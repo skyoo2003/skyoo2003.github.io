@@ -1,9 +1,9 @@
-title: Remeber list - To my memories...
-description: Personal remember list
-author: Sung-Kyu Yoo (Lukas)
+title: Technical Blogs
+description: Technical Blogs
+author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
 about: Search service developer. Kakao corp.
-disqus_shortname: rememberlist
+disqus_shortname: technical_articles
 google_analytics: UA-85297310-1
 
 enableTags: true
@@ -26,15 +26,17 @@ social:
     - icon: fa-stack-exchange
       link: "#"
 
-#share:
-#  twitter_username: agusmakmun6
-#  fb_appid: 1749788565247320
+share:
+ twitter_username: mr_skyoo
+ fb_appid: 1112332078820931
 
 urls:
     - text: About Me
       url: /about/
-    - text: Projects
-      url: /projects/
+    # - text: Project
+    #   url: /project/
+    - text: Category
+      url: /category/
     - text: Github
       url: https://github.com/skyoo2003
     - text: XML Feed
