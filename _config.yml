@@ -3,7 +3,7 @@ description: Technical Blogs
 author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
 about: Search service developer. Kakao corp.
-disqus_shortname: technicalblogs
+disqus_shortname: techblogs
 google_analytics: UA-85297310-1
 
 enableTags: true
