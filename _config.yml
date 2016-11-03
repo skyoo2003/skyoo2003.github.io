@@ -2,7 +2,7 @@ title: Technical Blogs
 description: Technical Blogs
 author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
-about: Search service developer. Kakao corp.
+about: Search service developer.
 disqus_shortname: techblogs
 google_analytics: UA-85297310-1
 
@@ -17,14 +17,14 @@ collections:
 social:
     - icon: fa-facebook
       link: "#"
-    - icon: fa-skype
-      link: "#"
+    #- icon: fa-skype
+    #  link: "#"
     - icon: fa-twitter
       link: "#"
     - icon: fa-linkedin
       link: "#"
-    - icon: fa-stack-exchange
-      link: "#"
+    #- icon: fa-stack-exchange
+    #  link: "#"
 
 share:
  twitter_username: mr_skyoo
