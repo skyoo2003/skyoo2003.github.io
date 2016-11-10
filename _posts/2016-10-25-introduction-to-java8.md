@@ -331,10 +331,10 @@ __Java8 에서의 Metaspace과 Heap 분리__
 
 [4] [Java8 메타 어노테이션](http://goodcodes.tistory.com/entry/Java-8-Feature-Annotation){:target="_blank"}
 
-[5] [Java SE 8 의 새로운 기능](http://www.yunsobi.com/blog/599)
+[5] [Java SE 8 의 새로운 기능](http://www.yunsobi.com/blog/599){:target="_blank"}
 
-[6] [StampedLock 성능 비교](http://blog.takipi.com/java-8-stampedlocks-vs-readwritelocks-and-synchronized/)
+[6] [StampedLock 성능 비교](http://blog.takipi.com/java-8-stampedlocks-vs-readwritelocks-and-synchronized/){:target="_blank"}
 
-[6] [Java8 New I/O API](https://blog.jooq.org/2014/01/24/java-8-friday-goodies-the-new-new-io-apis/)
+[6] [Java8 New I/O API](https://blog.jooq.org/2014/01/24/java-8-friday-goodies-the-new-new-io-apis/){:target="_blank"}
 
-[7] [Java8 PermGen to Metaspace](https://dzone.com/articles/java-8-permgen-metaspace)
+[7] [Java8 PermGen to Metaspace](https://dzone.com/articles/java-8-permgen-metaspace){:target="_blank"}
