@@ -251,3 +251,9 @@ member.filter(m -> m.getRating() >= 4.0)
 [4] [Java8#01. 람다 표현식(Lambda Expression)](http://multifrontgarden.tistory.com/124){:target="_blank"}
 
 [5] [자바 8 Optional](http://javaiyagi.tistory.com/443){:target="_blank"}
+
+[6] [함수형 프로그래밍 위키](https://ko.wikipedia.org/wiki/%ED%95%A8%EC%88%98%ED%98%95_%ED%94%84%EB%A1%9C%EA%B7%B8%EB%9E%98%EB%B0%8D){:target="_blank"}
+
+[7] [일급 객체 위키](https://ko.wikipedia.org/wiki/%EC%9D%BC%EA%B8%89_%EA%B0%9D%EC%B2%B4){:target="_blank"}
+
+[8] [일급 함수 제타위키](http://zetawiki.com/wiki/1%EA%B8%89_%ED%95%A8%EC%88%98){:target="_blank"}
