@@ -5,14 +5,14 @@ layout: null
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
    <url>
       <loc>{{ site.url }}{{ site.baseurl }}/</loc>
-      <lastmod>{{ site.time | date }}</lastmod>
+      <lastmod>{{ site.time | date: "%Y-%m-%d" }}</lastmod>
       <changefreq>monthly</changefreq>
       <priority>1.0</priority>
    </url>
    {% for post in site.posts %}
    <url>
       <loc>{{ post.url | prepend: site.baseurl | prepend: site.url }}</loc>
-      <lastmod>{{ post.date | date }}</lastmod>
+      <lastmod>{{ post.date | date: "%Y-%m-%d" }}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
    </url>
