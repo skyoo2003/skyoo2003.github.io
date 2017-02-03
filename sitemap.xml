@@ -12,7 +12,7 @@ layout: null
    {% for post in site.posts %}
    <url>
       <loc>{{ post.url | prepend: site.baseurl | prepend: site.url }}</loc>
-      <lastmod>{{ post.time | datetime }}</lastmod>
+      <lastmod>{{ post.date | datetime }}</lastmod>
       <changefreq>weekly</changefreq>
       <priority>0.5</priority>
    </url>
