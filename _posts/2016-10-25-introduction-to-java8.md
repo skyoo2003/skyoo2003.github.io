@@ -2,7 +2,7 @@
 layout: post
 title:  Introduction to Java8
 date:   2016-10-25 21:33:00
-categories: [all, java]
+categories: [java]
 ---
 
 ## Overview
