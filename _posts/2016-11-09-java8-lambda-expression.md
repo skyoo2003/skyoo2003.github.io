@@ -2,7 +2,7 @@
 layout: post
 title:  Java8 Lambda Expression
 date:   2016-11-09 18:02:24
-categories: [all, java]
+categories: [java]
 ---
 
 ## Overview
