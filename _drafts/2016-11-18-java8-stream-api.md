@@ -2,7 +2,9 @@
 layout: post
 title:  Java8 Stream API
 date:   2016-11-18 19:17:09
-categories: [java]
+categories: [all, java]
+permalink: /post/:year/:month/:day/:title
+published: true
 ---
 
 ## Overview
