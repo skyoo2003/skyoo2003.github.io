@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Java8 Lambda Expression
-date:   2016-11-09 18:02:24
+date:   2016-11-09T18:02:24+09:00
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true

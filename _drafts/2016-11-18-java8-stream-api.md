@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  Java8 Stream API
-date:   2016-11-18 19:17:09
+date:   2016-11-18T19:17:09+09:00
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
