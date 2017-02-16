@@ -23,4 +23,6 @@ TBD
 ## For writing a post
 ```
 $ bundle exec jekyll serve --drafts --future
+
+$ date +%Y-%m-%dT%H:%M:%S%z
 ```
