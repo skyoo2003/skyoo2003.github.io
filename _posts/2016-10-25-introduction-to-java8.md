@@ -1,16 +1,16 @@
 ---
 layout: post
-title:  Introduction to Java8
+title:  Java 8 살펴보기
 date:   2016-10-25T21:33:00+09:00
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
-## Overview
+## 시작하기 전에
 객체 지향적 언어로 알려져 있는 Java에 함수형 언어로서의 지원이 추가된 Java8에 대해서 간략하고 전체적인 부분을 정리한다.
 
-## New Features
+## 새로운 기능 간단 정리
 
 ### Lambda Expression (a.k.a Anonymous Method)
 
@@ -324,7 +324,8 @@ __Java8 에서의 Metaspace과 Heap 분리__
 
 * 수정될 필요가 없는 정보만 Metaspace에 저장, Metaspace는 JVM이 필요에 따라서 리사이징할 수 있는 구조로 개선되었음.
 
-## References
+## 참고 링크
+
 [1] [Java 8 개선 사항 관련 글 모음](http://blog.fupfin.com/?p=27){:target="_blank"}
 
 [2] [자바 8 살펴보기](http://www.moreagile.net/2014/04/AllAboutJava8.html){:target="_blank"}

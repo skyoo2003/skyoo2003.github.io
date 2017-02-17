@@ -1,17 +1,17 @@
 ---
 layout: post
-title:  Java8 Lambda Expression
+title:  Java8 람다 표현식 자세히 살펴보기
 date:   2016-11-09T18:02:24+09:00
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
-## Overview
+## 시작하기 전에
 
 2010년도에 '[Project Lambda](http://openjdk.java.net/projects/lambda/){:target="_blank"}' 라는 프로젝트로 진행되어 Java8 에 공식 릴리즈가 되었다. 객체지향적 프로그래밍 언어에 어떻게 함수형 프로그래밍을 구현할 수 있는지 알아보고자 한다.
 
-## Functional Programming
+## 함수형 프로그래밍 간략하게 알아보기
 
 자바의 람다식을 소개하기 전에 함수형 프로그래밍에 대해서 간략하게라도 알아볼 필요가 있다. (람다 대수에 근간을 두는 함수형 프로그래밍은 패러다임이고, 람다 표현식은 이를 나타낸다고 볼 수 있기 때문!)
 
@@ -60,7 +60,7 @@ public interface NotFunctional {
 함수형 인터페이스가 무엇인지 예제를 통해 간략히 알아보면,
 Functional1, 2, 3는 모두 함수형 인터페이스를 만족한다. 특이한 점이 Functional3 인터페이스의 경우, @FunctionalInterface 어노테이션을 붙여주었는데, 이는 컴파일러에게 명시적으로 함수형 인터페이스임을 알려주는 역할을 하고, 해당 인터페이스가 함수형 인터페이스 명세를 어기면 컴파일러 에러를 발생시켜 준다.
 
-## Lambda Expression
+## 람다 표현식 자세히 알아보기
 
 자바에서 기본적인 람다식 구조는 아래와 같다.
 
@@ -103,12 +103,12 @@ t -> { t.start(); }          // Single inferred-type parameter
 (x, int y) -> x+y          // Illegal: can't mix inferred and declared types
 ```
 
-## Lambda Specification
+## 람다 표현식 활용
 
 위에서 자바의 함수형 프로그래밍과 람다 표현식에 대해서 자세하게 살펴보았고, 이번에는 람다의 구체적인 명세에 대해서 정리해보고자 한다.
 람다식을 활용함에 있어 어떤 부분이 문법적인 제약이 있는지, 어떤 방법으로 활용될 수 있는지에 대해서 정리해보는 부분이라고 이해하면 좋다.
 
-### Parameterized Behaviors
+### 파라미터에 행위 전달 (Parameterized Behaviors)
 
 메소드에 사용할 데이터 혹은 변수와 행위를 같이 전달하게 하여 메소드의 행위 부분도 분리할 수 있을 것이다. 이를 통해 얻을 수 있는 장점은 아래 정도로 정리할 수 있을 것이다.
 
@@ -143,7 +143,7 @@ Collections.max(fruits, (o1, o2) -> o1.name.compareTo(o2.name) ;
 
 스프링 프레임워크에서 익명 클래스를 이용한 행위 파라미터를 적극적으로 활용해 '템플릿 콜백 패턴' 디자인패턴으로 이미 유용하게 사용되던 기법이었고, 람다식으로 간결하게 사용할 수 있게 된 것이다.
 
-### Immutable Free Variables
+### 불변 변수 사용 (Immutable Free Variables)
 
 자바에서 익명 클래스 + 자유 변수 포획으로 클로저를 가능하게 하였는데, 포획된 변수에는 명시적으로 final 지시자를 사용하도록 강제하였다. 람다식에서는 포획된 변수에 final 을 명시하지 않아도 되도록 변경되었지만 기존과 동일하게 포획된 변수는 변경할 수 없고, 변경하는 경우 컴파일 에러가 발생한다.
 
@@ -154,13 +154,13 @@ new Thread(() -> System.out.println(counter)) // OK
 new Thread(() -> System.out.println(counter++)) // Compile Error (Free variable is immutable!)
 ```
 
-### Stateless Object
+### 상태 없는 객체 (Stateless Object)
 
 클래스의 메소드(행위)에서 멤버 변수(상태)를 자유롭게 제어할 수 있다. 즉, 객체가 메소드를 호출하면 입력(Input)+상태(Properties)로부터 출력(Output)이 결정되기 때문에 Side-Effect가 발생할 수 있다. 함수 단위의 배타적 수행이 보장되지 않기 때문에 병렬 처리와 멀티 스레드 환경에서 여러 단점에 노출될 가능성이 있다.
 
 반면에 람다식으로 표현하게 되면, 오로지 입력(Input)과 출력(Output)에 종속되어 있기 때문에 Side-Effect 가 발생하지 않는 것을 최대한 보장할 수 있게 된 것이다. 후술할 스트림 API 에서는 함수형 인터페이스를 최대한 활용해 병렬(Parallel) 처리를 어떻게 효과적으로 할 수 있는지 알아볼 예정이다.
 
-### Optional + Lambda
+### Optional + Lambda 조합
 
 java.util.Optional 이라는 클래스는 값이 있거나 없는 경우를 표현하기 위한 클래스로 map, filter, flatMap 등의 고차 함수를 가지고 있다.
 Optional의 고차 함수를 조합하여 간결하게 표현이 가능하며, 언제 발생할지 모르는 NullPointerException 의 두려움에 방어 로직으로부터 벗어날 수 있지 않을까 한다.
@@ -242,7 +242,7 @@ member.filter(m -> m.getRating() >= 4.0)
     .ifPresent(m -> System.out::println)
 ```
 
-## References
+## 참고 링크
 
 [1] [자바8 람다식 소개](http://www.slideshare.net/madvirus/8-35205661){:target="_blank"}
 

@@ -1,13 +1,13 @@
 ---
 layout: post
-title:  Ansible Galaxy, Managing dependencies from a git repository
+title:  Ansible Galaxy, Git 저장소를 활용하여 Role 의존성 관리하기!
 date:   2017-02-16T17:31:36+0900
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
-## Push the Ansible Role into git repository
+## Git 저장소에 Ansible Role 올리기
 
 먼저, Ansible Role 을 개발하기 위한 Git repository를 생성한다. 그리고, Ansible Role 초기 프로젝트 구조를 Ansible Galaxy 를 사용하여 생성한다.
 
@@ -49,7 +49,7 @@ sample-role/
 $ git commit * -m "Add ansible role" && git push
 ```
 
-## Pull the Ansible Role from git repository
+## Git 저장소로부터 Ansible Role 가져오기
 
 * 방법 1) Ansible Galaxy CLI 명령을 통해 다운로드
 
@@ -107,7 +107,7 @@ roles/
         └── main.yml
 ```
 
-## Write 'requirements.yml'
+## 'requirements.yml' 작성하기
 
 * src
     * username.role_name : Ansible Galaxy 공식 저장소에 등록된 Ansible Role 을 다운로드할 때 사용.
@@ -152,7 +152,7 @@ roles/
   version: "0.1"  # quoted, so YAML doesn't parse this as a floating-point value
 ```
 
-## References
+## 참고 링크
 
 [1] [Ansible-Galaxy Document](http://docs.ansible.com/ansible/galaxy.html){:target="_blank"}
 
