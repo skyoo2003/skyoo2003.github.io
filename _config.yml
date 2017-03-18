@@ -3,6 +3,8 @@ description: TIL, a small contribution to the world
 author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
 about: Search service developer.
+avatar_url: /static/img/avatar.jpg
+disqus_shortname: todayilearned
 google_analytics: UA-85297310-1
 google_ad_client: ca-pub-7498978308301601
 
@@ -46,7 +48,7 @@ url: "https://skyoo2003.github.io"
 baseurl: ""
 paginate: 20
 per_page: 20
-paginate_path: "/page:num/"
+paginate_path: "/page/:num/"
 markdown: kramdown
 gems:
   - jekyll-paginate

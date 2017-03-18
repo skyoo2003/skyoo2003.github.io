@@ -10,12 +10,18 @@ input#js-search__input {
 .is-active .search__input {
     transform: translateY(0);
 }
+
+.search {
+  margin-bottom: 5px;
+}
+
 .search__results {
     list-style: none;
     padding: 0;
     overflow-x: hidden;
     height: calc(100% - 110px);
     transition: 0.2s ease;
+    margin-bottom: 0;
 }
 .search__results.is-hidden {
     opacity: 0;
@@ -27,11 +33,12 @@ input#js-search__input {
 }
 .search__results > li > a {
     display: block;
-    padding: 10px;
+    padding: 5px;
 }
 .search__result-date {
     color: #BBB;
-    position: absolute;
+    position: relative;
+    left: 4px;
     right: 12px;
 }
 .search.is-active {

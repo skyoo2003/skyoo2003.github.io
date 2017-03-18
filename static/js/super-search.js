@@ -3,6 +3,8 @@
     MIT Licensed
 */
 
+var _gaq = _gaq || [];
+
 (function () {
     var isSearchOpen = false,
         searchEl = document.querySelector('#js-search'),
@@ -63,7 +65,7 @@
     }
 
     var xmlhttp=new XMLHttpRequest();
-    xmlhttp.open("GET","/sitemap.xml");
+    xmlhttp.open("GET","/feed.xml");
     xmlhttp.onreadystatechange = function () {
         if (xmlhttp.readyState != 4) return;
         if (xmlhttp.status != 200 && xmlhttp.status != 304) { return; }
@@ -74,7 +76,7 @@
     xmlhttp.send();
 
     window.toggleSearch = function toggleSearch() {
-        _gaq.push(['_trackEvent', 'supersearch', searchEl.classList.contains('is-active')]);
+        ga("send", "event", "supersearch", searchEl.classList.contains('is-active'));
         searchEl.classList.toggle('is-active');
         if (searchEl.classList.contains('is-active')) {
             // while opening
