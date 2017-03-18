@@ -5,4 +5,5 @@ User-agent: *
 Disallow: /about/
 Disallow: /static/
 Disallow: /category/
+Disallow: /project/
 Allow: /post/
