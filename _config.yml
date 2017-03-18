@@ -35,8 +35,8 @@ share:
 urls:
     - text: About Me
       url: /about/
-    # - text: Project
-    #   url: /project/
+    - text: Project
+      url: /project/
     - text: Category
       url: /category/
     - text: Github
