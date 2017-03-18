@@ -18,6 +18,7 @@ layout: default
 {% for post in site.posts  %}
     {% assign postHasSimilar = false %}
     {% for tag in post.categories %}
+      {% if tag != "all" %}
         {% for thisTag in page.categories %}
             {% if postHasSimilar == false and hasSimilar.size < 6 and post != page and tag == thisTag %}
                 {% if hasSimilar.size == 0 %}
@@ -35,6 +36,7 @@ layout: default
                 {% assign postHasSimilar = true %}
             {% endif %}
         {% endfor %}
+      {% endif %}
     {% endfor %}
 {% endfor %}
 {% if hasSimilar.size > 0 %}

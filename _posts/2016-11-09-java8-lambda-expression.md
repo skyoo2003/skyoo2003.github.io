@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Java8 람다 표현식 자세히 살펴보기
+title:  Java 8 람다 표현식 자세히 살펴보기
 date:   2016-11-09T18:02:24+09:00
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
