@@ -13,15 +13,15 @@ published: true
 
 ## 심볼릭 링크 생성하기 (--install)
 
-`--install` 액션을 통해 심볼릭 링크를 생성할 수 있습니다. Redhat 기준으로 `alternatives` 는 기본적으로 `/etc/alternatives/<name>` 의 경로에 심볼릭 링크가 생성되고, mode, priority, link, path 에 대한 정보를 `/var/lib/alternatives/<name>` 의 경로에 저장 됩니다. 심볼릭 링크가 처음 생성되는 경우에는 `<link>`의 경로에 `/etc/alternatives/<name>`에 대한 심볼릭 링크가 생성됩니다. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
+`--install` 액션을 통해 심볼릭 링크를 생성할 수 있다. Redhat 기준으로 `alternatives` 는 기본적으로 `/etc/alternatives/<name>` 의 경로에 심볼릭 링크가 생성되고, mode, priority, link, path 에 대한 정보를 `/var/lib/alternatives/<name>` 의 경로에 저장 한다. 심볼릭 링크가 처음 생성되는 경우에는 `<link>`의 경로에 `/etc/alternatives/<name>`에 대한 심볼릭 링크가 생성된다. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
 
-`--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있습니다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
+`--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
 
 ```bash
 $ alternatives --install <link> <name> <path> <priority> [--slave <link> <name> <path>]*
 <link> : 심볼릭 링크의 경로를 입력.
 <name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
-<path> : 패키지의 절대 경로를 입력합니다.
+<path> : 패키지의 절대 경로를 입력.
 <priority> : 링크 그룹 내에서 우선순위 지정. 정수로 입력하며 클 수록 높음.
 ```
 
@@ -59,19 +59,19 @@ $ alternatives --altdir /home/user/alternatives --admindir /home/user/alternativ
 
 ## 심볼릭 링크 제거하기 (--remove)
 
-`--remove` 액션을 통해 생성한 심볼릭 링크를 제거할 수 있다. 자세히는 `alternatives` 의 메타 데이터에서 제거하게 되며, `<name>`에 해당하는 링크 그룹 내에 연결 가능한 심볼릭 링크가 없다면, `/etc/alternatives/<name>`의 심볼릭 링크와 `/var/lib/alternatives/<name>` 도 같이 소멸됩니다. 만약에 다른 대안이 있다면, `alternatives` 는 자동으로 해당 링크로 업데이트를 합니다.
+`--remove` 액션을 통해 생성한 심볼릭 링크를 제거할 수 있다. 자세히는 `alternatives` 의 메타 데이터에서 제거하게 되며, `<name>`에 해당하는 링크 그룹 내에 연결 가능한 심볼릭 링크가 없다면, `/etc/alternatives/<name>`의 심볼릭 링크와 `/var/lib/alternatives/<name>` 도 같이 소멸. 만약에 다른 대안이 있다면, `alternatives` 는 자동으로 해당 링크로 업데이트 한다.
 
 ```bash
 $ alternatives --remove <name> <path>
 <name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
-<path> : 삭제할 패키지의 절대 경로를 입력합니다.
+<path> : 삭제할 패키지의 절대 경로를 입력다.
 ```
 
 ```bash
 # mvn 심볼릭 링크 그룹에서 /usr/lib/apache-maven-3.3.9/bin/mvn 에 해당하는 심볼릭 링크 메타 정보 제거
 $ alternatives --remove mvn /usr/lib/apache-maven-3.3.9/bin/mvn
 
-# case1) apache-maven-3.3.3/bin/mvn 이 같은 그룹명으로 연결되어 있다면, 해당 경로로 업데이트 됩니다.
+# case1) apache-maven-3.3.3/bin/mvn 이 같은 그룹명으로 연결되어 있다면, 해당 경로로 업데이트 된다.
 $ ll /etc/alternatives/mvn
 lrwxrwxrwx 1 root root 35 Mar 18 00:49 /etc/alternatives/mvn -> /usr/lib/apache-maven-3.3.3/bin/mvn
 $ ll /var/lib/alternatives/mvn
@@ -83,7 +83,7 @@ auto
 /usr/lib/apache-maven-3.3.3/bin/mvn
 30303
 
-# case2) mvn 심볼릭 링크 그룹 내에서 다른 대안이 없다면, /etc/alternatives/mvn, /var/lib/alternatives/mvn, /usr/local/bin/mvn의 경로의 파일과 링크가 제거됩니다.
+# case2) mvn 심볼릭 링크 그룹 내에서 다른 대안이 없다면, /etc/alternatives/mvn, /var/lib/alternatives/mvn, /usr/local/bin/mvn의 경로의 파일과 링크가 제거된다.
 $ ll /etc/alternatives/mvn
 ls: cannot access /etc/alternatives/mvn: No such file or directory
 $ ll /var/lib/alternatives/mvn
@@ -189,7 +189,7 @@ $ alternatives --list
 ```
 
 ```bash
-# 로컬 머신에 등록된 모든 심볼릭 링크 그룹 리스트 입니다.
+# 로컬 머신에 등록된 모든 심볼릭 링크 그룹 리스트.
 $ alternatives --list
 java_sdk_1.8.0	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
 jre_openjdk	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64/jre
