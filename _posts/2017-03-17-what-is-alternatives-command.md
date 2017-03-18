@@ -17,8 +17,6 @@ published: true
 
 `--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있습니다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
 
-심볼릭 링크와 메타 데이터의 경로를 변경하고자 하는 경우, `--altdir <directory>`, `--admindir <directory>` 명령 옵션을 활용하면 된다. 예를 들면 다음과 같다. `$ alternatives --altdir /home/user/alternatives --admindir /home/user/alternatives/meta --install /home/user/bin/mvn mvn /usr/lib/maven-3.3.9/bin/mvn 1`
-
 ```bash
 $ alternatives --install <link> <name> <path> <priority> [--slave <link> <name> <path>]*
 <link> : 심볼릭 링크의 경로를 입력.
@@ -51,6 +49,13 @@ auto
 /usr/lib/apache-maven-3.3.9/bin/mvn
 30309
 ```
+
+PS. alternatives에서 관리하는 심볼릭 링크와 메타 데이터의 경로를 변경하고자 하는 경우, `--altdir <directory>`, `--admindir <directory>` 명령 옵션을 활용하면 된다.
+
+```bash
+$ alternatives --altdir /home/user/alternatives --admindir /home/user/alternatives/meta --install /home/user/bin/mvn mvn /usr/lib/maven-3.3.9/bin/mvn 1
+```
+
 
 ## 심볼릭 링크 제거하기 (--remove)
 
