@@ -13,6 +13,9 @@ published: true
 
 위와 같은 니즈에 적합한 오픈소스 솔루션이 pyenv 이라고 소개하고 싶다! 물론, 오픈소스를 활용하지 않고 충분히 버전을 통제할 수 있다. $PATH, $PYTHON_PATH 등의 환경변수를 적절히 관리하면 가능하다. 다만, 매 프로젝트에서 이러한 환경변수를 다루는 것까지 고민하는 것은 어떻게보면 낭비가 될 수도 있다는 생각에 pyenv에 대해서 자세히 알아보게 되었다.
 
+![Pyenv Example]({{ site.url
+}}/static/img/pyenv-example.png){:class="img-thumbnail img-responsive"}
+
 ## 핵심 기능 간략 소개
 
 pyenv가 제공하는 기능은 간략하게 다음과 같다.
