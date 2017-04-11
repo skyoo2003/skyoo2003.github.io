@@ -1,5 +1,5 @@
 ---
-layout: posts_by_category
+layout: category
 categories: scala
 title: Scala
 permalink: /category/scala

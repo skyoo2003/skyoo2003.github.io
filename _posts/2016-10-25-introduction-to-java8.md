@@ -2,15 +2,17 @@
 layout: post
 title:  Java 8 살펴보기
 date:   2016-10-25T21:33:00+09:00
+image: 	java8-logo.png
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
-## 시작하기 전에
-객체 지향적 언어로 알려져 있는 Java에 함수형 언어로서의 지원이 추가된 Java8에 대해서 간략하고 전체적인 부분을 정리한다.
+![Java 8 Logo](/static/img/posts/java8-logo.png){:class="img-thumbnail img-responsive"}
 
-## 새로운 기능 간단 정리
+Java 8 버전에 추가된 내용들에 대해서 정리하고자 한다. 전반적인 내용을 정리하고자 하였고, 자세하고 세부적인 내용은 관련 링크를 첨부하여 추후에 가능하다면, 해당 부분에 대해서 더 자세히 정리해보고자 한다.
+
+## 새로운 기능 정리
 
 ### Lambda Expression (a.k.a Anonymous Method)
 

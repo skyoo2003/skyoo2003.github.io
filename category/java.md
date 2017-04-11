@@ -1,5 +1,5 @@
 ---
-layout: posts_by_category
+layout: category
 categories: java
 title: Java
 permalink: /category/java

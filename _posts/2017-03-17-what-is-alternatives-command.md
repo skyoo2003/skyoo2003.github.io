@@ -2,10 +2,15 @@
 layout: post
 title:  alternatives 명령어 알아보기
 date:   2017-03-17T11:13:43+0900
+image:  alternatives-logo.jpg
 categories: [all, linux]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
+
+![Alternatives Logo](/static/img/posts/alternatives-logo.jpg){:class="img-thumbnail img-responsive"}
+
+이미지 출처: [talk.payloadz.com](http://talk.payloadz.com/top-10-paypal-alternatives){:target="_blank"}
 
 `alternatives` (cf, `update-alternatives`)는 심볼릭 링크를 생성, 제거, 관리, 조회할 수 있는 기능을 제공하는 GNU 라이센스의 커맨드라인 툴. 즉, 심볼릭 링크를 통해서 특정 커맨드에 대해 디폴트 버전 혹은 경로를 정의할 수 있다. 다만, Debian 계열의 리눅스에는 `update-alternatives` 명령어만 제공 (perl 언어에 대한 의존성을 제거하기 위해 기존의 `alternatives` 스크립트가 재구현이 되었다고 함)되고, Redhat 계열의 리눅스 명령과 제공하는 기능에는 다소 차이가 있지만, 이번에는 공통적인 기능과 옵션에 대해서만 정리하기로 하였다. 추가로, 예제들은 Redhat 기준으로 정리하였다.
 

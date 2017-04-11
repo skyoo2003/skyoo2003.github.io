@@ -2,19 +2,21 @@
 layout: post
 title:  pyenv 파이썬 버전 가상 환경 관리
 date:   2017-04-02T01:36:27+0900
+image:  pyenv-logo.jpg
 categories: [all, python]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
+
+![Pyenv Logo](/static/img/posts/pyenv-logo.jpg){:class="img-thumbnail img-responsive"}
+
+이미지 출처: [klauslaube](http://klauslaube.com.br/2016/04/26/o-simples-e-poderoso-pyenv.html){:target="_blank"}
 
 파이썬이라는 언어를 사용하다보면 다양한 버전 환경에 직면하게 된다. 먼저, Redhat, Debian 등의 배포판에는 자체에 설치된 시스템 파이썬이 존재하고, 필요에 따라 계정별로 소스 빌드를 통해 파이썬을 사용할 수도 있다. 파이썬은 크게 2.x 와 3.x 의 메이저 버전에 따라 문법과 내장 라이브러리의 차이가 있으며, 마이너 버전에 따라 일부 기능의 동작 방식이나 구현이 달라질 수 있는 자유롭지만 때론 위험한 상황에 직면해 있다.
 
 물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다. 하지만, 일반적으로 하나의 시스템에는 다양한 파이썬 프로젝트들이 존재할 수 있고 이들은 종종 다양한 파이썬 버전에 기반하여 구현이 되어 있을 수 있다. 의존성 분리를 통해 프로젝트 간에 응집력을 줄인다면, 개별 프로젝트는 다른 환경에 대한 고민을 하지 않아도 된다.
 
 위와 같은 니즈에 적합한 오픈소스 솔루션이 pyenv 이라고 소개하고 싶다! 물론, 오픈소스를 활용하지 않고 충분히 버전을 통제할 수 있다. $PATH, $PYTHON_PATH 등의 환경변수를 적절히 관리하면 가능하다. 다만, 매 프로젝트에서 이러한 환경변수를 다루는 것까지 고민하는 것은 어떻게보면 낭비가 될 수도 있다는 생각에 pyenv에 대해서 자세히 알아보게 되었다.
-
-![Pyenv Example]({{ site.url
-}}/static/img/pyenv-example.png){:class="img-thumbnail img-responsive"}
 
 ## 핵심 기능 간략 소개
 

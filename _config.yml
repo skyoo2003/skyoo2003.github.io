@@ -1,42 +1,25 @@
-title: Today I Learned
-description: TIL, a small contribution to the world
+title: SKY Higher ✈️
+description: Thinking first, Coding next.
 author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
-about: Search service developer.
+about: Developer at Kakao corp.
 avatar_url: /static/img/avatar.png
-disqus_shortname: todayilearned
 google_analytics: UA-85297310-1
 google_ad_client: ca-pub-7498978308301601
 
 enableTags: true
 tagarray: []
 
-collections:
-  project:
-    output: true
-    permalink: /project/:path/
-
 social:
-    # - icon: fa-facebook
-    #   link: "#"
-    #- icon: fa-skype
-    #  link: "#"
-    - icon: fa-twitter
-      link: "https://twitter.com/mr_skyoo"
     # - icon: fa-linkedin
     #   link: "#"
-    #- icon: fa-stack-exchange
-    #  link: "#"
 
 share:
- twitter_username: mr_skyoo
  fb_appid: 1112332078820931
 
 urls:
     - text: About Me
       url: /about/
-    - text: Project
-      url: /project/
     - text: Category
       url: /category/
     - text: Github

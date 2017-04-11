@@ -1,5 +1,5 @@
 ---
-layout: posts_by_category
+layout: category
 categories: python
 title: Python
 permalink: /category/python

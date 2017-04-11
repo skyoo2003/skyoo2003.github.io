@@ -1,8 +1,6 @@
 ---
-layout: posts_by_category
+layout: category
 categories: all
 title: Category
 permalink: /category/
 ---
-
-TBD

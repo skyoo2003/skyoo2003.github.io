@@ -2,14 +2,19 @@
 layout: post
 title:  Java 8 람다 표현식 자세히 살펴보기
 date:   2016-11-09T18:02:24+09:00
+image:  java8-lambda-logo.png
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
+![Java 8 Lambda Logo](/static/img/posts/java8-lambda-logo.png){:class="img-thumbnail img-responsive"}
+
+이미지 출처: [ninja-squad](http://ninja-squad.com/formations/formation-java8){:target="_blank"}
+
 ## 시작하기 전에
 
-2010년도에 '[Project Lambda](http://openjdk.java.net/projects/lambda/){:target="_blank"}' 라는 프로젝트로 진행되어 Java8 에 공식 릴리즈가 되었다. 객체지향적 프로그래밍 언어에 어떻게 함수형 프로그래밍을 구현할 수 있는지 알아보고자 한다.
+2010년도에 '[Project Lambda](http://openjdk.java.net/projects/lambda/){:target="_blank"}' 라는 프로젝트로 진행되어 Java 8 에 공식 릴리즈가 되었다. 기존의 Java 언어에 어떻게 함수형 프로그래밍을 녹여내었는지 좀 더 자세히 정리하고자 한다.
 
 ## 함수형 프로그래밍 간략하게 알아보기
 

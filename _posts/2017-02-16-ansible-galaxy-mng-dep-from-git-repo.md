@@ -2,12 +2,13 @@
 layout: post
 title:  Ansible Galaxy, Git 저장소를 활용하여 Role 의존성 관리하기!
 date:   2017-02-16T17:31:36+0900
+image:  ansible-galaxy-github-logo.png
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
 published: true
 ---
 
-![Ansible Galaxy Github]({{ site.url }}/static/img/ansible-galaxy-github.png){:class="img-thumbnail img-responsive"}
+![Ansible Galaxy + Github Logo](/static/img/posts/ansible-galaxy-github-logo.png){:class="img-thumbnail img-responsive"}
 
 ## Git 저장소에 Ansible Role 올리기
 
