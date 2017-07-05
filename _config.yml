@@ -1,18 +1,17 @@
-title: SKY Higher ✈️
-description: Thinking first, Coding next.
+title: 📚 Devlog in the SKY 📚
+description: Yet another developer's blog
 author: Sung-Kyu Yoo
 github: https://github.com/skyoo2003
-about: Developer at Kakao
+about: Software Developer
 avatar_url: /static/img/avatar.jpg
 google_analytics: UA-85297310-1
 google_ad_client: ca-pub-7498978308301601
 
-enableTags: true
-tagarray: []
-
 social:
-    # - icon: fa-linkedin
-    #   link: "#"
+    - icon: fa-github-alt
+      link: "https://github.com/skyoo2003"
+    - icon: fa-linkedin   
+      link: "https://www.linkedin.com/in/성규-유-6b2251b7"
 
 share:
  fb_appid: 1112332078820931
@@ -22,8 +21,6 @@ urls:
       url: /about/
     - text: Category
       url: /category/
-    - text: Github
-      url: https://github.com/skyoo2003
     - text: XML Feed
       url: /feed.xml
 
