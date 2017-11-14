@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Ansible Callback Plugin 개발하기
+title:  Ansible Callback Plugin 소개
 date:   2017-11-14T21:44:56+09:00
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
@@ -89,7 +89,7 @@ def on_file_diff(self, host, diff):
     pass
 ```
 
-### 플러그인 구현 예제
+### 구현 예제
 
 아래의 Ansible Plugin 은 [[jlafon/ansible-profile]](https://github.com/jlafon/ansible-profile){:target="_blank"} 프로젝트를 차용하였다는 점을 먼저 알려드립니다.
 
