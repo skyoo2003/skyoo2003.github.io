@@ -5,6 +5,7 @@ date:   2017-11-14T21:44:56+09:00
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 Ansible Plugin 중에서 **Callback Plugin** 에 관련한 부분만 정리합니다. Callback Plugin 은 Ansible 에서 특정 이벤트 발생 시 데이터를 로깅한다거나 Slack, Mail 등의 외부 채널로 Write 하는 등의 다양한 목적을 달성하기 위해 사용하는 모듈입니다. 참고로 이 내용은 **Ansible 2.2.1.0** 기준으로 작성되었습니다.

@@ -6,6 +6,7 @@ image:  java8-lambda-logo.png
 categories: [all, java]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 ![Java 8 Lambda Logo](/static/img/posts/java8-lambda-logo.png){:class="img-thumbnail img-responsive"}

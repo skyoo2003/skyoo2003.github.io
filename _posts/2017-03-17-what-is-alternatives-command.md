@@ -6,6 +6,7 @@ image:  alternatives-logo.jpg
 categories: [all, linux]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 ![Alternatives Logo](/static/img/posts/alternatives-logo.jpg){:class="img-thumbnail img-responsive"}

@@ -6,6 +6,7 @@ image:  ansible-galaxy-github-logo.png
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 ![Ansible Galaxy + Github Logo](/static/img/posts/ansible-galaxy-github-logo.png){:class="img-thumbnail img-responsive"}

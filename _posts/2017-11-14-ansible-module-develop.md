@@ -5,6 +5,7 @@ date:   2017-11-14T21:44:56+09:00
 categories: [all, ansible]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 Ansible 은 대규모의 서버 장비에 대한 설치 및 어플리케이션의 배포와 서비스 운영에 대한 자동화 부분을 비교적 쉽게 작성할 수 있도록 기능을 제공합니다. 최신 트렌드인 DevOps 를 가능케하는 방법 중에 하나라고 할 수 있습니다. 

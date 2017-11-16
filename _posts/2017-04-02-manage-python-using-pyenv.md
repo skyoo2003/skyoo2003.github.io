@@ -6,6 +6,7 @@ image:  pyenv-logo.jpg
 categories: [all, python]
 permalink: /post/:year/:month/:day/:title
 published: true
+comments: true
 ---
 
 ![Pyenv Logo](/static/img/posts/pyenv-logo.jpg){:class="img-thumbnail img-responsive"}
