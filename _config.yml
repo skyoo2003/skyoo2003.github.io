@@ -6,6 +6,7 @@ about: Software Developer
 avatar_url: /static/img/avatar.jpg
 google_analytics: UA-85297310-1
 google_ad_client: ca-pub-7498978308301601
+disqus_shortname: devlog-in-the-sky
 
 social:
     - icon: fa-github-alt
