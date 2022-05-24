@@ -1,0 +1,80 @@
+baseURL = 'https://skyoo2003.github.io/'
+languageCode = 'en-us'
+title = 'Devlog in the SKY'
+theme = 'cactus'
+copyright = "Sung-Kyu Yoo"
+disqusShortname = 'devlog-in-the-sky'
+googleAnalytics = "UA-85297310-1"
+
+[permalinks]
+posts = "/post/:year/:month/:day/:filename"
+
+[taxonomies]
+  tag = 'tags'
+
+[markup.tableOfContents]
+endLevel = 4
+ordered = false
+startLevel = 2
+
+[markup.highlight]
+codeFences = true
+guessSyntax = false
+hl_Lines = ""
+lineNoStart = 1
+lineNos = true
+lineNumbersInTable = false
+noClasses = true
+style = "dracula"
+tabWidth = 4
+
+[[menu.main]]
+name = "Home"
+url = "/"
+weight = 1
+
+[[menu.main]]
+name = "Posts"
+url = "/posts"
+weight = 2
+
+[[menu.main]]
+name = "Tags"
+url = "/tags"
+weight = 3
+
+[[menu.main]]
+name = "About"
+url = "/about"
+weight = 4
+
+[params]
+colortheme = "light"
+rss = true
+googleAnalyticsAsync = true
+showAllPostsArchive = false
+description = "Devlog in the SKY - Yet another developer's blog"
+mainSection = "posts"
+showAllPostsOnHomePage = false
+postsOnHomePage = 5
+tagsOverview = true
+tocInline = true
+showProjectsList = true
+projectsUrl = "https://github.com/skyoo2003"
+mathjax = true
+
+[[params.social]]
+name = "github"
+link = "https://github.com/skyoo2003"
+
+[[params.social]]
+name = "email"
+link = "skyoo2003@gmail.com"
+
+[[params.social]]
+name = "linkedin"
+link = "https://www.linkedin.com/in/skyoo2003"
+
+[params.comments]
+enabled = true
+engine = "disqus"

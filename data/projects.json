@@ -1,0 +1,14 @@
+{
+   "list": [
+      {
+         "name": "kakaowork-py",
+         "url": "https://github.com/skyoo2003/kakaowork-py",
+         "desc": "(Unofficial) Kakaowork Python client"
+      },
+      {
+         "name": "acor",
+         "url": "https://github.com/skyoo2003/acor",
+         "desc": "ACOR means Aho-Corasick automation working On Redis, Written in Go"
+      }
+   ]
+}
