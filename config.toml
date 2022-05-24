@@ -10,7 +10,7 @@ googleAnalytics = "UA-85297310-1"
 posts = "/post/:year/:month/:day/:filename"
 
 [taxonomies]
-  tag = 'tags'
+tag = 'tags'
 
 [markup.tableOfContents]
 endLevel = 4
@@ -49,7 +49,7 @@ url = "/about"
 weight = 4
 
 [params]
-colortheme = "light"
+colortheme = "white"
 rss = true
 googleAnalyticsAsync = true
 showAllPostsArchive = false

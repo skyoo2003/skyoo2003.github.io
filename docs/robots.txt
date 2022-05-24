@@ -1,0 +1,4 @@
+User-agent: *
+Disallow: /about/
+Allow: /
+DaumWebMasterTool:8f4e29d4d2e914a46014d92dd074a8051e0b3e7c555d197b5240870a5001893c:tG5SHo570LjMCvbuBaT5IQ==
