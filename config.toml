@@ -49,6 +49,7 @@ url = "/about"
 weight = 4
 
 [params]
+logo = "/images/logo.jpg"
 colortheme = "white"
 rss = true
 googleAnalyticsAsync = true
