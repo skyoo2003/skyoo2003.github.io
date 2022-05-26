@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-brands-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-regular-400.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/font-awesome/webfonts/fa-solid-900.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <link rel="preload" href="/lib/JetBrainsMono/web/woff2/JetBrainsMono-Regular.woff2" as="font" type="font/woff2" crossorigin="anonymous">
+  <script type="text/javascript" src="https://latest.cactus.chat/cactus.js"></script>
+  <link rel="stylesheet" href="https://latest.cactus.chat/style.css" type="text/css">
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title> pyenv 파이썬 버전 가상 환경 관리 | Devlog in the SKY</title>
+  <link rel = 'canonical' href = 'https://skyoo2003.github.io/post/2017/04/02/2017-04-02-manage-python-using-pyenv/'>
+  <meta name="description" content="Devlog in the SKY - Yet another developer&#39;s blog">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="all,follow">
+  <meta name="googlebot" content="index,follow,snippet,archive">
+  <meta property="og:title" content="pyenv 파이썬 버전 가상 환경 관리" />
+<meta property="og:description" content="파이썬이라는 언어를 사용하다보면 다양한 버전 환경에 직면하게 된다. 먼저, Redhat, Debian 등의 배포판에는 자체에 설치된 시스템 파이썬이 존재하고, 필요에 따라 계정별로 소스 빌드를 통해 파이썬을 사용할 수도 있다. 파이썬은 크게 2.x 와 3.x 의 메이저 버전에 따라 문법과 내장 라이브러리의 차이가 있으며, 마이너 버전에 따라 일부 기능의 동작 방식이나 구현이 달라질 수 있는 자유롭지만 때론 위험한 상황에 직면해 있다.
+물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://skyoo2003.github.io/post/2017/04/02/2017-04-02-manage-python-using-pyenv/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2017-04-02T01:36:27+09:00" />
+<meta property="article:modified_time" content="2017-04-02T01:36:27+09:00" />
+
+
+  <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="pyenv 파이썬 버전 가상 환경 관리"/>
+<meta name="twitter:description" content="파이썬이라는 언어를 사용하다보면 다양한 버전 환경에 직면하게 된다. 먼저, Redhat, Debian 등의 배포판에는 자체에 설치된 시스템 파이썬이 존재하고, 필요에 따라 계정별로 소스 빌드를 통해 파이썬을 사용할 수도 있다. 파이썬은 크게 2.x 와 3.x 의 메이저 버전에 따라 문법과 내장 라이브러리의 차이가 있으며, 마이너 버전에 따라 일부 기능의 동작 방식이나 구현이 달라질 수 있는 자유롭지만 때론 위험한 상황에 직면해 있다.
+물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다."/>
+
+  
+  
+    
+  
+  
+  <link rel="stylesheet" href="https://skyoo2003.github.io/css/styles.94f653e9e151e28067a7c5dbbc4600cbd5a3c721e79faaf971e523c40f3b249b8e4f20bb57810dfffa8d559ca5c140fd56eb4cd9c0853113ad08e66afdb08bdd.css" integrity="sha512-lPZT6eFR4oBnp8XbvEYAy9WjxyHnn6r5ceUjxA87JJuOTyC7V4EN//qNVZylwUD9VutM2cCFMROtCOZq/bCL3Q=="> 
+
+  
+  
+  
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  
+
+  
+<link rel="icon" type="image/png" href="https://skyoo2003.github.io/images/favicon.ico" />
+
+  
+  
+  
+  
+  
+    
+<script type="application/javascript">
+var doNotTrack = false;
+if (!doNotTrack) {
+	window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+	ga('create', 'UA-85297310-1', 'auto');
+	
+	ga('send', 'pageview');
+}
+</script>
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+
+  
+  
+</head>
+
+<body class="max-width mx-auto px3 ltr">
+  <div class="content index py4">
+
+  <div id="header-post">
+  <a id="menu-icon" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="menu-icon-tablet" href="#"><i class="fas fa-bars fa-lg"></i></a>
+  <a id="top-icon-tablet" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" style="display:none;" aria-label="Top of Page"><i class="fas fa-chevron-up fa-lg"></i></a>
+  <span id="menu">
+    <span id="nav">
+      <ul>
+         
+        <li><a href="/">Home</a></li>
+         
+        <li><a href="/posts">Posts</a></li>
+         
+        <li><a href="/tags">Tags</a></li>
+         
+        <li><a href="/about">About</a></li>
+        
+      </ul>
+    </span>
+    <br/>
+    <span id="actions">
+      <ul>
+        
+        <li>
+          <a class="icon" href=" https://skyoo2003.github.io/post/2017/03/17/2017-03-17-what-is-alternatives-command/" aria-label="Previous">
+            <i class="fas fa-chevron-left" aria-hidden="true" onmouseover="$('#i-prev').toggle();" onmouseout="$('#i-prev').toggle();"></i>
+          </a>
+        </li>
+        
+        
+        <li>
+          <a class="icon" href="https://skyoo2003.github.io/post/2017/11/14/2017-11-14-ansible-module-develop/" aria-label="Next">
+            <i class="fas fa-chevron-right" aria-hidden="true" onmouseover="$('#i-next').toggle();" onmouseout="$('#i-next').toggle();"></i>
+          </a>
+        </li>
+        
+        <li>
+          <a class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" aria-label="Top of Page">
+            <i class="fas fa-chevron-up" aria-hidden="true" onmouseover="$('#i-top').toggle();" onmouseout="$('#i-top').toggle();"></i>
+          </a>
+        </li>
+        <li>
+          <a class="icon" href="#" aria-label="Share">
+            <i class="fas fa-share-alt" aria-hidden="true" onmouseover="$('#i-share').toggle();" onmouseout="$('#i-share').toggle();" onclick="$('#share').toggle();return false;"></i>
+          </a>
+        </li>
+      </ul>
+      <span id="i-prev" class="info" style="display:none;">Previous post</span>
+      <span id="i-next" class="info" style="display:none;">Next post</span>
+      <span id="i-top" class="info" style="display:none;">Back to top</span>
+      <span id="i-share" class="info" style="display:none;">Share post</span>
+    </span>
+    <br/>
+    <div id="share" style="display: none">
+      
+      <ul>
+  
+  
+    
+  
+  
+  <li>
+    <a class="icon" href="http://www.facebook.com/sharer.php?u=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f" aria-label="Facebook">
+      <i class="fab fa-facebook " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://twitter.com/share?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&text=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Twitter">
+      <i class="fab fa-twitter " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.linkedin.com/shareArticle?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Linkedin">
+      <i class="fab fa-linkedin " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&is_video=false&description=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Pinterest">
+      <i class="fab fa-pinterest " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="mailto:?subject=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac&body=Check out this article: https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f" aria-label="Email">
+      <i class="fas fa-envelope " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://getpocket.com/save?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Pocket">
+      <i class="fab fa-get-pocket " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://reddit.com/submit?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="reddit">
+      <i class="fab fa-reddit " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.tumblr.com/share/link?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&name=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac&description=%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%b4%eb%9d%bc%eb%8a%94%20%ec%96%b8%ec%96%b4%eb%a5%bc%20%ec%82%ac%ec%9a%a9%ed%95%98%eb%8b%a4%eb%b3%b4%eb%a9%b4%20%eb%8b%a4%ec%96%91%ed%95%9c%20%eb%b2%84%ec%a0%84%20%ed%99%98%ea%b2%bd%ec%97%90%20%ec%a7%81%eb%a9%b4%ed%95%98%ea%b2%8c%20%eb%90%9c%eb%8b%a4.%20%eb%a8%bc%ec%a0%80%2c%20Redhat%2c%20Debian%20%eb%93%b1%ec%9d%98%20%eb%b0%b0%ed%8f%ac%ed%8c%90%ec%97%90%eb%8a%94%20%ec%9e%90%ec%b2%b4%ec%97%90%20%ec%84%a4%ec%b9%98%eb%90%9c%20%ec%8b%9c%ec%8a%a4%ed%85%9c%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%b4%20%ec%a1%b4%ec%9e%ac%ed%95%98%ea%b3%a0%2c%20%ed%95%84%ec%9a%94%ec%97%90%20%eb%94%b0%eb%9d%bc%20%ea%b3%84%ec%a0%95%eb%b3%84%eb%a1%9c%20%ec%86%8c%ec%8a%a4%20%eb%b9%8c%eb%93%9c%eb%a5%bc%20%ed%86%b5%ed%95%b4%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%84%20%ec%82%ac%ec%9a%a9%ed%95%a0%20%ec%88%98%eb%8f%84%20%ec%9e%88%eb%8b%a4.%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%80%20%ed%81%ac%ea%b2%8c%202.x%20%ec%99%80%203.x%20%ec%9d%98%20%eb%a9%94%ec%9d%b4%ec%a0%80%20%eb%b2%84%ec%a0%84%ec%97%90%20%eb%94%b0%eb%9d%bc%20%eb%ac%b8%eb%b2%95%ea%b3%bc%20%eb%82%b4%ec%9e%a5%20%eb%9d%bc%ec%9d%b4%eb%b8%8c%eb%9f%ac%eb%a6%ac%ec%9d%98%20%ec%b0%a8%ec%9d%b4%ea%b0%80%20%ec%9e%88%ec%9c%bc%eb%a9%b0%2c%20%eb%a7%88%ec%9d%b4%eb%84%88%20%eb%b2%84%ec%a0%84%ec%97%90%20%eb%94%b0%eb%9d%bc%20%ec%9d%bc%eb%b6%80%20%ea%b8%b0%eb%8a%a5%ec%9d%98%20%eb%8f%99%ec%9e%91%20%eb%b0%a9%ec%8b%9d%ec%9d%b4%eb%82%98%20%ea%b5%ac%ed%98%84%ec%9d%b4%20%eb%8b%ac%eb%9d%bc%ec%a7%88%20%ec%88%98%20%ec%9e%88%eb%8a%94%20%ec%9e%90%ec%9c%a0%eb%a1%ad%ec%a7%80%eb%a7%8c%20%eb%95%8c%eb%a1%a0%20%ec%9c%84%ed%97%98%ed%95%9c%20%ec%83%81%ed%99%a9%ec%97%90%20%ec%a7%81%eb%a9%b4%ed%95%b4%20%ec%9e%88%eb%8b%a4.%0a%eb%ac%bc%eb%a1%a0%2c%20%eb%8b%a8%ec%9d%bc%20%ec%8b%9c%ec%8a%a4%ed%85%9c%ec%97%90%ec%84%9c%20%ed%95%98%eb%82%98%ec%9d%98%20%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8%eb%a7%8c%ec%9d%84%20%ec%9a%b4%ec%9a%a9%ed%95%9c%eb%8b%a4%ea%b1%b0%eb%82%98%20%eb%b2%84%ec%a0%84%ec%9d%b4%20%ec%a0%88%eb%8c%80%20%eb%b3%80%ea%b2%bd%eb%90%a0%20%ea%b0%80%eb%8a%a5%ec%84%b1%ec%9d%b4%20%ec%97%86%eb%8b%a4%eb%a9%b4%20%ed%8a%b9%eb%b3%84%ed%9e%88%20%ea%b3%a0%eb%af%bc%ed%95%98%ec%a7%80%20%ec%95%8a%ec%95%84%eb%8f%84%20%eb%90%a0%20%ec%88%98%20%ec%9e%88%eb%8b%a4." aria-label="Tumblr">
+      <i class="fab fa-tumblr " aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://news.ycombinator.com/submitlink?u=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&t=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Hacker News">
+      <i class="fab fa-hacker-news " aria-hidden="true"></i>
+    </a>
+  </li>
+</ul>
+
+    </div>
+    
+  </span>
+</div>
+
+
+  <article class="post" itemscope itemtype="http://schema.org/BlogPosting">
+    <header>
+      <h1 class="posttitle" itemprop="name headline">
+        pyenv 파이썬 버전 가상 환경 관리
+      </h1>
+      <div class="meta">
+        
+        <div class="postdate">
+          
+          <time datetime="2017-04-02 01:36:27 &#43;0900 KST" itemprop="datePublished">2017-04-02</time>
+          
+        </div>
+        
+        
+        
+        
+        <div class="article-tag">
+            <i class="fas fa-tag"></i>
+            
+            
+            <a class="tag-link" href="/tags/python" rel="tag">python</a>
+            
+        </div>
+        
+      </div>
+    </header>
+
+  
+    
+    <div id="toc">
+      <nav id="TableOfContents">
+  <ul>
+    <li><a href="#핵심-기능-간략-소개">핵심 기능 간략 소개</a></li>
+    <li><a href="#동작-원리-이해하기">동작 원리 이해하기</a></li>
+    <li><a href="#설치하기">설치하기</a></li>
+    <li><a href="#최신-또는-특정-버전-선택하기">최신 또는 특정 버전 선택하기</a></li>
+    <li><a href="#삭제하기">삭제하기</a></li>
+    <li><a href="#명령어-알아보기">명령어 알아보기</a>
+      <ul>
+        <li><a href="#파이썬-설치하기">파이썬 설치하기</a></li>
+        <li><a href="#파이썬-삭제하기">파이썬 삭제하기</a></li>
+        <li><a href="#파이썬-버전-관리하기">파이썬 버전 관리하기</a>
+          <ul>
+            <li><a href="#pyenv-shell">pyenv shell</a></li>
+            <li><a href="#pyenv-local">pyenv local</a></li>
+            <li><a href="#pyenv-global">pyenv global</a></li>
+          </ul>
+        </li>
+      </ul>
+    </li>
+    <li><a href="#참고-링크">참고 링크</a></li>
+  </ul>
+</nav>
+    </div>
+    
+    <div class="content" itemprop="articleBody">
+      <p>파이썬이라는 언어를 사용하다보면 다양한 버전 환경에 직면하게 된다. 먼저, Redhat, Debian 등의 배포판에는 자체에 설치된 시스템 파이썬이 존재하고, 필요에 따라 계정별로 소스 빌드를 통해 파이썬을 사용할 수도 있다. 파이썬은 크게 2.x 와 3.x 의 메이저 버전에 따라 문법과 내장 라이브러리의 차이가 있으며, 마이너 버전에 따라 일부 기능의 동작 방식이나 구현이 달라질 수 있는 자유롭지만 때론 위험한 상황에 직면해 있다.</p>
+<p>물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다. 하지만, 일반적으로 하나의 시스템에는 다양한 파이썬 프로젝트들이 존재할 수 있고 이들은 종종 다양한 파이썬 버전에 기반하여 구현이 되어 있을 수 있다. 의존성 분리를 통해 프로젝트 간에 응집력을 줄인다면, 개별 프로젝트는 다른 환경에 대한 고민을 하지 않아도 된다.</p>
+<p>위와 같은 니즈에 적합한 오픈소스 솔루션이 pyenv 이라고 소개하고 싶다! 물론, 오픈소스를 활용하지 않고 충분히 버전을 통제할 수 있다. $PATH, $PYTHON_PATH 등의 환경변수를 적절히 관리하면 가능하다. 다만, 매 프로젝트에서 이러한 환경변수를 다루는 것까지 고민하는 것은 어떻게보면 낭비가 될 수도 있다는 생각에 pyenv에 대해서 자세히 알아보게 되었다.</p>
+<h2 id="핵심-기능-간략-소개">핵심 기능 간략 소개</h2>
+<p>pyenv가 제공하는 기능은 간략하게 다음과 같다.</p>
+<ul>
+<li>사용자 별로 Global Python Version 을 변경할 수 있다.</li>
+<li>프로젝트 단위로 파이썬 버전을 관리하는 기능을 사용할 수 있다.</li>
+<li>환경변수를 통해 파이썬 버전을 오버라이딩하는 것도 허용된다.</li>
+<li>특정 시점에 여러 파이썬 버전을 조회할 수 있다. 이는 다양한 버전에서 테스트를 수행하는 라이브러리나 CI툴 등에서 유용하다.</li>
+</ul>
+<p>그리고, 유사한 솔루션과의 차이점은 다음과 같다고 소개하고 있다.</p>
+<ul>
+<li>파이썬에 의존성이 없다. 순수한 쉘 스크립트로 구현되어 있다.</li>
+<li>쉘에서 Pyenv를 환경변수로 로딩할 필요가 있다. 즉, <code>$PATH</code> 에 pyenv&rsquo;s shim 을 접근하기 위한 디렉토리를 추가해주어야 한다.</li>
+<li>virtualenv 를 관리할 수 있다. 직접 virtualenv 를 사용할 수도 있으며, 혹은 pyenv-virtualenv 를 통해 가상환경을 만드는 일련의 프로세스를 자동화할 수 있다.</li>
+</ul>
+<h2 id="동작-원리-이해하기">동작 원리 이해하기</h2>
+<p>유닉스, 리눅스 시스템에서는 특정 명령을 수행할 때, <code>$PATH</code>에 등록된 디렉토리 리스트에서 실행 가능한 파일 (Executable file)을 순서대로 찾도록 되어 있다. 일반적으로 사용하는 <code>cd</code>, <code>rm</code> 등의 명령어도 <code>$PATH</code>라는 환경변수에 등록이 되어 있기 때문에 가능하다. 만약 <code>$PATH</code>에 등록되지 않았다면, 매번 <code>/bin/cd</code>, <code>/bin/rm</code>과 같이 절대 경로로 실행 가능한 파일을 명시해주어야 한다. <code>$PATH</code>에서 왼쪽-&gt;오른쪽 순서로 디렉토리를 탐색하고, 동일한 실행 파일명을 가지고 있다면, 먼저 발견된 디렉토리의 실행 파일을 사용하게 된다.</p>
+<p>pyenv 설치를 완료하면 <code>eval $(pyenv init -)</code> 를 초기에 호출하는데, 이 때 <code>PATH=$(pyenv root)/shims:$PATH</code> 와 같이 환경변수에 등록된다. 이 때, <code>$(pyenv root)</code> 를 통해 동적으로 경로가 생성되는데, 이를 pyenv 프로젝트에선 Hash (혹은 Rehash) 된다고 언급한다.</p>
+<p>이후 pyenv 를 통해 파이썬을 설치하게 되면, <code>$(pyenv root)/versions/&lt;version&gt;</code> 의 경로에 버전별로 설치된다. 그리고, 바이너리 파일들은 <code>$(pyenv root)/shims</code> 디렉토리 안에 생성된다.</p>
+<h2 id="설치하기">설치하기</h2>
+<p>최초 설치시에는 공식 Github 프로젝트에서 복제하여 가져온다. <code>$HOME/.pyenv</code> 에 설치하는 것을 가장 권장하고 있으나 필수는 아니므로 적절한 경로에 가져온다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ git clone https://github.com/pyenv/pyenv.git <span style="color:#8be9fd;font-style:italic">$HOME</span>/.pyenv
+</span></span></code></pre></div><p>자신이 사용하는 쉘에 적당한 rc 파일에 아래의 환경변수를 설정한다. (필자는 zsh 쉘을 사용하고 있다. bash 쉘을 사용하는 경우 .bash_profile 파일을 수정하면 된다.)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ vi ~/.zshrc
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span><span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">PYENV_ROOT</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$HOME</span><span style="color:#f1fa8c">/.pyenv&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span><span style="color:#8be9fd;font-style:italic">export</span> <span style="color:#8be9fd;font-style:italic">PATH</span><span style="color:#ff79c6">=</span><span style="color:#f1fa8c">&#34;</span><span style="color:#8be9fd;font-style:italic">$PYENV_ROOT</span><span style="color:#f1fa8c">/bin:</span><span style="color:#8be9fd;font-style:italic">$PATH</span><span style="color:#f1fa8c">&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#8be9fd;font-style:italic">eval</span> <span style="color:#f1fa8c">&#34;</span><span style="color:#ff79c6">$(</span>pyenv init -<span style="color:#ff79c6">)</span><span style="color:#f1fa8c">&#34;</span>
+</span></span></code></pre></div><p><strong>[주의사항]</strong> bash 쉘을 사용하는 경우, 일부 시스템에서 BASH_ENV가 .bashrc 를 호출하게끔 되어 있는 경우, .bashrc 에 위의 내용을 넣는 경우 무한루프에 빠질 수 있으니 주의가 필요함. (반드시 .bash_profile 에 추가해야만 한다.)</p>
+<p>최종적으로, 위의 변경사항을 반영하기 위해 아래의 커맨드를 수행한다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ <span style="color:#8be9fd;font-style:italic">exec</span> <span style="color:#8be9fd;font-style:italic">$SHELL</span>
+</span></span></code></pre></div><p><strong>설정 가능한 환경변수 정리</strong></p>
+<p><code>PYENV_VERSION</code> 사용할 파이썬 버전을 명시한다.</p>
+<p><code>PYENV_ROOT</code> pyenv 가 설치될 루트 디렉토리를 명시한다. (기본값: ~/.pyenv)</p>
+<p><code>PYENV_DEBUG</code> pyenv 디버그 정보 노출 여부 cf. <code>pyenv --debug &lt;subcommand&gt;</code></p>
+<p><code>PYENV_HOOK_PATH</code> pyenv hooks 기능에서 사용할 탐색 경로를 정의한다. pyenv hooks 기능은 pyenv 명령이 특정 시점에 지정한 스크립트가 동작되길 원할 때 사용하는 전문가 옵션이므로 자세한 내용은 다음의 위키를 참조하도록 한다. <a href="https://github.com/pyenv/pyenv/wiki/Authoring-plugins#pyenv-hooks">pyenv hook wiki 참조</a>{:target=&quot;_blank&quot;}</p>
+<p><code>PYENV_DIR</code>	<code>.python-version</code> 파일을 찾기위한 경로를 입력한다. (기본값: $PWD)</p>
+<p><code>PYTHON_BUILD_ARIA2_OPTS</code> pyenv는 <code>$PATH</code>에 aria2c 바이너리의 경로가 정의되고 실행 가능하다면, <code>aria2</code> 를 사용하여 파이썬 소스를 다운로드 받는데, 이 때 사용하는 옵션을 전달하기 위한 환경변수이다. bandwidth 조절이나, 커넥션 수 등을 조절할 수 있다. <a href="https://aria2.github.io/manual/en/html/aria2c.html#options">aria2c options</a>{:target=&quot;_blank&quot;}</p>
+<h2 id="최신-또는-특정-버전-선택하기">최신 또는 특정 버전 선택하기</h2>
+<p>공식 릴리즈되지 않은 최신 커밋의 버전을 사용하고자 하는 경우, 아래의 명령을 호출한다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ <span style="color:#8be9fd;font-style:italic">cd</span> <span style="color:#ff79c6">$(</span>pyenv root<span style="color:#ff79c6">)</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ git pull
+</span></span></code></pre></div><p>만약, 릴리즈된 특정 태그를 명시하여 사용하고 싶다면, 아래의 명령을 호출한다. (예를 들어, v1.0.9 버전을 사용한다. v0.9.4 를 사용한다. 등&hellip;)</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ <span style="color:#8be9fd;font-style:italic">cd</span> <span style="color:#ff79c6">$(</span>pyenv root<span style="color:#ff79c6">)</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ git fetch
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>$ git tag
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>git tag
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>v0.1.0
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>v0.1.1
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">7</span><span>v0.1.2
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">8</span><span>--- 생략 ---
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">9</span><span>$ git checkout v1.0.9
+</span></span></code></pre></div><h2 id="삭제하기">삭제하기</h2>
+<p>설치된 pyenv 디렉토리를 제거한 뒤에 위에 설정한 환경 변수를 모두 제거하면 된다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ rm -rf <span style="color:#ff79c6">$(</span>pyenv root<span style="color:#ff79c6">)</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ vi ~/.zshrc
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span><span style="color:#6272a4"># export PYENV_ROOT=&#34;$HOME/.pyenv&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span><span style="color:#6272a4"># export PATH=&#34;$PYENV_ROOT/bin:$PATH&#34;</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span><span style="color:#6272a4"># eval &#34;$(pyenv init -)&#34;</span>
+</span></span></code></pre></div><h2 id="명령어-알아보기">명령어 알아보기</h2>
+<p>pyenv 설치가 완료되었다면, 이제 pyenv에서 제공하는 명령어에 대해서 정리하려고 한다. 모든 명령어를 정리하지는 않고, 자주 사용하고 필수적인 내용만 다루어보려고 한다. 기타 명령어나 최신 버전에 추가된 명령어 등을 확인하려면, <a href="https://github.com/pyenv/pyenv/blob/master/COMMANDS.md">pyenv COMMANDS</a>{:target=&quot;_blank&quot;} 페이지를 참조하도록 한다.</p>
+<h3 id="파이썬-설치하기">파이썬 설치하기</h3>
+<p>특정 파이썬 버전을 설치하거나, 설치 가능한 파이썬 버전 리스트를 볼 수 있다.</p>
+<ul>
+<li>특정 버전의 파이썬 설치</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv install 2.7.12
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>Downloading Python-2.7.12.tar.xz...
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>-&gt; https://www.python.org/ftp/python/2.7.12/Python-2.7.12.tar.xz
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>Installing Python-2.7.12...
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>Installed Python-2.7.12 to /Users/lukas/.pyenv/versions/2.7.12
+</span></span></code></pre></div><p>파이썬 빌드 중 컴파일 옵션을 설정할 필요가 있는 경우, <code>CONFIGURE_OPTS</code> 환경변수를 통해 설정이 가능하다.</p>
+<p>HTTP(S) 프록시 설정이 필요한 경우에는 <code>http_proxy</code>, <code>https_proxy</code> 환경변수를 사전에 설정하면 된다.</p>
+<p>필수 패키지/라이브러리 설치, CPU 아키텍처 선택 등의 다양한 빌드 문제를 정리한 부분은 <a href="https://github.com/pyenv/pyenv/wiki/Common-build-problems">common build problems wiki</a>{:target=&quot;_blank&quot;} 페이지를 참조하도록 한다.</p>
+<ul>
+<li>설치 가능한 전체 파이썬 리스트 조회</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv install -l
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>Available versions:
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>  2.1.3
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>  2.2.3
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>  2.3.7
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">6</span><span>--- 생략 ---
+</span></span></code></pre></div><h3 id="파이썬-삭제하기">파이썬 삭제하기</h3>
+<p>이미 설치된 파이썬을 삭제할 때 사용한다. 모든 버전에 대해서 삭제할 필요가 있고, pyenv 를 더이상 사용하지 않을 경우에는 <code>rm -rf $(pyenv root)</code> 를 통해 영구적인 삭제가 가능하다. 다만, <code>pyenv uninstall</code> 명령을 사용하는 경우에는 다른 가용한 파이썬으로 대체하여 준다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>pyenv uninstall 2.7.12
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>pyenv: remove /Users/lukas/.pyenv/versions/2.7.12? y <span style="color:#6272a4"># y/n 중에 하나 입력!</span>
+</span></span></code></pre></div><h3 id="파이썬-버전-관리하기">파이썬 버전 관리하기</h3>
+<p>pyenv는 다양한 파이썬 버전을 다루게 되는데 몇가지 환경변수를 응용하여, 필요에 따라서 다양한 버전을 선택할 수 있고 복수의 버전을 선택할 수도 있다.</p>
+<p>먼저, pyenv가 파이썬을 선택할 때, <code>$PYENV_VERSION</code> &gt; <code>$PYENV_DIR/.python-version</code> &gt; <code>$PYENV_ROOT/version</code>순으로 우선순위가 정의되어 있으며, 각각의 값은 <code>pyenv shell</code>, <code>pyenv local</code>, <code>pyenv global</code> 의 명령을 통해서 설정할 수 있다.</p>
+<p>즉, <code>python 호출</code> -&gt; <code>pyenv가 명령어 후킹</code> -&gt; <code>우선 순위에 따라 사용할 버전 정보 획득</code> -&gt; <code>해당 버전 파이썬 실행</code> 과 같다.</p>
+<p>추가로 특이한 점은 복수의 파이썬 버전을 선택할 수 있다는 점이다. 만약에 2.7.13과 3.4.6 버전을 사용하기로 한다면? <code>pyenv (shell|local|global) 2.7.13 3.4.6</code> 과 같이 설정하면 된다. 이렇게 설정한 경우, <code>python</code> 명령을 호출하면, 2.7.13 버전의 파이썬이 호출된다. 만약에 3.4.6 버전을 디폴트로 사용하고자 한다면? <code>pyenv (shell|local|global) 3.4.6 2.7.13</code> 과 같이 순서만 바꾸면 된다.</p>
+<p>구체적인 내용은 아래에 정리해보도록 하겠다.</p>
+<h4 id="pyenv-shell">pyenv shell</h4>
+<p>쉘에서 파이썬 버전을 관리하기 위한 명령이다. 즉, <code>$PYENV_VERSION</code> 환경변수를 설정하여 사용할 버전을 명시하는데, 이 환경변수는 다른 설정 방법 중에서 가장 높은 우선순위를 가지고 있다. 만약에 스크립트 단위로 파이썬 버전이 달라져야한다는 경우와 같이 실행 시점에 버전이 결정되어야할 필요가 있을 때 유용하다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$PYENV_VERSION</span> <span style="color:#6272a4"># 환경변수의 값이 비어있다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>$ pyenv shell 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$PYENV_VERSION</span> <span style="color:#6272a4"># 환경변수에 설정된 것을 볼 수 있다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>3.4.6
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv shell 2.7.13 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ <span style="color:#8be9fd;font-style:italic">echo</span> <span style="color:#8be9fd;font-style:italic">$PYENV_VERSION</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>2.7.13:3.4.6
+</span></span></code></pre></div><h4 id="pyenv-local">pyenv local</h4>
+<p>특정 디렉토리에서 파이썬 버전을 관리하기 위한 명령어이다. 더 정확히는 <code>$PYENV_DIR/.python-version</code>에 사용할 파이썬 버전을 정의하는 명령어라고 할 수 있다. 특별히 <code>$PYENV_DIR</code> 환경변수를 설정하지 않았다면, 기본값으로 <code>$PWD</code> 즉, 현재 디렉토리에 해당 파일이 생성되는 것을 알 수 있다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv <span style="color:#8be9fd;font-style:italic">local</span> 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ ll .python-version <span style="color:#6272a4"># 현재 디렉토리에 .python-version 파일이 생성되었다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>-rw-rw-r--  <span style="color:#bd93f9">1</span> lukas  staff     6B  <span style="color:#bd93f9">4</span>  <span style="color:#bd93f9">2</span> 01:10 .python-version
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>$ cat .python-version <span style="color:#6272a4"># 내가 설정한 파이썬 버전이 정의되어 있다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>3.4.6
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv <span style="color:#8be9fd;font-style:italic">local</span> 2.7.13 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ cat .python-version <span style="color:#6272a4"># 복수의 버전이 정의되어 있다. python 명령어 수행 시, 2.7.13 버전이 수행된다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>2.7.13
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>3.4.6
+</span></span></code></pre></div><h4 id="pyenv-global">pyenv global</h4>
+<p>시스템의 파이썬 버전을 관리하기 위한 명령이다. 더 정확히는 <code>$PYENV_ROOT/version</code>에 사용할 버전을 정의하기 위한 명령어이다. <code>$PYENV_ROOT</code> 환경변수를 특별히 정의하지 않았다면 기본적으로 <code>~/.pyenv</code> 를 기본값으로 가지고 있다.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv global 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ ll ~/.pyenv/version <span style="color:#6272a4"># $PYENV_ROOT/version 경로에 파일이 생성되었다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>-rw-r--r--  <span style="color:#bd93f9">1</span> lukas  staff    13B  <span style="color:#bd93f9">4</span>  <span style="color:#bd93f9">2</span> 01:30 /Users/lukas/.pyenv/version
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>$ cat ~/.pyenv/version <span style="color:#6272a4"># 내가 설정한 파이썬 버전이 정의되어 있다.</span>
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">5</span><span>3.4.6
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#282a36;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-bash" data-lang="bash"><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">1</span><span>$ pyenv global 2.7.13 3.4.6
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">2</span><span>$ cat ~/.pyenv/version
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">3</span><span>2.7.13
+</span></span><span style="display:flex;"><span style="white-space:pre;user-select:none;margin-right:0.4em;padding:0 0.4em 0 0.4em;color:#7f7f7f">4</span><span>3.4.6
+</span></span></code></pre></div><h2 id="참고-링크">참고 링크</h2>
+<p>[1] <a href="https://github.com/yyuu/pyenv">github.com/yyuu/pyenv</a>{:target=&quot;_blank&quot;}</p>
+
+    </div>
+  </article>
+
+  
+  
+
+
+
+
+  <div class="blog-post-comments">
+    
+      <div id="disqus_thread">
+  <script type="text/javascript">
+    (function() {
+      
+      
+      
+      
+    
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      var disqus_shortname = 'devlog-in-the-sky';
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="https://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+
+    
+  </div>
+
+
+
+  <div id="footer-post-container">
+  <div id="footer-post">
+
+    <div id="nav-footer" style="display: none">
+      <ul>
+         
+          <li><a href="/">Home</a></li>
+         
+          <li><a href="/posts">Posts</a></li>
+         
+          <li><a href="/tags">Tags</a></li>
+         
+          <li><a href="/about">About</a></li>
+        
+      </ul>
+    </div>
+
+    
+
+    <div id="share-footer" style="display: none">
+      
+      <ul>
+  
+  
+    
+  
+  
+  <li>
+    <a class="icon" href="http://www.facebook.com/sharer.php?u=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f" aria-label="Facebook">
+      <i class="fab fa-facebook fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://twitter.com/share?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&text=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Twitter">
+      <i class="fab fa-twitter fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.linkedin.com/shareArticle?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Linkedin">
+      <i class="fab fa-linkedin fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://pinterest.com/pin/create/bookmarklet/?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&is_video=false&description=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Pinterest">
+      <i class="fab fa-pinterest fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="mailto:?subject=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac&body=Check out this article: https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f" aria-label="Email">
+      <i class="fas fa-envelope fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://getpocket.com/save?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Pocket">
+      <i class="fab fa-get-pocket fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://reddit.com/submit?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&title=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="reddit">
+      <i class="fab fa-reddit fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="http://www.tumblr.com/share/link?url=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&name=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac&description=%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%b4%eb%9d%bc%eb%8a%94%20%ec%96%b8%ec%96%b4%eb%a5%bc%20%ec%82%ac%ec%9a%a9%ed%95%98%eb%8b%a4%eb%b3%b4%eb%a9%b4%20%eb%8b%a4%ec%96%91%ed%95%9c%20%eb%b2%84%ec%a0%84%20%ed%99%98%ea%b2%bd%ec%97%90%20%ec%a7%81%eb%a9%b4%ed%95%98%ea%b2%8c%20%eb%90%9c%eb%8b%a4.%20%eb%a8%bc%ec%a0%80%2c%20Redhat%2c%20Debian%20%eb%93%b1%ec%9d%98%20%eb%b0%b0%ed%8f%ac%ed%8c%90%ec%97%90%eb%8a%94%20%ec%9e%90%ec%b2%b4%ec%97%90%20%ec%84%a4%ec%b9%98%eb%90%9c%20%ec%8b%9c%ec%8a%a4%ed%85%9c%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%b4%20%ec%a1%b4%ec%9e%ac%ed%95%98%ea%b3%a0%2c%20%ed%95%84%ec%9a%94%ec%97%90%20%eb%94%b0%eb%9d%bc%20%ea%b3%84%ec%a0%95%eb%b3%84%eb%a1%9c%20%ec%86%8c%ec%8a%a4%20%eb%b9%8c%eb%93%9c%eb%a5%bc%20%ed%86%b5%ed%95%b4%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%84%20%ec%82%ac%ec%9a%a9%ed%95%a0%20%ec%88%98%eb%8f%84%20%ec%9e%88%eb%8b%a4.%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%ec%9d%80%20%ed%81%ac%ea%b2%8c%202.x%20%ec%99%80%203.x%20%ec%9d%98%20%eb%a9%94%ec%9d%b4%ec%a0%80%20%eb%b2%84%ec%a0%84%ec%97%90%20%eb%94%b0%eb%9d%bc%20%eb%ac%b8%eb%b2%95%ea%b3%bc%20%eb%82%b4%ec%9e%a5%20%eb%9d%bc%ec%9d%b4%eb%b8%8c%eb%9f%ac%eb%a6%ac%ec%9d%98%20%ec%b0%a8%ec%9d%b4%ea%b0%80%20%ec%9e%88%ec%9c%bc%eb%a9%b0%2c%20%eb%a7%88%ec%9d%b4%eb%84%88%20%eb%b2%84%ec%a0%84%ec%97%90%20%eb%94%b0%eb%9d%bc%20%ec%9d%bc%eb%b6%80%20%ea%b8%b0%eb%8a%a5%ec%9d%98%20%eb%8f%99%ec%9e%91%20%eb%b0%a9%ec%8b%9d%ec%9d%b4%eb%82%98%20%ea%b5%ac%ed%98%84%ec%9d%b4%20%eb%8b%ac%eb%9d%bc%ec%a7%88%20%ec%88%98%20%ec%9e%88%eb%8a%94%20%ec%9e%90%ec%9c%a0%eb%a1%ad%ec%a7%80%eb%a7%8c%20%eb%95%8c%eb%a1%a0%20%ec%9c%84%ed%97%98%ed%95%9c%20%ec%83%81%ed%99%a9%ec%97%90%20%ec%a7%81%eb%a9%b4%ed%95%b4%20%ec%9e%88%eb%8b%a4.%0a%eb%ac%bc%eb%a1%a0%2c%20%eb%8b%a8%ec%9d%bc%20%ec%8b%9c%ec%8a%a4%ed%85%9c%ec%97%90%ec%84%9c%20%ed%95%98%eb%82%98%ec%9d%98%20%ed%94%84%eb%a1%9c%ec%a0%9d%ed%8a%b8%eb%a7%8c%ec%9d%84%20%ec%9a%b4%ec%9a%a9%ed%95%9c%eb%8b%a4%ea%b1%b0%eb%82%98%20%eb%b2%84%ec%a0%84%ec%9d%b4%20%ec%a0%88%eb%8c%80%20%eb%b3%80%ea%b2%bd%eb%90%a0%20%ea%b0%80%eb%8a%a5%ec%84%b1%ec%9d%b4%20%ec%97%86%eb%8b%a4%eb%a9%b4%20%ed%8a%b9%eb%b3%84%ed%9e%88%20%ea%b3%a0%eb%af%bc%ed%95%98%ec%a7%80%20%ec%95%8a%ec%95%84%eb%8f%84%20%eb%90%a0%20%ec%88%98%20%ec%9e%88%eb%8b%a4." aria-label="Tumblr">
+      <i class="fab fa-tumblr fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+  <li>
+    <a class="icon" href="https://news.ycombinator.com/submitlink?u=https%3a%2f%2fskyoo2003.github.io%2fpost%2f2017%2f04%2f02%2f2017-04-02-manage-python-using-pyenv%2f&t=pyenv%20%ed%8c%8c%ec%9d%b4%ec%8d%ac%20%eb%b2%84%ec%a0%84%20%ea%b0%80%ec%83%81%20%ed%99%98%ea%b2%bd%20%ea%b4%80%eb%a6%ac" aria-label="Hacker News">
+      <i class="fab fa-hacker-news fa-lg" aria-hidden="true"></i>
+    </a>
+  </li>
+</ul>
+
+    </div>
+
+    <div id="actions-footer">
+      
+        <a id="menu-toggle" class="icon" href="#" onclick="$('#nav-footer').toggle();return false;" aria-label="Menu">
+          <i class="fas fa-bars fa-lg" aria-hidden="true"></i> Menu</a>
+        
+        <a id="share-toggle" class="icon" href="#" onclick="$('#share-footer').toggle();return false;" aria-label="Share">
+          <i class="fas fa-share-alt fa-lg" aria-hidden="true"></i> share</a>
+        <a id="top" style="display:none" class="icon" href="#" onclick="$('html, body').animate({ scrollTop: 0 }, 'fast');" aria-label="Top of Page">
+          <i class="fas fa-chevron-up fa-lg" aria-hidden="true"></i> Top</a>
+    </div>
+
+  </div>
+</div>
+
+
+  <footer id="footer">
+  <div class="footer-left">
+    Copyright  &copy; 2022  Sung-Kyu Yoo 
+  </div>
+  <div class="footer-right">
+    <nav>
+      <ul>
+         
+        <li><a href="/">Home</a></li>
+         
+        <li><a href="/posts">Posts</a></li>
+         
+        <li><a href="/tags">Tags</a></li>
+         
+        <li><a href="/about">About</a></li>
+        
+      </ul>
+    </nav>
+  </div>
+</footer>
+
+
+  </div>
+</body>
+
+<link rel="stylesheet" href=/lib/font-awesome/css/all.min.css>
+<script src=/lib/jquery/jquery.min.js></script>
+<script src=/js/main.js></script>
+
+<script src=/js/code-copy.js></script>
+
+
+
+  
+
+
+<script>
+  MathJax = {
+    tex: {
+      inlineMath: [['$', '$'], ['\\(', '\\)']]
+    },
+    svg: {
+      fontCache: 'global'
+    }
+  };
+</script>
+<script type="text/javascript" id="MathJax-script" async
+  src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js">
+</script>
+
+</html>
