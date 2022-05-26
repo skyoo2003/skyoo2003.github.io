@@ -66,11 +66,11 @@ __설정 가능한 환경변수 정리__
 
 `PYENV_DEBUG` pyenv 디버그 정보 노출 여부 cf. `pyenv --debug <subcommand>`
 
-`PYENV_HOOK_PATH` pyenv hooks 기능에서 사용할 탐색 경로를 정의한다. pyenv hooks 기능은 pyenv 명령이 특정 시점에 지정한 스크립트가 동작되길 원할 때 사용하는 전문가 옵션이므로 자세한 내용은 다음의 위키를 참조하도록 한다. [pyenv hook wiki 참조](https://github.com/pyenv/pyenv/wiki/Authoring-plugins#pyenv-hooks){:target="_blank"}
+`PYENV_HOOK_PATH` pyenv hooks 기능에서 사용할 탐색 경로를 정의한다. pyenv hooks 기능은 pyenv 명령이 특정 시점에 지정한 스크립트가 동작되길 원할 때 사용하는 전문가 옵션이므로 자세한 내용은 다음의 위키를 참조하도록 한다. [pyenv hook wiki 참조](https://github.com/pyenv/pyenv/wiki/Authoring-plugins#pyenv-hooks)
 
 `PYENV_DIR`	`.python-version` 파일을 찾기위한 경로를 입력한다. (기본값: $PWD)
 
-`PYTHON_BUILD_ARIA2_OPTS` pyenv는 `$PATH`에 aria2c 바이너리의 경로가 정의되고 실행 가능하다면, `aria2` 를 사용하여 파이썬 소스를 다운로드 받는데, 이 때 사용하는 옵션을 전달하기 위한 환경변수이다. bandwidth 조절이나, 커넥션 수 등을 조절할 수 있다. [aria2c options](https://aria2.github.io/manual/en/html/aria2c.html#options){:target="_blank"}
+`PYTHON_BUILD_ARIA2_OPTS` pyenv는 `$PATH`에 aria2c 바이너리의 경로가 정의되고 실행 가능하다면, `aria2` 를 사용하여 파이썬 소스를 다운로드 받는데, 이 때 사용하는 옵션을 전달하기 위한 환경변수이다. bandwidth 조절이나, 커넥션 수 등을 조절할 수 있다. [aria2c options](https://aria2.github.io/manual/en/html/aria2c.html#options)
 
 ## 최신 또는 특정 버전 선택하기
 
@@ -109,7 +109,7 @@ $ vi ~/.zshrc
 
 ## 명령어 알아보기
 
-pyenv 설치가 완료되었다면, 이제 pyenv에서 제공하는 명령어에 대해서 정리하려고 한다. 모든 명령어를 정리하지는 않고, 자주 사용하고 필수적인 내용만 다루어보려고 한다. 기타 명령어나 최신 버전에 추가된 명령어 등을 확인하려면, [pyenv COMMANDS](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md){:target="_blank"} 페이지를 참조하도록 한다.
+pyenv 설치가 완료되었다면, 이제 pyenv에서 제공하는 명령어에 대해서 정리하려고 한다. 모든 명령어를 정리하지는 않고, 자주 사용하고 필수적인 내용만 다루어보려고 한다. 기타 명령어나 최신 버전에 추가된 명령어 등을 확인하려면, [pyenv COMMANDS](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md) 페이지를 참조하도록 한다.
 
 ### 파이썬 설치하기
 
@@ -129,7 +129,7 @@ Installed Python-2.7.12 to /Users/lukas/.pyenv/versions/2.7.12
 
 HTTP(S) 프록시 설정이 필요한 경우에는 `http_proxy`, `https_proxy` 환경변수를 사전에 설정하면 된다.
 
-필수 패키지/라이브러리 설치, CPU 아키텍처 선택 등의 다양한 빌드 문제를 정리한 부분은 [common build problems wiki](https://github.com/pyenv/pyenv/wiki/Common-build-problems){:target="_blank"} 페이지를 참조하도록 한다.
+필수 패키지/라이브러리 설치, CPU 아키텍처 선택 등의 다양한 빌드 문제를 정리한 부분은 [common build problems wiki](https://github.com/pyenv/pyenv/wiki/Common-build-problems) 페이지를 참조하도록 한다.
 
 * 설치 가능한 전체 파이썬 리스트 조회
 
@@ -221,4 +221,4 @@ $ cat ~/.pyenv/version
 
 ## 참고 링크
 
-[1] [github.com/yyuu/pyenv](https://github.com/yyuu/pyenv){:target="_blank"}
+- [github.com/yyuu/pyenv](https://github.com/yyuu/pyenv)

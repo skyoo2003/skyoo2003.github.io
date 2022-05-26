@@ -70,7 +70,7 @@ EXAMPLES = """
 
 #### 모듈 개발
 
-모듈 명세 작성이 완료되었으면, Ansible Module 구현을 진행할 수 있습니다. 구현에 앞서 몇가지 사항에 대해서 간략하게 설명하고자 합니다. Ansible Module 은 당연히 파이썬 언어로 작성되며, Python 2 을 공식적으로 지원합니다. Python 3 도 Ansible 2.2 부터 지원을 시작했지만, 일부 모듈이 대응이 되지 않는 부분이 있을 수 있습니다. ( [Ansible Python 3 Support](https://docs.ansible.com/ansible/python_3_support.html){:target="_blank"} )
+모듈 명세 작성이 완료되었으면, Ansible Module 구현을 진행할 수 있습니다. 구현에 앞서 몇가지 사항에 대해서 간략하게 설명하고자 합니다. Ansible Module 은 당연히 파이썬 언어로 작성되며, Python 2 을 공식적으로 지원합니다. Python 3 도 Ansible 2.2 부터 지원을 시작했지만, 일부 모듈이 대응이 되지 않는 부분이 있을 수 있습니다. ([Ansible Python 3 Support](https://docs.ansible.com/ansible/python_3_support.html))
 
 그리고, Ansible Module 에서 사용하는 파이썬 라이브러리는 가급적 Ansible 에서 기본으로 제공하는 모듈 유틸 라이브러리를 사용하기를 권장하고 있습니다. 다만, 외부 의존성을 사용하는 경우도 가능하며, 이 경우에는 모듈 명세에 반드시 언급을 해주셔야 합니다.
 
@@ -160,6 +160,5 @@ PARSED OUTPUT
 
 ### 참고 링크
 
-[1] [Ansible Module 개발 공식 가이드](http://docs.ansible.com/ansible/dev_guide/developing_modules.html){:target="_blank"}
-
-[2] [10분 안에 Ansible Module 만들기](http://blog.toast38coza.me/custom-ansible-module-hello-world){:target="_blank"}
+- [Ansible Module 개발 공식 가이드](http://docs.ansible.com/ansible/dev_guide/developing_modules.html)
+- [10분 안에 Ansible Module 만들기](http://blog.toast38coza.me/custom-ansible-module-hello-world)

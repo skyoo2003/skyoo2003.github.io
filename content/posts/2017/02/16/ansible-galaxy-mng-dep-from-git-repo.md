@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  Ansible Galaxy, Git 저장소를 활용하여 Role 의존성 관리하기!
+title:  Ansible Galaxy - Git 저장소를 활용하여 Role 의존성 관리하기!
 date:   2017-02-16T17:31:36+0900
 tags: [ansible]
 ---
@@ -152,6 +152,5 @@ roles/
 
 ## 참고 링크
 
-[1] [Ansible-Galaxy Document](http://docs.ansible.com/ansible/galaxy.html){:target="_blank"}
-
-[2] [Reusing ansible roles with private git repos and dependency management](https://opencredo.com/reusing-ansible-roles-with-private-git-repos-and-dependencies/){:target="_blank"}
+- [Ansible-Galaxy Document](http://docs.ansible.com/ansible/galaxy.html)
+- [Reusing ansible roles with private git repos and dependency management](https://opencredo.com/reusing-ansible-roles-with-private-git-repos-and-dependencies/)

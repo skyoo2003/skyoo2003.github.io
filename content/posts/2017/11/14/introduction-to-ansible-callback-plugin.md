@@ -88,7 +88,7 @@ def on_file_diff(self, host, diff):
 
 ### 구현 예제
 
-아래의 Ansible Plugin 은 [[jlafon/ansible-profile]](https://github.com/jlafon/ansible-profile){:target="_blank"} 프로젝트를 차용하였다는 점을 먼저 알려드립니다.
+아래의 Ansible Plugin 은 [[jlafon/ansible-profile]](https://github.com/jlafon/ansible-profile) 프로젝트를 차용하였다는 점을 먼저 알려드립니다.
 
 이 플러그인에 대해서 간략하게 설명하자면, playbook의 task의 수행 시간을 메모리에 적재한 뒤에 playbook이 종료되기 전 태스크의 수행 시간을 Display 해주는 간단한 플러그인 입니다. 코드의 내용을 참고해주시면 이해가 될 것으로 생각되고, 플러그인에 대해서 설명이 필요한 부분은 주석을 참고하시면 됩니다.
 
@@ -181,8 +181,6 @@ loggly | Install TLS version-----------------------------------------------3.36s
 ```
 
 ### 참고 링크
-[1] [Ansible Callback Plugin](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#callback-plugins){:target="_blank"}
-
-[2] [Custom Callback Plugin 예제](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#developing-callback-plugins){:target="_blank"}
-
-[3] [표준 Callback Plugin 리스트](https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/callback){:target="_blank"}
+- [Ansible Callback Plugin](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#callback-plugins)
+- [Custom Callback Plugin 예제](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#developing-callback-plugins)
+- [표준 Callback Plugin 리스트](https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/callback)
