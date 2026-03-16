@@ -5,6 +5,15 @@ theme = 'cactus'
 copyright = "Sung-Kyu Yoo"
 disqusShortname = 'devlog-in-the-sky'
 googleAnalytics = "UA-85297310-1"
+defaultContentLanguage = 'en'
+
+[languages]
+  [languages.en]
+    languageName = 'English'
+    weight = 1
+  [languages.ko]
+    languageName = '한국어'
+    weight = 2
 
 [permalinks]
 posts = "/post/:year/:month/:day/:filename"

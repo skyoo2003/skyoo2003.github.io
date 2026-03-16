@@ -1,14 +1,14 @@
 {
    "list": [
       {
-         "name": "kakaowork-py",
-         "url": "https://github.com/skyoo2003/kakaowork-py",
-         "desc": "(Unofficial) Kakaowork Python client"
-      },
-      {
          "name": "acor",
          "url": "https://github.com/skyoo2003/acor",
          "desc": "ACOR means Aho-Corasick automation working On Redis, Written in Go"
+      },
+      {
+         "name": "kvs",
+         "url": "https://github.com/skyoo2003/kvs",
+         "desc": "A key-value store as a distributed server or a Go module"
       }
    ]
 }
