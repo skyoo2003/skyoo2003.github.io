@@ -219,6 +219,6 @@ Index APIs는 기존 API 대비 다음과 같은 오버헤드가 있다:
 
 ## 마치며
 
-ACOR v1.3.0의 Index APIs는 매칭 위치 정보를 제공하여 라이브러리의 활용 범위를 확장했다. 특히 Unicode를 올바르게 처리하는 Rune 기반 인덱싱과 Aho-Corasick의 상태 전이를 Redis에 구현한 점이 흥미롭다.
+ACOR v1.3.0의 Index APIs는 매칭 위치 정보를 제공하여 라이브러리의 활용 범위를 확장했다. 특히 Unicode를 올바르게 처리하는 Rune 기반 인덱싱과 Aho-Corasick의 상태 전이를 Redis에 구현한 점이 흥미로운 부분이다.
 
-더 자세한 내용은 [ACOR GitHub 저장소](https://github.com/skyoo2003/acor)와 [공식 문서](https://skyoo2003.github.io/acor/)를 참고하자.
+더 자세한 내용은 [ACOR GitHub 저장소](https://github.com/skyoo2003/acor)와 [공식 문서](https://skyoo2003.github.io/acor/)를 참고.
