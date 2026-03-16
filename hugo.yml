@@ -1,0 +1,153 @@
+baseURL: 'https://skyoo2003.github.io/'
+title: 'Devlog in the SKY'
+theme: PaperMod
+
+enableRobotsTXT: true
+buildDrafts: false
+buildFuture: false
+buildExpired: false
+
+minify:
+  disableXML: true
+  minifyOutput: true
+
+defaultContentLanguage: ko
+defaultContentLanguageInSubdir: true
+
+languages:
+  ko:
+    languageName: "한국어"
+    weight: 1
+    title: 'Devlog in the SKY'
+    params:
+      profileMode:
+        enabled: true
+        title: "유성규"
+        subtitle: "백엔드 소프트웨어 엔지니어"
+        imageUrl: "/images/logo.jpg"
+        imageTitle: "Profile"
+        buttons:
+          - name: "글"
+            url: "posts"
+          - name: "소개"
+            url: "about"
+    menu:
+      main:
+        - name: "홈"
+          url: "/"
+          weight: 1
+        - name: "글"
+          url: "/posts/"
+          weight: 2
+        - name: "태그"
+          url: "/tags/"
+          weight: 3
+        - name: "검색"
+          url: "/search/"
+          weight: 4
+        - name: "소개"
+          url: "/about/"
+          weight: 5
+  en:
+    languageName: "English"
+    weight: 2
+    title: 'Devlog in the SKY'
+    params:
+      profileMode:
+        enabled: true
+        title: "Sung-Kyu Yoo"
+        subtitle: "Backend Software Engineer"
+        imageUrl: "/images/logo.jpg"
+        imageTitle: "Profile"
+        buttons:
+          - name: "Posts"
+            url: "posts"
+          - name: "About"
+            url: "about"
+    menu:
+      main:
+        - name: "Home"
+          url: "/en/"
+          weight: 1
+        - name: "Posts"
+          url: "/en/posts/"
+          weight: 2
+        - name: "Tags"
+          url: "/en/tags/"
+          weight: 3
+        - name: "Search"
+          url: "/en/search/"
+          weight: 4
+        - name: "About"
+          url: "/en/about/"
+          weight: 5
+
+params:
+  env: production
+  description: "Devlog in the SKY - Yet another developer's blog"
+  author: "Sung-Kyu Yoo"
+  defaultTheme: auto
+  ShowReadingTime: true
+  ShowShareButtons: true
+  ShowPostNavLinks: true
+  ShowBreadCrumbs: true
+  ShowCodeCopyButtons: true
+  ShowRssButtonInSectionTermList: true
+  UseHugoToc: true
+  disableSpecial1stPost: false
+  disableScrollToTop: false
+  comments: false
+  hidemeta: false
+  hideSummary: false
+  showtoc: true
+  tocopen: false
+
+  socialIcons:
+    - name: github
+      url: "https://github.com/skyoo2003"
+    - name: email
+      url: "mailto:skyoo2003@gmail.com"
+    - name: linkedin
+      url: "https://www.linkedin.com/in/skyoo2003"
+
+  assets:
+    favicon: "/favicon.ico"
+    favicon16x16: "/favicon-16x16.png"
+    favicon32x32: "/favicon-32x32.png"
+    apple_touch_icon: "/apple-touch-icon.png"
+
+  label:
+    text: "Devlog in the SKY"
+
+  profileMode:
+    enabled: true
+
+  cover:
+    hidden: false
+    hiddenInList: false
+    hiddenInSingle: false
+
+  editPost:
+    URL: "https://github.com/skyoo2003/skyoo2003.github.io/tree/main/content"
+    Text: "Suggest Changes"
+    appendFilePath: true
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON
+
+taxonomies:
+  tag: tags
+  category: categories
+
+markup:
+  goldmark:
+    renderer:
+      unsafe: true
+  highlight:
+    codeFences: true
+    guessSyntax: true
+    lineNos: true
+    style: dracula
