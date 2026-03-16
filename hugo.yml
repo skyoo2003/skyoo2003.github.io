@@ -1,5 +1,5 @@
-baseURL: 'https://skyoo2003.github.io/'
-title: 'Devlog in the SKY'
+baseURL: "https://skyoo2003.github.io/"
+title: "Devlog in the SKY"
 theme: PaperMod
 
 enableRobotsTXT: true
@@ -18,7 +18,7 @@ languages:
   ko:
     languageName: "한국어"
     weight: 1
-    title: 'Devlog in the SKY'
+    title: "Devlog in the SKY"
     params:
       profileMode:
         enabled: true
@@ -51,7 +51,7 @@ languages:
   en:
     languageName: "English"
     weight: 2
-    title: 'Devlog in the SKY'
+    title: "Devlog in the SKY"
     params:
       profileMode:
         enabled: true
@@ -84,6 +84,9 @@ languages:
 
 params:
   env: production
+  analytics:
+    google:
+      id: G-YVJGV6NPZX
   description: "Devlog in the SKY - Yet another developer's blog"
   author: "Sung-Kyu Yoo"
   defaultTheme: auto
