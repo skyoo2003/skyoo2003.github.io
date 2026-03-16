@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Tags on Devlog in the SKY</title>
+    <link>https://skyoo2003.github.io/ko/tags/</link>
+    <description>Recent content in Tags on Devlog in the SKY</description>
+    <generator>Hugo</generator>
+    <language>ko</language>
+    <lastBuildDate>Mon, 16 Mar 2026 00:00:00 +0900</lastBuildDate>
+    <atom:link href="https://skyoo2003.github.io/ko/tags/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Aho-Corasick</title>
+      <link>https://skyoo2003.github.io/ko/tags/aho-corasick/</link>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/aho-corasick/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Algorithm</title>
+      <link>https://skyoo2003.github.io/ko/tags/algorithm/</link>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/algorithm/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Go</title>
+      <link>https://skyoo2003.github.io/ko/tags/go/</link>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/go/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Redis</title>
+      <link>https://skyoo2003.github.io/ko/tags/redis/</link>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/redis/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Ansible</title>
+      <link>https://skyoo2003.github.io/ko/tags/ansible/</link>
+      <pubDate>Thu, 26 May 2022 22:08:24 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/ansible/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Testing</title>
+      <link>https://skyoo2003.github.io/ko/tags/testing/</link>
+      <pubDate>Thu, 26 May 2022 22:08:24 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/testing/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Misc</title>
+      <link>https://skyoo2003.github.io/ko/tags/misc/</link>
+      <pubDate>Thu, 26 May 2022 14:32:18 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/misc/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Github-Actions</title>
+      <link>https://skyoo2003.github.io/ko/tags/github-actions/</link>
+      <pubDate>Sun, 15 Nov 2020 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/github-actions/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Go-Modules</title>
+      <link>https://skyoo2003.github.io/ko/tags/go-modules/</link>
+      <pubDate>Sun, 15 Nov 2020 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/go-modules/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Python</title>
+      <link>https://skyoo2003.github.io/ko/tags/python/</link>
+      <pubDate>Sun, 02 Apr 2017 01:36:27 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/python/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Linux</title>
+      <link>https://skyoo2003.github.io/ko/tags/linux/</link>
+      <pubDate>Fri, 17 Mar 2017 11:13:43 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/linux/</guid>
+      <description></description>
+    </item>
+    <item>
+      <title>Java</title>
+      <link>https://skyoo2003.github.io/ko/tags/java/</link>
+      <pubDate>Wed, 09 Nov 2016 18:02:24 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/tags/java/</guid>
+      <description></description>
+    </item>
+  </channel>
+</rss>

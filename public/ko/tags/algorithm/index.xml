@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Algorithm on Devlog in the SKY</title>
+    <link>https://skyoo2003.github.io/ko/tags/algorithm/</link>
+    <description>Recent content in Algorithm on Devlog in the SKY</description>
+    <generator>Hugo</generator>
+    <language>ko</language>
+    <lastBuildDate>Mon, 16 Mar 2026 00:00:00 +0900</lastBuildDate>
+    <atom:link href="https://skyoo2003.github.io/ko/tags/algorithm/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>ACOR v1.3.0 Index APIs 심층 분석</title>
+      <link>https://skyoo2003.github.io/ko/posts/2026/03/16/acor-index-apis-deep-dive/</link>
+      <pubDate>Mon, 16 Mar 2026 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/posts/2026/03/16/acor-index-apis-deep-dive/</guid>
+      <description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm&#34;&gt;Aho-Corasick 알고리즘&lt;/a&gt;은 다중 패턴 문자열 검색을 위한 고전적인 알고리즘이다. 사전에 등록된 여러 키워드를 입력 텍스트에서 동시에 효율적으로 찾을 수 있어, 스팸 필터링, 민감 정보 탐지, 자동완성 등 다양한 영역에서 활용된다.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/skyoo2003/acor&#34;&gt;ACOR&lt;/a&gt;은 이 Aho-Corasick 알고리즘을 Go로 구현하고 Redis를 백엔드 저장소로 사용하는 라이브러리다. v1.3.0에서는 기존 API를 확장하여 매칭된 키워드의 위치 정보를 제공하는 Index APIs가 추가되었다.&lt;/p&gt;
+&lt;p&gt;이 포스트에서는 &lt;code&gt;FindIndex&lt;/code&gt;와 &lt;code&gt;SuggestIndex&lt;/code&gt; API의 설계와 구현을 심층 분석해본다.&lt;/p&gt;
+&lt;h2 id=&#34;기존-api와의-차이점&#34;&gt;기존 API와의 차이점&lt;/h2&gt;
+&lt;p&gt;v1.3.0 이전에는 &lt;code&gt;Find&lt;/code&gt;와 &lt;code&gt;Suggest&lt;/code&gt; 두 가지 검색 API가 있었다:&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>ACOR v1.2.0 릴리즈: 표준 프로젝트 구조와 버그 수정</title>
+      <link>https://skyoo2003.github.io/ko/posts/2021/07/08/acor-v1.2.0-release-notes/</link>
+      <pubDate>Thu, 08 Jul 2021 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/posts/2021/07/08/acor-v1.2.0-release-notes/</guid>
+      <description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/skyoo2003/acor&#34;&gt;ACOR&lt;/a&gt; v1.2.0을 릴리즈했다. 이번 버전은 프로젝트 구조를 Go 표준으로 정리하고 몇 가지 버그를 수정하는 데 집중했다.&lt;/p&gt;
+&lt;h2 id=&#34;표준-프로젝트-구조로-변경&#34;&gt;표준 프로젝트 구조로 변경&lt;/h2&gt;
+&lt;p&gt;v1.2.0에서는 Go 커뮤니티의 표준 프로젝트 레이아웃을 따르도록 구조를 변경했다 (&lt;a href=&#34;https://github.com/skyoo2003/acor/issues/2&#34;&gt;#2&lt;/a&gt;).&lt;/p&gt;
+&lt;p&gt;Go 프로젝트가 성장하면서 파일 구조를 체계적으로 관리할 필요가 있었다. &lt;a href=&#34;https://github.com/golang-standards/project-layout&#34;&gt;Standard Go Project Layout&lt;/a&gt; 가이드라인을 참고하여:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;pkg/&lt;/code&gt;: 외부에서 import 가능한 패키지 코드&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;internal/&lt;/code&gt;: 내부 전용 코드&lt;/li&gt;
+&lt;li&gt;&lt;code&gt;cmd/&lt;/code&gt;: 메인 애플리케이션&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;이런 구조를 적용함으로써 프로젝트의 의도를 더 명확히 전달할 수 있게 되었다.&lt;/p&gt;
+&lt;h2 id=&#34;지원-go-버전-변경&#34;&gt;지원 Go 버전 변경&lt;/h2&gt;
+&lt;p&gt;Go 버전 지원 정책을 업데이트했다 (&lt;a href=&#34;https://github.com/skyoo2003/acor/issues/5&#34;&gt;#5&lt;/a&gt;).&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>ACOR v1.1.0 릴리즈: Go modules와 GitHub Actions로의 전환</title>
+      <link>https://skyoo2003.github.io/ko/posts/2020/11/15/acor-v1.1.0-release-notes/</link>
+      <pubDate>Sun, 15 Nov 2020 00:00:00 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/posts/2020/11/15/acor-v1.1.0-release-notes/</guid>
+      <description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/skyoo2003/acor&#34;&gt;ACOR&lt;/a&gt; v1.1.0을 릴리즈했다. 이번 버전은 새로운 기능 추가보다는 프로젝트의 기반을 현대화하는 데 집중했다. Go 생태계의 변화에 맞춰 의존성 관리와 CI/CD 시스템을 최신 표준으로 전환했다.&lt;/p&gt;
+&lt;h2 id=&#34;왜-go-modules로-전환했는가&#34;&gt;왜 Go modules로 전환했는가&lt;/h2&gt;
+&lt;p&gt;ACOR은 처음 &lt;a href=&#34;https://github.com/Masterminds/glide&#34;&gt;Glide&lt;/a&gt;를 사용해 의존성을 관리했다. Glide는 Go에 공식 의존성 관리 도구가 없던 시절, 커뮤니티에서 널리 사용되던 도구였다. 하지만 Go 1.11부터 &lt;a href=&#34;https://blog.golang.org/using-go-modules&#34;&gt;Go modules&lt;/a&gt;가 공식으로 도입되면서 상황이 바뀌었다.&lt;/p&gt;
+&lt;p&gt;Glide의 한계는 명확했다:&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;strong&gt;유지보수 중단&lt;/strong&gt;: Glide는 더 이상 활발히 개발되지 않는다&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;버전 관리&lt;/strong&gt;: 정확한 버전 고정과 의존성 트리 관리가 번거롭다&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;재현성&lt;/strong&gt;: 다른 환경에서 동일한 빌드를 보장하기 어렵다&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;Go modules는 이 문제들을 해결한다. &lt;code&gt;go.mod&lt;/code&gt; 파일 하나로 의존성을 관리하고, Semantic Versioning을 기반으로 버전을 제어한다. 무엇보다 Go 도구 체인에 내장되어 있어 별도 설치가 필요 없다.&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>ACOR 소개: Redis 기반 Aho-Corasick 구현</title>
+      <link>https://skyoo2003.github.io/ko/posts/2017/06/28/introducing-acor/</link>
+      <pubDate>Wed, 28 Jun 2017 16:39:49 +0900</pubDate>
+      <guid>https://skyoo2003.github.io/ko/posts/2017/06/28/introducing-acor/</guid>
+      <description>&lt;h2 id=&#34;들어가며&#34;&gt;들어가며&lt;/h2&gt;
+&lt;p&gt;문자열 검색은 소프트웨어 개발에서 자주 마주치는 문제다. 특정 키워드 하나를 찾는 것은 간단하지만, 수백 개의 키워드를 동시에 찾아야 한다면 어떨까? 각 키워드마다 텍스트를 순회한다면 비효율적일 것이다.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm&#34;&gt;Aho-Corasick 알고리즘&lt;/a&gt;은 이 문제를 우아하게 해결한다. 1975년 Alfred V. Aho와 Margaret J. Corasick이 개발한 이 알고리즘은 여러 패턴을 동시에 효율적으로 검색할 수 있다.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&#34;https://github.com/skyoo2003/acor&#34;&gt;ACOR&lt;/a&gt;은 이 Aho-Corasick 알고리즘을 Go로 구현하고 Redis를 백엔드 저장소로 사용하는 라이브러리다. 이 포스트에서는 ACOR의 소개와 Aho-Corasick 알고리즘의 기본 개념, 그리고 사용법을 살펴본다.&lt;/p&gt;</description>
+    </item>
+  </channel>
+</rss>
