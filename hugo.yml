@@ -18,11 +18,6 @@ services:
   disqus:
     shortname: devlog-in-the-sky
 
-layouts:
-  - partials
-    - disqus.html
-    - comments.html
-
 languages:
   ko:
     languageName: "한국어"
@@ -100,6 +95,9 @@ params:
   author: "Sung-Kyu Yoo"
   defaultTheme: auto
   ShowReadingTime: true
+  ShowWordCount: true
+  DateFormat: "2006-01-02"
+  displayFullLangName: true
   ShareButtons:
     - x
     - linkedin
@@ -134,10 +132,6 @@ params:
     favicon32x32: "/favicon-32x32.png"
     apple_touch_icon: "/apple-touch-icon.png"
 
-  homeInfoParams:
-    Title: Devlog in the SKY
-    Content: Yet another developer's blog
-
   label:
     text: "Devlog in the SKY"
 
@@ -148,11 +142,24 @@ params:
     hidden: false
     hiddenInList: false
     hiddenInSingle: false
+    linkFullImages: true
 
   editPost:
     URL: "https://github.com/skyoo2003/skyoo2003.github.io/tree/main/content"
     Text: "Suggest Changes"
     appendFilePath: true
+
+  schema:
+    publisherType: "Person"
+
+  fuseOpts:
+    isCaseSensitive: false
+    shouldSort: true
+    location: 0
+    distance: 1000
+    threshold: 0.4
+    minMatchCharLength: 0
+    keys: ["title", "permalink", "summary", "content"]
 
 outputs:
   home:
