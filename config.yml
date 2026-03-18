@@ -1,0 +1,27 @@
+params:
+  homeInfoParams:
+    Title: Devlog in the SKY
+    Content: Yet another developer's blog
+  socialIcons:
+    - name: github
+      url: https://github.com/skyoo2003
+    - name: linkedin
+      url: https://www.linkedin.com/in/skyoo2003
+    - name: email
+      url: skyoo2003@gmail.com
+  ShowShareButtons: true
+  ShareButtons:
+    - x
+    - linkedin
+    - reddit
+    - facebook
+  ShowReadingTime: true
+  ShowToc: true
+  ShowBreadCrumbs: true
+  ShowPostNavLinks: true
+  ShowCodeCopyButtons: true
+  ShowFullTextinRSS: true
+  ShowRssButtonInSectionTermList: true
+  comments: true
+
+disqusShortname: devlog-in-the-sky
