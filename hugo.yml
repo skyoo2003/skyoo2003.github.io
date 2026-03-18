@@ -14,6 +14,15 @@ minify:
 defaultContentLanguage: ko
 defaultContentLanguageInSubdir: true
 
+services:
+  disqus:
+    shortname: devlog-in-the-sky
+
+layouts:
+  - partials
+    - disqus.html
+    - comments.html
+
 languages:
   ko:
     languageName: "한국어"
@@ -91,15 +100,21 @@ params:
   author: "Sung-Kyu Yoo"
   defaultTheme: auto
   ShowReadingTime: true
+  ShareButtons:
+    - x
+    - linkedin
+    - reddit
+    - facebook
   ShowShareButtons: true
   ShowPostNavLinks: true
   ShowBreadCrumbs: true
   ShowCodeCopyButtons: true
+  ShowFullTextinRSS: true
   ShowRssButtonInSectionTermList: true
   UseHugoToc: true
   disableSpecial1stPost: false
   disableScrollToTop: false
-  comments: false
+  comments: true
   hidemeta: false
   hideSummary: false
   showtoc: true
@@ -108,16 +123,20 @@ params:
   socialIcons:
     - name: github
       url: "https://github.com/skyoo2003"
-    - name: email
-      url: "mailto:skyoo2003@gmail.com"
     - name: linkedin
       url: "https://www.linkedin.com/in/skyoo2003"
+    - name: email
+      url: "mailto:skyoo2003@gmail.com"
 
   assets:
     favicon: "/favicon.ico"
     favicon16x16: "/favicon-16x16.png"
     favicon32x32: "/favicon-32x32.png"
     apple_touch_icon: "/apple-touch-icon.png"
+
+  homeInfoParams:
+    Title: Devlog in the SKY
+    Content: Yet another developer's blog
 
   label:
     text: "Devlog in the SKY"
