@@ -7,6 +7,7 @@
     return;
   }
   
+  // NOTE: Update this list when adding new top-level sections to the site
   var patterns = ['posts', 'about', 'tags', 'search'];
   var shouldRedirect = patterns.some(function(p) {
     return path === '/' + p || path === '/' + p + '/' || path.indexOf('/' + p + '/') === 0;
