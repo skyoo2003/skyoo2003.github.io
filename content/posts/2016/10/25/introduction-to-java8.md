@@ -1,7 +1,7 @@
 ---
 title: Java 8 살펴보기
 date: 2016-10-25T21:33:00+09:00
-tags: [java]
+tags: [java, tutorial]
 ---
 
 Java 8 버전에 추가된 내용들에 대해서 정리하고자 한다. 전반적인 내용을 정리하고자 하였고, 자세하고 세부적인 내용은 관련 링크를 첨부하여 추후에 가능하다면, 해당 부분에 대해서 더 자세히 정리해보고자 한다.
@@ -49,12 +49,59 @@ Collections.sort(theListOfMyClasses, new Comparator<MyClass>() {
 
 ```java
 theListOfMyClasses.sort((MyClass a, MyClass b) -> {
-    return a.getValue() - b.getValue();
+	return a.getValue() - b.getValue();
 });
 
 theListOfMyClasses.sort((a, b) -> a.getValue() - b.getValue());
 ```
 람다 표현식에 '타입 추론' 이 가능하며, 전달하는 파라미터의 타입을 명시하지 않아도 런타임에 추론이 가능해진다. 명시적으로 선언하지 않아도 되므로, 코드량이 감소한다.
+
+#### 람다 실전 활용 패턴
+
+**이벤트 핸들러 간소화**
+
+```java
+// Java 7
+button.addActionListener(new ActionListener() {
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        System.out.println("Button clicked!");
+    }
+});
+
+// Java 8
+button.addActionListener(e -> System.out.println("Button clicked!"));
+```
+
+**조건부 실행 패턴**
+
+```java
+public static void processIfValid(String input, Consumer<String> processor) {
+    if (input != null && !input.isEmpty()) {
+        processor.accept(input);
+    }
+}
+
+// 사용
+processIfValid(userData, data -> saveToDatabase(data));
+processIfValid(logMessage, msg -> logger.info(msg));
+```
+
+**지연 초기화 (Lazy Initialization)**
+
+```java
+public class ExpensiveResource {
+    private Supplier<HeavyObject> heavyObject = () -> {
+        HeavyObject instance = createHeavyObject();
+        heavyObject = () -> instance; // 메모이제이션
+        return instance;
+    };
+    
+    public HeavyObject getHeavyObject() {
+        return heavyObject.get();
+    }
+}
+```
 
 ### Stream API
 
@@ -72,6 +119,107 @@ return guests.stream()
 ```
 컨테이너로부터 스트림을 생성하고, 특정 company와 동일한 guest 객체만 필터링한 뒤에, guest.grade 값을 오름차순으로 정렬한 뒤에 guest의 이름만 추출하여 다시 리스트로 만드는 로직이다.
 기존의 for-each 문의로 작성하려고 하면 복잡해질 수 있는 부분이 단순해지며 명확해진다.
+
+#### Stream API 심화
+
+**병렬 스트림 (Parallel Stream)**
+
+```java
+// 순차 처리
+long count = data.stream()
+    .filter(s -> s.length() > 5)
+    .count();
+
+// 병렬 처리
+long count = data.parallelStream()
+    .filter(s -> s.length() > 5)
+    .count();
+```
+
+병렬 스트림 사용 시 주의사항:
+- 데이터 크기가 충분히 클 때만 효과적
+- 스레드 안전하지 않은 연산은 피해야 함
+- 순서가 중요한 연산에는 부적합
+
+```java
+// 잘못된 예: 공유 상태 변경
+List<Integer> results = new ArrayList<>();
+IntStream.range(0, 1000).parallel()
+    .forEach(i -> results.add(i)); // ConcurrentModificationException 발생 가능
+
+// 올바른 예: 스레드 안전한 수집
+List<Integer> results = IntStream.range(0, 1000).parallel()
+    .boxed()
+    .collect(Collectors.toList());
+```
+
+**커스텀 수집기 (Custom Collector)**
+
+```java
+public class StringJoiner implements Collector<CharSequence, StringBuilder, String> {
+    
+    @Override
+    public Supplier<StringBuilder> supplier() {
+        return StringBuilder::new;
+    }
+    
+    @Override
+    public BiConsumer<StringBuilder, CharSequence> accumulator() {
+        return (sb, cs) -> {
+            if (sb.length() > 0) sb.append(", ");
+            sb.append(cs);
+        };
+    }
+    
+    @Override
+    public BinaryOperator<StringBuilder> combiner() {
+        return (sb1, sb2) -> {
+            if (sb1.length() > 0) sb1.append(", ");
+            sb1.append(sb2);
+            return sb1;
+        };
+    }
+    
+    @Override
+    public Function<StringBuilder, String> finisher() {
+        return StringBuilder::toString;
+    }
+    
+    @Override
+    public Set<Characteristics> characteristics() {
+        return Collections.emptySet();
+    }
+}
+
+// 사용
+String result = names.stream().collect(new StringJoiner());
+```
+
+**그룹화와 분할**
+
+```java
+// 그룹화
+Map<Department, List<Employee>> byDept = employees.stream()
+    .collect(Collectors.groupingBy(Employee::getDepartment));
+
+// 그룹화 + 집계
+Map<Department, Double> avgSalaryByDept = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::getDepartment,
+        Collectors.averagingDouble(Employee::getSalary)
+    ));
+
+// 다중 그룹화
+Map<Department, Map<Grade, List<Employee>>> byDeptAndGrade = employees.stream()
+    .collect(Collectors.groupingBy(
+        Employee::getDepartment,
+        Collectors.groupingBy(Employee::getGrade)
+    ));
+
+// 분할 (Partitioning)
+Map<Boolean, List<Employee>> partitioned = employees.stream()
+    .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000));
+```
 
 ### Default Method
 
@@ -189,6 +337,41 @@ public class JSR310Test {
 }
 ```
 
+#### 날짜 API 실전 활용
+
+**날짜 계산**
+
+```java
+LocalDate today = LocalDate.now();
+LocalDate nextWeek = today.plusWeeks(1);
+LocalDate lastDayOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+LocalDate nextMonday = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
+
+// 두 날짜 사이의 기간
+Period period = Period.between(startDate, endDate);
+long days = ChronoUnit.DAYS.between(startDate, endDate);
+```
+
+**시간대 처리**
+
+```java
+ZonedDateTime seoul = ZonedDateTime.of(
+    LocalDateTime.of(2024, 1, 1, 9, 0),
+    ZoneId.of("Asia/Seoul")
+);
+
+ZonedDateTime ny = seoul.withZoneSameInstant(ZoneId.of("America/New_York"));
+// 서울 9시 = 뉴욕 전날 19시
+```
+
+**날짜 파싱과 포맷팅**
+
+```java
+DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+LocalDateTime dateTime = LocalDateTime.parse("2024-01-15 10:30:00", formatter);
+String formatted = dateTime.format(formatter);
+```
+
 ### 메타 어노테이션 지원 보완
 
 개발 편리성 및 생산성을 위하 메타 프로그래밍이 사용되고 있다. 메소드나 프로퍼티에 어노테이션을 걸고, 동적으로 정보를 가져올 수 있는 개발 방법이다.
@@ -224,6 +407,34 @@ public static void main(String[] args) {
 * java.util.concurrent.ForkJoinPool 멀티 코어 대응 ExecutorService 구현체 (JDK7+) / ForkJoinPool.commonPool() 메소드 추가로 ForkJoinPool 객체를 생성 하지 않고 할당받을 수 있게 됨.
 * java.util.concurrent.locks.ReadWriteLock 의 성능 이슈로 이를 개선한 java.util.concurrent.locks.StampedLock 이 추가 되었다. 자체로 속도가 개선 되었을 뿐 만 아니라 Optimistic Lock을 제공해 더욱 빠르게 동작함. 자세한 내용은 [5] 링크 참조. 성능 비교는 [6] 링크 참조.
 * 계수 / 누산에 같은 작업의 원자적 연산을 지원하는 클래스(DoubleAccumulator, DoubleAdder, LongAccumulator, LongAdder)가 추가되었다. 자세한 내용은 [5] 링크 참조.
+
+#### CompletableFuture 활용
+
+Java 8에서 `CompletableFuture`가 추가되어 비동기 프로그래밍이 더욱 편리해졌다.
+
+```java
+// 비동기 작업 생성
+CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+    return expensiveOperation();
+});
+
+// 체이닝
+CompletableFuture<Integer> result = future
+    .thenApply(String::length)
+    .thenApply(len -> len * 2);
+
+// 조합
+CompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> "Hello");
+CompletableFuture<String> future2 = CompletableFuture.supplyAsync(() -> "World");
+
+CompletableFuture<String> combined = future1
+    .thenCombine(future2, (s1, s2) -> s1 + " " + s2);
+
+// 예외 처리
+CompletableFuture<String> handled = future
+    .exceptionally(ex -> "Error: " + ex.getMessage())
+    .thenApply(s -> "Result: " + s);
+```
 
 ### IO/NIO 확장
 
@@ -319,6 +530,144 @@ __Java8 에서의 Metaspace과 Heap 분리__
 * PermGen 영역에 저장되어 문제를 유발하던 Static Obect는 Heap 영역으로 옮겨서 최대한 GC 대상이 되도록 함. (Static Final 인 경우는 어쩔 수 없음...)
 
 * 수정될 필요가 없는 정보만 Metaspace에 저장, Metaspace는 JVM이 필요에 따라서 리사이징할 수 있는 구조로 개선되었음.
+
+## Java 8 마이그레이션 가이드
+
+### 기존 코드 리팩토링 체크리스트
+
+**1. 익명 클래스를 람다로 변환**
+
+```java
+// Before
+Runnable r = new Runnable() {
+    @Override
+    public void run() {
+        System.out.println("Hello");
+    }
+};
+
+// After
+Runnable r = () -> System.out.println("Hello");
+```
+
+**2. for 루프를 스트림으로 변환**
+
+```java
+// Before
+List<String> names = new ArrayList<>();
+for (User user : users) {
+    if (user.isActive()) {
+        names.add(user.getName());
+    }
+}
+
+// After
+List<String> names = users.stream()
+    .filter(User::isActive)
+    .map(User::getName)
+    .collect(Collectors.toList());
+```
+
+**3. null 체크를 Optional로 변환**
+
+```java
+// Before
+String name = user != null ? user.getName() : "Unknown";
+
+// After
+String name = Optional.ofNullable(user)
+    .map(User::getName)
+    .orElse("Unknown");
+```
+
+**4. Date/Calendar를 새 날짜 API로 변환**
+
+```java
+// Before
+Calendar cal = Calendar.getInstance();
+cal.set(2024, Calendar.JANUARY, 15);
+Date date = cal.getTime();
+
+// After
+LocalDate date = LocalDate.of(2024, 1, 15);
+```
+
+### 마이그레이션 시 주의사항
+
+**성능 고려사항**
+
+```java
+// 작은 컬렉션에서는 스트림이 더 느릴 수 있음
+List<String> smallList = Arrays.asList("a", "b", "c");
+
+// 이런 경우 기존 for-each가 더 효율적일 수 있음
+for (String s : smallList) {
+    System.out.println(s);
+}
+
+// 큰 컬렉션에서는 스트림이 유리
+largeCollection.stream()
+    .filter(...)
+    .map(...)
+    .collect(...);
+```
+
+**직렬화 주의**
+
+```java
+// 람다는 직렬화할 수 있지만 권장하지 않음
+// 필요한 경우 명시적 인터페이스 사용
+@FunctionalInterface
+public interface SerializableFunction<T, R> 
+    extends Function<T, R>, Serializable {
+}
+```
+
+## 트러블슈팅
+
+### 자주 발생하는 문제
+
+**1. StreamAlreadyClosedException**
+
+```java
+// 잘못된 예
+Stream<String> stream = Files.lines(path);
+stream.forEach(System.out::println);
+stream.count(); // 예외 발생!
+
+// 올바른 예
+try (Stream<String> stream = Files.lines(path)) {
+    stream.forEach(System.out::println);
+}
+```
+
+**2. ConcurrentModificationException**
+
+```java
+// 잘못된 예
+List<String> list = new ArrayList<>(Arrays.asList("a", "b", "c"));
+list.stream().forEach(s -> list.add(s.toUpperCase())); // 예외!
+
+// 올바른 예
+List<String> upper = list.stream()
+    .map(String::toUpperCase)
+    .collect(Collectors.toList());
+```
+
+**3. NullPointerException in Streams**
+
+```java
+// 문제 코드
+List<String> names = users.stream()
+    .map(User::getName) // user가 null이면 NPE
+    .collect(Collectors.toList());
+
+// 안전한 코드
+List<String> names = users.stream()
+    .filter(Objects::nonNull)
+    .map(User::getName)
+    .collect(Collectors.toList());
+```
 
 ## 참고 링크
 

@@ -1,65 +1,65 @@
 ---
-title: alternatives 명령어 알아보기
+title: Understanding the alternatives Command
 date: 2017-03-17T11:13:43+09:00
 tags: [linux, tutorial]
 ---
 
-`alternatives` (cf, `update-alternatives`)는 심볼릭 링크를 생성, 제거, 관리, 조회할 수 있는 기능을 제공하는 GNU 라이센스의 커맨드라인 툴. 즉, 심볼릭 링크를 통해서 특정 커맨드에 대해 디폴트 버전 혹은 경로를 정의할 수 있다. 다만, Debian 계열의 리눅스에는 `update-alternatives` 명령어만 제공 (perl 언어에 대한 의존성을 제거하기 위해 기존의 `alternatives` 스크립트가 재구현이 되었다고 함)되고, Redhat 계열의 리눅스 명령과 제공하는 기능에는 다소 차이가 있지만, 이번에는 공통적인 기능과 옵션에 대해서만 정리하기로 하였다. 추가로, 예제들은 Redhat 기준으로 정리하였다.
+`alternatives` (or `update-alternatives`) is a GNU-licensed command-line tool that provides functionality to create, remove, manage, and query symbolic links. In other words, it allows defining default versions or paths for specific commands through symbolic links. Note that Debian-based Linux distributions only provide the `update-alternatives` command (the original `alternatives` script was reimplemented to remove perl language dependency), and there are some differences in functionality compared to RedHat-based Linux commands, but this article covers only common functionality and options. Examples are based on RedHat.
 
-이해를 쉽게하기 위해, 각각의 기능을 설명할 때, 메이븐을 시스템에 설치한 뒤에 심볼릭 링크로 연결하는 방법을 정리하도록 한다. 때문에 메이븐이 `/usr/lib/apache-maven-*` 경로에 설치되어 있다고 가정한다. 물론, 메이븐 이외의 다른 응용도 충분히 가능하다.
+For easier understanding, I'll use Maven installation on the system and connecting it via symbolic links. Assume Maven is installed at `/usr/lib/apache-maven-*`. Of course, other applications are also possible.
 
-## alternatives란 무엇인가?
+## What is alternatives?
 
-### 개요
+### Overview
 
-Linux 시스템에서는 여러 버전의 동일한 프로그램이 설치될 수 있다. 예를 들어:
+In Linux systems, multiple versions of the same program can be installed. For example:
 - Java: OpenJDK 8, OpenJDK 11, Oracle JDK
 - Python: Python 2.7, Python 3.6, Python 3.9
 - Maven: 3.3.9, 3.6.3, 3.8.1
 
-이때 `java`, `python`, `mvn` 같은 명령어가 어떤 버전을 가리킬지 결정해야 한다. `alternatives`는 이 문제를 심볼릭 링크를 통해 우아하게 해결한다.
+The `alternatives` command solves this problem elegantly through symbolic links.
 
-### 동작 원리
+### How It Works
 
 ```
 /usr/bin/java → /etc/alternatives/java → /usr/lib/jvm/java-11/bin/java
      ^                    ^                          ^
      |                    |                          |
-  사용자 명령        alternatives 관리            실제 바이너리
+  User command      Managed by alternatives       Actual binary
 ```
 
-1. 사용자가 `java` 명령어 입력
-2. 시스템은 `/usr/bin/java` 심볼릭 링크를 따라감
-3. `/etc/alternatives/java`를 가리키고 있음
-4. 최종적으로 실제 Java 바이너리에 도달
+1. User enters `java` command
+2. System follows `/usr/bin/java` symbolic link
+3. Points to `/etc/alternatives/java`
+4. Finally reaches the actual Java binary
 
-## 심볼릭 링크 생성하기 (--install)
+## Creating Symbolic Links (--install)
 
-`--install` 액션을 통해 심볼릭 링크를 생성할 수 있다. Redhat 기준으로 `alternatives` 는 기본적으로 `/etc/alternatives/<name>` 의 경로에 심볼릭 링크가 생성되고, mode, priority, link, path 에 대한 정보를 `/var/lib/alternatives/<name>` 의 경로에 저장 한다. 심볼릭 링크가 처음 생성되는 경우에는 `<link>`의 경로에 `/etc/alternatives/<name>`에 대한 심볼릭 링크가 생성된다. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
+The `--install` action creates symbolic links. On RedHat, `alternatives` creates symbolic links in `/etc/alternatives/<name>` by default, and stores mode, priority, link, and path information in `/var/lib/alternatives/<name>`. When a symbolic link is created for the first time, a symbolic link to `/etc/alternatives/<name>` is created at the `<link>` path. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
 
-`--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
+The `--slave` option is used to manage additional commands along with the master symbolic link. For example, when creating a symbolic link for the `java` command, you can also manage additional commands like `javac`, `javadoc`, etc. The `--slave` option can be defined multiple times.
 
 ```bash
 $ alternatives --install <link> <name> <path> <priority> [--slave <link> <name> <path>]*
-<link> : 심볼릭 링크의 경로를 입력.
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
-<path> : 패키지의 절대 경로를 입력.
-<priority> : 링크 그룹 내에서 우선순위 지정. 정수로 입력하며 클 수록 높음.
+<link> : Enter the symbolic link path.
+<name> : Enter the symbolic link group name managed by alternatives.
+<path> : Enter the absolute path of the package.
+<priority> : Specify priority within the link group. Enter as integer; higher is better.
 ```
 
 ```bash
-# /usr/local/bin/mvn 경로에 메이븐 3.3.3에 대한 심볼릭 링크 생성
+# Create symbolic link for Maven 3.3.3 at /usr/local/bin/mvn
 $ alternatives --install /usr/local/bin/mvn mvn /usr/lib/apache-maven-3.3.3/bin/mvn 30303
-# /usr/local/bin/mvn 경로에 메이븐 3.3.9에 대한 심볼릭 링크 생성
+# Create symbolic link for Maven 3.3.9 at /usr/local/bin/mvn
 $ alternatives --install /usr/local/bin/mvn mvn /usr/lib/apache-maven-3.3.9/bin/mvn 30309
 
-# 아래의 경로에 심볼릭 링크가 생성된 것을 볼 수 있다.
+# You can see symbolic links created at the following paths
 $ ll /etc/alternatives/mvn
 lrwxrwxrwx 1 root root 35 Mar 18 00:34 /etc/alternatives/mvn -> /usr/lib/apache-maven-3.3.9/bin/mvn
 $ ll /usr/local/bin/mvn
 lrwxrwxrwx 1 root root 21 Mar 18 00:34 /usr/local/bin/mvn -> /etc/alternatives/mvn
 
-# 아래의 경로에 메타 데이터가 저장되는 것을 볼 수 있다.
+# You can see metadata stored at the following path
 $ ll /var/lib/alternatives/mvn
 -rw-r--r-- 1 root root 109 Mar 18 00:34 /var/lib/alternatives/mvn
 $ cat /var/lib/alternatives/mvn
@@ -72,15 +72,15 @@ auto
 30309
 ```
 
-PS. alternatives에서 관리하는 심볼릭 링크와 메타 데이터의 경로를 변경하고자 하는 경우, `--altdir <directory>`, `--admindir <directory>` 명령 옵션을 활용하면 된다.
+Note: To change the paths where alternatives manages symbolic links and metadata, use the `--altdir <directory>` and `--admindir <directory>` command options.
 
 ```bash
 $ alternatives --altdir /home/user/alternatives --admindir /home/user/alternatives/meta --install /home/user/bin/mvn mvn /usr/lib/maven-3.3.9/bin/mvn 1
 ```
 
-### Slave 옵션 활용 예시
+### Using Slave Option Example
 
-Java 설치 시 연관된 명령어들을 함께 관리:
+Managing related commands together when installing Java:
 
 ```bash
 $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 2000 \
@@ -90,21 +90,21 @@ $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/jav
   --slave /usr/bin/jps jps /usr/lib/jvm/java-11-openjdk/bin/jps
 ```
 
-## 심볼릭 링크 제거하기 (--remove)
+## Removing Symbolic Links (--remove)
 
-`--remove` 액션을 통해 생성한 심볼릭 링크를 제거할 수 있다. 자세히는 `alternatives` 의 메타 데이터에서 제거하게 되며, `<name>`에 해당하는 링크 그룹 내에 연결 가능한 심볼릭 링크가 없다면, `/etc/alternatives/<name>`의 심볼릭 링크와 `/var/lib/alternatives/<name>` 도 같이 소멸. 만약에 다른 대안이 있다면, `alternatives` 는 자동으로 해당 링크로 업데이트 한다.
+The `--remove` action removes created symbolic links. Specifically, it removes from alternatives metadata, and if there are no connectable symbolic links within the `<name>` link group, both `/etc/alternatives/<name>` symbolic link and `/var/lib/alternatives/<name>` are also destroyed. If there are other alternatives, `alternatives` automatically updates to that link.
 
 ```bash
 $ alternatives --remove <name> <path>
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
-<path> : 삭제할 패키지의 절대 경로를 입력다.
+<name> : Enter the symbolic link group name managed by alternatives.
+<path> : Enter the absolute path of the package to delete.
 ```
 
 ```bash
-# mvn 심볼릭 링크 그룹에서 /usr/lib/apache-maven-3.3.9/bin/mvn 에 해당하는 심볼릭 링크 메타 정보 제거
+# Remove symbolic link metadata for /usr/lib/apache-maven-3.3.9/bin/mvn from mvn symbolic link group
 $ alternatives --remove mvn /usr/lib/apache-maven-3.3.9/bin/mvn
 
-# case1) apache-maven-3.3.3/bin/mvn 이 같은 그룹명으로 연결되어 있다면, 해당 경로로 업데이트 된다.
+# case1) If apache-maven-3.3.3/bin/mvn is connected with the same group name, it updates to that path
 $ ll /etc/alternatives/mvn
 lrwxrwxrwx 1 root root 35 Mar 18 00:49 /etc/alternatives/mvn -> /usr/lib/apache-maven-3.3.3/bin/mvn
 $ ll /var/lib/alternatives/mvn
@@ -116,7 +116,7 @@ auto
 /usr/lib/apache-maven-3.3.3/bin/mvn
 30303
 
-# case2) mvn 심볼릭 링크 그룹 내에서 다른 대안이 없다면, /etc/alternatives/mvn, /var/lib/alternatives/mvn, /usr/local/bin/mvn의 경로의 파일과 링크가 제거된다.
+# case2) If there are no other alternatives in the mvn symbolic link group, files and links at /etc/alternatives/mvn, /var/lib/alternatives/mvn, and /usr/local/bin/mvn are removed
 $ ll /etc/alternatives/mvn
 ls: cannot access /etc/alternatives/mvn: No such file or directory
 $ ll /var/lib/alternatives/mvn
@@ -125,20 +125,20 @@ $ ll /usr/local/bin/mvn
 ls: cannot access /usr/local/bin/mvn: No such file or directory
 ```
 
-## 자동 모드 설정하기 (--auto)
+## Setting Auto Mode (--auto)
 
-`--auto` 액션은 `alternatives` 에 등록된 심볼릭 링크를 링크 그룹 내에서 자동으로 선택하도록 설정. `<priority>`가 가장 높은 값으로 설정된 링크를 우선적으로 선택하며, 자동으로 선택된 링크를 제거한 경우 다른 대안의 링크로 연결해주도록 되어 있다.
+The `--auto` action sets alternatives-registered symbolic links to be automatically selected within the link group. It preferentially selects the link with the highest `<priority>` value, and if the automatically selected link is removed, it connects to another alternative link.
 
 ```bash
 $ alternatives --auto <name>
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
+<name> : Enter the symbolic link group name managed by alternatives.
 ```
 
 ```bash
-# mvn 으로 등록된 심볼릭 링크 그룹을 자동 모드로 관리하도록 설정.
+# Set mvn registered symbolic link group to auto mode
 $ alternatives --auto mvn
 
-# 메타 데이터에 첫 번째 라인에 'auto' 라고 되어있는 부분을 볼 수 있다.
+# You can see 'auto' in the first line of metadata
 $ cat /var/lib/alternatives/mvn
 auto
 /usr/local/bin/mvn
@@ -149,17 +149,17 @@ auto
 30309
 ```
 
-## 수동 모드 설정하기 (--config)
+## Setting Manual Mode (--config)
 
-`--config` 액션은 `alternatives` 에 등록된 심볼릭 링크를 링크 그룹 내에서 사용자가 임의로 선택할 수 있는 기능.
+The `--config` action allows users to arbitrarily select from alternatives-registered symbolic links within the link group.
 
 ```bash
 $ alternatives --config <name>
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
+<name> : Enter the symbolic link group name managed by alternatives.
 ```
 
 ```bash
-# 사용자로부터 어떤 명령을 기본적으로 사용할 것인지 입력받는다.
+# Prompts user to input which command to use by default
 $ alternatives --config mvn
 
 There are 2 programs which provide 'mvn'.
@@ -171,7 +171,7 @@ There are 2 programs which provide 'mvn'.
 
 Enter to keep the current selection[+], or type selection number: 1
 
-# 심볼릭 링크가 변경되는 것을 볼 수 있고, 메타 데이터의 첫 번째 라인에 'manual' 으로 정의된 부분을 볼 수 있다.
+# You can see the symbolic link changed and 'manual' in the first line of metadata
 $ ll /etc/alternatives/mvn
 lrwxrwxrwx 1 root root 35 Mar 18 00:58 /etc/alternatives/mvn -> /usr/lib/apache-maven-3.3.3/bin/mvn
 $ cat /var/lib/alternatives/mvn
@@ -184,17 +184,17 @@ manual
 30309
 ```
 
-## 심볼릭 링크 그룹 확인하기 (--display)
+## Viewing Symbolic Link Groups (--display)
 
-`--display` 액션은 `alternatives` 에 등록된 심볼릭 링크 그룹에 대한 상세 정보를 확인할 수 있다. 마스터/슬레이브 심볼릭 링크에 연결된 명령어 경로, 현재 사용 중인 모드, 현재 선택된 링크와 가능한 다른 링크에 대한 정보 및 심볼릭 링크의 우선순위 값도 확인할 수 있다.
+The `--display` action shows detailed information about alternatives-registered symbolic link groups. You can see command paths connected to master/slave symbolic links, current mode, currently selected link and other available links, and symbolic link priority values.
 
 ```bash
 $ alternatives --display <name>
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
+<name> : Enter the symbolic link group name managed by alternatives.
 ```
 
 ```bash
-# mvn 링크에 대한 패키지 정보 확인
+# Check package information for mvn link
 $ alternatives --display mvn
 mvn - status is manual.
  link currently points to /usr/lib/apache-maven-3.3.3/bin/mvn
@@ -202,7 +202,7 @@ mvn - status is manual.
 /usr/lib/apache-maven-3.3.3/bin/mvn - priority 30303
 Current 'best' version is /usr/lib/apache-maven-3.3.9/bin/mvn.
 
-# --auto 설정 후 변경된 mvn 에 대한 mode 확인
+# Check changed mvn mode after --auto setting
 $ alternatives --auto mvn
 $ alternatives --display mvn
 mvn - status is auto.
@@ -212,17 +212,17 @@ mvn - status is auto.
 Current 'best' version is /usr/lib/apache-maven-3.3.9/bin/mvn.
 ```
 
-## 전체 심볼릭 링크 그룹 확인하기 (--list)
+## Viewing All Symbolic Link Groups (--list)
 
-`--list` 는 `alternatives` 에 등록된 모든 심볼릭 링크에 대한 정보를 확인할 수 있다.
+`--list` shows information about all symbolic links registered in alternatives.
 
 ```bash
 $ alternatives --list
-<name> : alternatives 에서 관리할 심볼릭 링크 그룹명을 입력.
+<name> : Enter the symbolic link group name managed by alternatives.
 ```
 
 ```bash
-# 로컬 머신에 등록된 모든 심볼릭 링크 그룹 리스트.
+# List of all symbolic link groups registered on local machine
 $ alternatives --list
 java_sdk_1.8.0	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
 jre_openjdk	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64/jre
@@ -241,40 +241,40 @@ jre_1.8.0_openjdk	auto	/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_
 java_sdk_1.7.0_openjdk	auto	/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.131-2.6.9.0.el7_3.x86_64
 ```
 
-## 실전 활용 예제
+## Practical Examples
 
-### Java 버전 관리
+### Java Version Management
 
 ```bash
-# OpenJDK 8 설치 및 등록
+# Install and register OpenJDK 8
 $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.8.0-openjdk/bin/java 1800 \
   --slave /usr/bin/javac javac /usr/lib/jvm/java-1.8.0-openjdk/bin/javac
 
-# OpenJDK 11 설치 및 등록
+# Install and register OpenJDK 11
 $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 1100 \
   --slave /usr/bin/javac javac /usr/lib/jvm/java-11-openjdk/bin/javac
 
-# Java 버전 전환
+# Switch Java version
 $ alternatives --config java
 
-# 현재 Java 버전 확인
+# Check current Java version
 $ java -version
 ```
 
-### Python 버전 관리
+### Python Version Management
 
 ```bash
-# Python 3.6 등록
+# Register Python 3.6
 $ alternatives --install /usr/bin/python python /usr/bin/python3.6 1
 
-# Python 3.8 등록
+# Register Python 3.8
 $ alternatives --install /usr/bin/python python /usr/bin/python3.8 2
 
-# Python 버전 전환
+# Switch Python version
 $ alternatives --config python
 ```
 
-### Jenkins CI/CD에서의 활용
+### Jenkins CI/CD Usage
 
 ```groovy
 pipeline {
@@ -296,47 +296,47 @@ pipeline {
 }
 ```
 
-## 트러블슈팅
+## Troubleshooting
 
-### 자주 발생하는 문제
+### Common Problems
 
-**1. 권한 부족**
+**1. Insufficient Permissions**
 
 ```bash
 failed to create /var/lib/alternatives/java.new: Permission denied
 ```
 
-해결:
+Solution:
 ```bash
 $ sudo alternatives --install ...
 ```
 
-**2. 링크 그룹이 존재하지 않음**
+**2. Link Group Does Not Exist**
 
 ```bash
 failed to read link /usr/bin/java: No such file or directory
 ```
 
-해결:
+Solution:
 ```bash
-# 먼저 install을 수행해야 함
+# Must perform install first
 $ alternatives --install /usr/bin/java java /path/to/java 1
 ```
 
-**3. 우선순위 이해하기**
+**3. Understanding Priority**
 
 ```bash
-# 높은 우선순위가 자동 선택됨
+# Higher priority is automatically selected
 $ alternatives --install /usr/bin/java java /path/to/java8 800
 $ alternatives --install /usr/bin/java java /path/to/java11 1100
 
-# 자동 모드에서는 java11이 선택됨
+# java11 is selected in auto mode
 $ alternatives --auto java
 ```
 
-## Debian/Ubuntu에서의 차이점
+## Differences in Debian/Ubuntu
 
-Debian 계열에서는 `update-alternatives` 명령어를 사용한다:
+Debian-based systems use the `update-alternatives` command:
 
 ```bash
 # Debian/Ubuntu
@@ -345,26 +345,26 @@ $ sudo update-alternatives --config java
 $ sudo update-alternatives --display java
 $ sudo update-alternatives --list
 
-# 옵션은 동일함
+# Options are the same
 # --install, --remove, --config, --auto, --display, --list
 ```
 
-## 모범 사례
+## Best Practices
 
-### 1. 우선순위 전략
+### 1. Priority Strategy
 
 ```bash
-# 버전 번호를 우선순위로 사용
+# Use version number as priority
 # Java 8.0.121 → 80121
 # Java 11.0.2 → 110002
 # Maven 3.3.9 → 30309
 # Maven 3.6.3 → 30603
 ```
 
-### 2. 슬레이브 옵션 적극 활용
+### 2. Actively Use Slave Option
 
 ```bash
-# 관련 명령어를 함께 관리
+# Manage related commands together
 $ alternatives --install /usr/bin/java java /path/to/java 1 \
   --slave /usr/bin/javac javac /path/to/javac \
   --slave /usr/bin/javadoc javadoc /path/to/javadoc \
@@ -372,7 +372,7 @@ $ alternatives --install /usr/bin/java java /path/to/java 1 \
   --slave /usr/bin/jps jps /path/to/jps
 ```
 
-### 3. 스크립트로 자동화
+### 3. Automate with Script
 
 ```bash
 #!/bin/bash
@@ -390,7 +390,7 @@ echo "Java installed. Current version:"
 java -version
 ```
 
-## 참고 링크
+## References
 
 - [Linux alternatives Manual](https://linux.die.net/man/8/alternatives)
 - [Debian update-alternatives](https://manpages.debian.org/stable/dpkg/update-alternatives.1.en.html)

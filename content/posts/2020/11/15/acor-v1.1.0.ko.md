@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.1.0 릴리즈: Go modules와 GitHub Actions로의 전환"
 date: 2020-11-15T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick, go-modules, github-actions]
+tags: [go, redis, acor, release-notes]
 ---
 
 ## 들어가며

@@ -1,7 +1,7 @@
 ---
 title: "Deep Dive into ACOR v1.3.0 Index APIs"
 date: 2026-03-16T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, deep-dive]
 ---
 
 ## Introduction

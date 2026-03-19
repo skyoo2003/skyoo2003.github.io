@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.2.0 Release: Standard Project Structure and Bug Fixes"
 date: 2021-07-08T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, release-notes]
 ---
 
 ## Introduction

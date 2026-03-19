@@ -1,88 +1,88 @@
 ---
-title: Ansible Callback Plugin 소개
+title: Introduction to Ansible Callback Plugin
 date: 2017-11-14T21:44:56+09:00
 tags: [ansible, tutorial]
 ---
 
-Ansible Plugin 중에서 **Callback Plugin** 에 관련한 부분만 정리합니다. Callback Plugin 은 Ansible 에서 특정 이벤트 발생 시 데이터를 로깅한다거나 Slack, Mail 등의 외부 채널로 Write 하는 등의 다양한 목적을 달성하기 위해 사용하는 모듈입니다. 참고로 이 내용은 **Ansible 2.2.1.0** 기준으로 작성되었습니다.
+This article focuses only on **Callback Plugin** among Ansible Plugins. Callback Plugin is a module used for various purposes such as logging data when specific events occur in Ansible, or writing to external channels like Slack, Mail, etc. This content is based on **Ansible 2.2.1.0**.
 
-## Callback Plugin이란?
+## What is Callback Plugin?
 
-### 소개
+### Introduction
 
-**Ansible Callback Plugin** 은 Ansible 의 각종 이벤트를 Hooking 해서 해당 시점에 원하는 로직을 수행할 수 있는 플러그인을 말합니다. 이 콜백 플러그인은 Ansible Task, Playbook 등에 대해 "실행 직전", "실행 종료" 등의 이벤트에 대한 콜백 함수를 정의할 수 있도록 지원합니다.
+**Ansible Callback Plugin** refers to plugins that can hook into various Ansible events and execute desired logic at those points. These callback plugins support defining callback functions for events like "before execution" and "after execution" for Ansible Tasks, Playbooks, etc.
 
-### 활용 사례
+### Use Cases
 
-Callback Plugin은 다양한 용도로 활용할 수 있습니다:
+Callback Plugin can be used for various purposes:
 
-- **성능 모니터링**: 태스크 실행 시간 측정
-- **알림**: Slack, 이메일, SMS 등으로 실행 결과 전송
-- **로깅**: 상세한 실행 로그를 파일이나 DB에 저장
-- **메트릭 수집**: Prometheus, Datadog 등으로 메트릭 전송
-- **감사**: 실행 기록 보존 및 추적
+- **Performance Monitoring**: Measure task execution time
+- **Notifications**: Send execution results via Slack, email, SMS, etc.
+- **Logging**: Store detailed execution logs in files or DB
+- **Metrics Collection**: Send metrics to Prometheus, Datadog, etc.
+- **Auditing**: Preserve and track execution records
 
-### 동작 방식
+### How It Works
 
-기본적으로 Callback Plugin 들은 **callback_whitelist** 라는 Ansible 환경 변수에 등록된 플러그인에 대해서만 콜백 함수가 동작하도록 되어 있습니다. 단, 콜백 모듈을 CALLBACK\_NEEDS\_WHITELIST = False 로 설정한 경우에는 무관합니다.
+By default, Callback Plugins only execute callback functions for plugins registered in the **callback_whitelist** Ansible environment variable. However, if the callback module has CALLBACK\_NEEDS\_WHITELIST = False, this doesn't apply.
 
-그리고, Callback Plugin 의 실행 순서는 Alphanumeric 순으로 실행됩니다. (e.g. 1.py → 2.py → a.py) 설정에 등록된 콜백 리스트 순서와는 무관합니다.
+Also, Callback Plugins execute in alphanumeric order (e.g., 1.py → 2.py → a.py), regardless of the order registered in the callback list configuration.
 
-## 환경 설정
+## Environment Configuration
 
-Callback Plugin 을 사용하기 위한 각종 Ansible 환경 설정을 정리합니다. 이 환경변수들은 ansible.cfg 파일에 정의해서 사용해도 되며, 커맨드라인을 통해 전달하는 방식도 가능합니다.
+Here are various Ansible environment settings for using Callback Plugin. These environment variables can be defined in ansible.cfg or passed via command line.
 
-### 주요 설정 변수
+### Key Configuration Variables
 
-* **callback_plugins** : 콜백 플러그인이 있는 디렉토리 위치를 지정합니다.
+* **callback_plugins**: Specify the directory location of callback plugins.
 
 > (ex) callback_plugins = ~/.ansible/plugins/callback:/usr/share/ansible/plugins/callback
 
-* **stdout_callback** : stdout 에 대한 기본 콜백을 변경합니다. CALLBACK_TYPE = stdout 인 콜백 플러그인 모듈만 지정이 가능합니다.
+* **stdout_callback**: Change the default callback for stdout. Only callback plugin modules with CALLBACK_TYPE = stdout can be specified.
 
 > (ex) stdout_callback = skippy
 
-* **callback_whitelist** : 콜백을 동작시킬 플러그인 이름을 지정합니다. CALLBACK_NEEDS_WHITELIST = False 인 콜백 플러그인 모듈은 무관합니다.
+* **callback_whitelist**: Specify plugin names to activate callbacks. Callback plugin modules with CALLBACK_NEEDS_WHITELIST = False are unaffected.
 
 > (ex) callback_whitelist = timer,mail
 
-### ansible.cfg 예시
+### ansible.cfg Example
 
 ```ini
 [defaults]
-# 콜백 플러그인 디렉토리
+# Callback plugin directory
 callback_plugins = ./callback_plugins:~/.ansible/plugins/callback
 
-# 기본 stdout 콜백
+# Default stdout callback
 stdout_callback = yaml
 
-# 활성화할 콜백 플러그인 목록
+# List of callback plugins to activate
 callback_whitelist = profile_tasks,slack,mail
 ```
 
-### 커맨드라인 옵션
+### Command Line Options
 
 ```bash
-# 콜백 플러그인 활성화
+# Activate callback plugins
 $ ansible-playbook site.yml -e "ansible_callback_whitelist=profile_tasks,timer"
 
-# 환경변수로 설정
+# Set via environment variable
 $ ANSIBLE_CALLBACK_WHITELIST=profile_tasks ansible-playbook site.yml
 ```
 
-## 이벤트 후킹 (Event Hooking)
+## Event Hooking
 
-Ansible 프로젝트의 "lib/ansible/plugins/callback/\_\_init\_\_.py" 의 소스에 존재하는 CallbackBase 클래스의 Public Method가 이벤트 후킹 가능한 콜백 함수를 의미합니다. 
+The Public Methods of the CallbackBase class in the source code at "lib/ansible/plugins/callback/\_\_init\_\_.py" in the Ansible project represent callback functions that can hook into events.
 
-Callback Plugin 을 구현하는 경우, CallbackBase 클래스를 상속해서 사용할 이벤트를 Override 하시면 됩니다. 만약, Ansible 2.0 버전 이상에 해당하는 이벤트에만 콜백 함수가 동작하기를 원하하는 경우에는 함수에 "v2_" 접두어를 붙인 메소드를 Override 하시면 됩니다.
+When implementing a Callback Plugin, inherit from the CallbackBase class and Override the events you want to use. If you want callback functions to only work for events in Ansible 2.0 or later, Override methods with the "v2_" prefix.
 
-### 이벤트 종류
+### Event Types
 
 ```python
-# 아래는 오버라이딩 가능한 메소드 리스트 입니다.
-# Ansible 2.0 이상의 콜백 플러그인을 구현하시는 경우에는 v2_ 접두사를 추가로 붙여주시면 됩니다.
+# Below is a list of overridable methods.
+# When implementing callback plugins for Ansible 2.0+, add v2_ prefix.
 
-# Play 수준 이벤트
+# Play level events
 def set_play_context(self, play_context):
     pass
 def playbook_on_start(self):
@@ -108,7 +108,7 @@ def playbook_on_play_start(self, name):
 def playbook_on_stats(self, stats):
     pass
 
-# Task 수준 이벤트
+# Task level events
 def on_any(self, *args, **kwargs):
     pass
 def runner_on_failed(self, host, res, ignore_errors=False):
@@ -128,16 +128,16 @@ def runner_on_async_ok(self, host, res, jid):
 def runner_on_async_failed(self, host, res, jid):
     pass
 
-# 파일 변경 이벤트
+# File change events
 def on_file_diff(self, host, diff):
     pass
 ```
 
-## 구현 예제
+## Implementation Example
 
-아래의 Ansible Plugin 은 [[jlafon/ansible-profile]](https://github.com/jlafon/ansible-profile) 프로젝트를 차용하였다는 점을 먼저 알려드립니다.
+The Ansible Plugin below is borrowed from the [[jlafon/ansible-profile]](https://github.com/jlafon/ansible-profile) project.
 
-이 플러그인에 대해서 간략하게 설명하자면, playbook의 task의 수행 시간을 메모리에 적재한 뒤에 playbook이 종료되기 전 태스크의 수행 시간을 Display 해주는 간단한 플러그인 입니다.
+Briefly, this plugin loads task execution times of a playbook into memory, then displays task execution times before the playbook finishes. Refer to the code content for understanding, and see comments for plugin explanations.
 
 ```python
 import datetime
@@ -149,17 +149,19 @@ class CallbackModule(CallbackBase):
     """
     A plugin for timing tasks
     """
-    # 콜백 플러그인에 필수로 정의되어야 하는 클래스 속성
-    CALLBACK_VERSION = 2.0 # 콜백 플러그인 버전
-    CALLBACK_TYPE = 'notification' # 'stdout', 'notification', 'aggregate' 중 하나
-    CALLBACK_NAME = 'profile_tasks' # 콜백 모듈 이름. Whitelist 등록 시 사용
+    # Class attributes required for callback plugin
+    CALLBACK_VERSION = 2.0 # Specify callback plugin version
+    CALLBACK_TYPE = 'notification' # Use one of 'stdout', 'notification', 'aggregate'
+    CALLBACK_NAME = 'profile_tasks' # Define callback module name. Used when registering in Whitelist
     CALLBACK_NEEDS_WHITELIST = True
     
+    # Plugin initialization
     def __init__(self):
         super(CallbackModule, self).__init__()
         self.stats = {}
         self.current = None
     
+    # Logic executed when each Task in Playbook starts
     def playbook_on_task_start(self, name, is_conditional):
         """
         Logs the start of each task
@@ -173,6 +175,7 @@ class CallbackModule(CallbackBase):
         self.current = name
         self.stats[self.current] = time.time()
     
+    # Logic executed when Playbook completes
     def playbook_on_stats(self, stats):
         """
         Prints the timings
@@ -207,7 +210,7 @@ class CallbackModule(CallbackBase):
           )
 ```
 
-### 실행 예시
+### Execution Example
 
 ```bash
 ansible-playbook site.yml
@@ -224,9 +227,9 @@ duo_security | Install Duo Unix SSH Integration----------------------------3.37s
 loggly | Install TLS version-----------------------------------------------3.36s
 ```
 
-## 고급 활용 예제
+## Advanced Examples
 
-### Slack 알림 플러그인
+### Slack Notification Plugin
 
 ```python
 import json
@@ -262,7 +265,7 @@ class CallbackModule(CallbackBase):
         requests.post(self.webhook_url, json=message)
 ```
 
-### 로그 파일 기록 플러그인
+### Log File Plugin
 
 ```python
 import os
@@ -297,7 +300,7 @@ class CallbackModule(CallbackBase):
             f.write(f"{datetime.now().isoformat()} - {message}\n")
 ```
 
-### 메트릭 수집 플러그인
+### Metrics Collection Plugin
 
 ```python
 import os
@@ -335,9 +338,9 @@ class CallbackModule(CallbackBase):
         requests.post(self.metrics_url, json=payload)
 ```
 
-## 표준 Callback Plugin 목록
+## Standard Callback Plugin List
 
-Ansible은 다양한 표준 Callback Plugin을 제공합니다:
+Ansible provides various standard Callback Plugins:
 
 | Plugin | Type | Description |
 |--------|------|-------------|
@@ -354,7 +357,6 @@ Ansible은 다양한 표준 Callback Plugin을 제공합니다:
 | full_skip | stdout | Show skipped tasks |
 | hipchat | notification | Send events to HipChat |
 | jabber | notification | Send events to Jabber |
-| json | stdout | JSON output |
 | junit | aggregate | Write JUnit XML |
 | log_plays | aggregate | Log playbook results |
 | logdna | notification | Send events to LogDNA |
@@ -380,25 +382,25 @@ Ansible은 다양한 표준 Callback Plugin을 제공합니다:
 | unixy | stdout | Unix-style output |
 | yaml | stdout | YAML output |
 
-## 모범 사례
+## Best Practices
 
-### 1. CALLBACK_TYPE 올바르게 설정
+### 1. Set CALLBACK_TYPE Correctly
 
 ```python
-# stdout: 출력 형식 변경 (ansible.cfg의 stdout_callback로 설정)
+# stdout: Change output format (set via ansible.cfg's stdout_callback)
 CALLBACK_TYPE = 'stdout'
 
-# notification: 외부 알림 전송 (whitelist 필요)
+# notification: Send external notifications (whitelist required)
 CALLBACK_TYPE = 'notification'
 
-# aggregate: 데이터 수집 및 분석 (whitelist 불필요 가능)
+# aggregate: Data collection and analysis (whitelist may not be required)
 CALLBACK_TYPE = 'aggregate'
 ```
 
-### 2. 환경변수 활용
+### 2. Use Environment Variables
 
 ```python
-# 설정을 환경변수로 주입받기
+# Inject configuration via environment variables
 def __init__(self):
     super(CallbackModule, self).__init__()
     self.webhook_url = os.getenv('SLACK_WEBHOOK_URL')
@@ -407,10 +409,10 @@ def __init__(self):
 def playbook_on_stats(self, stats):
     if not self.enabled:
         return
-    # ... 로직 실행
+    # ... execute logic
 ```
 
-### 3. 에러 처리
+### 3. Error Handling
 
 ```python
 def send_notification(self, message):
@@ -418,27 +420,27 @@ def send_notification(self, message):
         response = requests.post(self.webhook_url, json=message)
         response.raise_for_status()
     except requests.RequestException as e:
-        # 알림 전송 실패가 playbook 실행에 영향을 주지 않도록 로깅만 함
+        # Only log notification failures to not affect playbook execution
         self._display.warning(f"Failed to send notification: {e}")
 ```
 
-### 4. v2 API 사용
+### 4. Use v2 API
 
 ```python
-# Ansible 2.0+ 이벤트 사용
+# Use Ansible 2.0+ events
 def v2_runner_on_ok(self, result):
     """Called when a task succeeds"""
     host = result._host.name
     task = result._task.name
     
-    # 결과 데이터 접근
+    # Access result data
     if 'stdout' in result._result:
         print(f"{host} | {task} | {result._result['stdout']}")
 ```
 
-## 참고 링크
+## References
 
 - [Ansible Callback Plugin](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#callback-plugins)
-- [Custom Callback Plugin 예제](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#developing-callback-plugins)
-- [표준 Callback Plugin 리스트](https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/callback)
+- [Custom Callback Plugin Example](http://docs.ansible.com/ansible/dev_guide/developing_plugins.html#developing-callback-plugins)
+- [Standard Callback Plugin List](https://github.com/ansible/ansible/blob/devel/lib/ansible/plugins/callback)
 - [Ansible Callback Plugins Documentation](https://docs.ansible.com/ansible/latest/collections/index_callback.html)

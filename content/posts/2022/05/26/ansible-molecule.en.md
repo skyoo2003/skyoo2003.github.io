@@ -1,51 +1,51 @@
 ---
-title: "Ansible Molecule으로 테스트 작성하기"
+title: "Testing Ansible Roles with Molecule"
 date: 2022-05-26T21:48:32+09:00
 tags: [ansible, testing, tutorial, devops]
 ---
 
-# Molecule 소개
+# Introduction to Molecule
 
-[Molecule](https://molecule.readthedocs.io/en/latest/)는 ansible-community에서 관리하는 Ansible Role용 테스트 프레임워크입니다. Molecule을 사용하면 Ansible Role을 체계적으로 테스트할 수 있으며, 여러 인스턴스, 운영 체제, 가상화 공급자, 테스트 프레임워크 및 테스트 시나리오를 활용한 종합적인 테스트가 가능합니다.
+[Molecule](https://molecule.readthedocs.io/en/latest/) is a testing framework for Ansible Roles maintained by the ansible-community. With Molecule, you can systematically test Ansible Roles, enabling comprehensive testing using multiple instances, operating systems, virtualization providers, test frameworks, and test scenarios.
 
-## 왜 Molecule이 필요한가?
+## Why Do You Need Molecule?
 
-Ansible Role을 개발할 때 다음과 같은 문제에 직면합니다:
+When developing Ansible Roles, you face the following challenges:
 
-- **수동 테스트의 한계**: 매번 수동으로 Role을 실행하고 결과를 확인하는 것은 시간이 많이 소요됩니다.
-- **다양한 환경 지원**: Ubuntu, CentOS, Debian 등 다양한 OS에서 Role이 정상 동작하는지 확인해야 합니다.
-- **지속적 통합**: CI/CD 파이프라인에서 자동으로 테스트를 수행해야 합니다.
-- **코드 품질**: Ansible 코드의 품질을 일관되게 유지해야 합니다.
+- **Limitations of Manual Testing**: Manually running and verifying Roles each time is time-consuming.
+- **Multi-Environment Support**: You need to ensure Roles work correctly on various operating systems like Ubuntu, CentOS, and Debian.
+- **Continuous Integration**: Tests need to run automatically in CI/CD pipelines.
+- **Code Quality**: Ansible code quality must be maintained consistently.
 
-Molecule은 이러한 문제를 해결하기 위해 다음 기능을 제공합니다:
+Molecule provides the following features to address these challenges:
 
-- 다양한 드라이버 지원 (Docker, Podman, Vagrant, EC2 등)
-- 자동화된 테스트 수명주기 관리
-- 여러 테스트 프레임워크 통합 (Ansible, Testinfra, Goss)
-- Lint 도구 통합 (yamllint, ansible-lint)
+- Support for various drivers (Docker, Podman, Vagrant, EC2, etc.)
+- Automated test lifecycle management
+- Integration with multiple test frameworks (Ansible, Testinfra, Goss)
+- Lint tool integration (yamllint, ansible-lint)
 
-## 설치하기
+## Installation
 
-### 시스템 요구사항
+### System Requirements
 
-- Python 3.8 이상
-- Docker, Podman 또는 Vagrant (테스트 환경용)
-- Ansible 2.10 이상
+- Python 3.8 or higher
+- Docker, Podman, or Vagrant (for test environments)
+- Ansible 2.10 or higher
 
-### 설치 방법
+### Installation Methods
 
-Pip 설치 시 시스템 Python의 의존성을 꼬이게 할 수 있으므로 가급적 Virtualenv로 가상 환경을 만들거나 Pipenv, Poetry 등의 의존성 관리 도구를 사용하는 것을 권장합니다.
+When installing with Pip, it's recommended to create a virtual environment with Virtualenv or use dependency management tools like Pipenv or Poetry to avoid corrupting system Python dependencies.
 
 ```sh
-# 가상 환경 생성 (권장)
+# Create virtual environment (recommended)
 $ python -m venv .venv
 $ source .venv/bin/activate
 
-# docker 및 yamllint, ansible-lint 패키지 추가로 설치
-# podman, vagrant, azure, hetzner 도 지원
+# Install with docker, yamllint, and ansible-lint packages
+# podman, vagrant, azure, hetzner are also supported
 $ pip install molecule[docker,lint]
 
-# 설치 확인
+# Verify installation
 $ molecule --version
 molecule 24.9.0 using python 3.11
     ansible:2.17.0
@@ -53,63 +53,63 @@ molecule 24.9.0 using python 3.11
     docker:24.9.0 from molecule_docker
 ```
 
-### 추가 드라이버 설치
+### Installing Additional Drivers
 
 ```sh
-# Podman 드라이버
+# Podman driver
 $ pip install molecule[podman]
 
-# Vagrant 드라이버
+# Vagrant driver
 $ pip install molecule[vagrant]
 
-# EC2 드라이버
+# EC2 driver
 $ pip install molecule[ec2]
 ```
 
-## Molecule의 핵심 개념
+## Core Concepts of Molecule
 
-### 시나리오 (Scenario)
+### Scenario
 
-시나리오는 테스트 수명주기를 정의합니다. 기본 시나리오는 `default`이며, 필요에 따라 여러 시나리오를 생성할 수 있습니다. 예를 들어:
+A scenario defines the test lifecycle. The default scenario is named `default`, and you can create multiple scenarios as needed. For example:
 
-- `default`: 기본 Docker 기반 테스트
-- `centos`: CentOS 특화 테스트
-- `ubuntu`: Ubuntu 특화 테스트
+- `default`: Basic Docker-based testing
+- `centos`: CentOS-specific testing
+- `ubuntu`: Ubuntu-specific testing
 
-### 드라이버 (Driver)
+### Driver
 
-드라이버는 테스트 인스턴스를 생성하는 방법을 정의합니다:
+A driver defines how test instances are created:
 
-| 드라이버 | 용도 | 장점 | 단점 |
-|---------|------|------|------|
-| Docker | 컨테이너 기반 테스트 | 빠르고 가벼움 | systemd 지원 제한적 |
-| Podman | 컨테이너 기반 테스트 | rootless 실행 | Docker와 호환성 고려 필요 |
-| Vagrant | VM 기반 테스트 | 완전한 OS 환경 | 상대적으로 느림 |
-| EC2 | 클라우드 VM 테스트 | 실제 프로덕션 환경 | 비용 발생 |
+| Driver | Use Case | Advantages | Disadvantages |
+|--------|----------|------------|---------------|
+| Docker | Container-based testing | Fast and lightweight | Limited systemd support |
+| Podman | Container-based testing | Rootless execution | Docker compatibility considerations |
+| Vagrant | VM-based testing | Complete OS environment | Relatively slow |
+| EC2 | Cloud VM testing | Real production environment | Cost incurred |
 
-### 프로비저너 (Provisioner)
+### Provisioner
 
-Role을 적용하는 방법을 정의합니다. 기본적으로 Ansible을 사용합니다.
+Defines how Roles are applied. Ansible is used by default.
 
-### 베리파이어 (Verifier)
+### Verifier
 
-테스트 결과를 검증하는 방법을 정의합니다:
+Defines how test results are validated:
 
-- **Ansible**: Ansible playbook으로 검증
-- **Testinfra**: Python 기반 테스트 프레임워크
-- **Goss**: YAML 기반 경량 테스트 도구
+- **Ansible**: Validate with Ansible playbooks
+- **Testinfra**: Python-based testing framework
+- **Goss**: YAML-based lightweight testing tool
 
-## 테스트 작성하기
+## Writing Tests
 
-### 1. 새 Role 생성
+### 1. Creating a New Role
 
-기존 Role이 없다면 Molecule로 새 Role을 초기화할 수 있습니다:
+If you don't have an existing Role, you can initialize a new one with Molecule:
 
 ```sh
 $ molecule init role myrole
 ```
 
-이 명령은 다음 구조를 생성합니다:
+This command creates the following structure:
 
 ```
 myrole/
@@ -135,9 +135,9 @@ myrole/
     └── main.yml
 ```
 
-### 2. 기존 Role에 Molecule 추가
+### 2. Adding Molecule to an Existing Role
 
-기존 Role에 Molecule을 추가하려면:
+To add Molecule to an existing Role:
 
 ```sh
 $ cd /path/to/role
@@ -146,9 +146,9 @@ $ molecule init scenario
 Initialized scenario in /path/to/role/molecule/default successfully.
 ```
 
-### 3. molecule.yml 구성
+### 3. Configuring molecule.yml
 
-`/path/to/role/molecule/default/molecule.yml` 파일을 생성하고 다음 내용을 입력합니다:
+Create the `/path/to/role/molecule/default/molecule.yml` file with the following content:
 
 ```yaml
 ---
@@ -186,17 +186,17 @@ lint: |
   ansible-lint -c ../../.ansible-lint
 ```
 
-**주요 설정 설명:**
+**Key Configuration Explanations:**
 
-- `dependency.galaxy`: Ansible Galaxy 의존성을 관리합니다.
-- `driver.name`: Docker를 사용하여 테스트 인스턴스를 생성합니다.
-- `platforms`: 테스트할 플랫폼 목록입니다. 여러 OS를 동시에 테스트할 수 있습니다.
-- `privileged: true`: systemd와 같은 기능을 사용하기 위해 필요합니다.
-- `provisioner.config_options`: Ansible 설정을 커스터마이즈합니다.
+- `dependency.galaxy`: Manages Ansible Galaxy dependencies.
+- `driver.name`: Uses Docker to create test instances.
+- `platforms`: List of platforms to test. Multiple OS can be tested simultaneously.
+- `privileged: true`: Required for features like systemd.
+- `provisioner.config_options`: Customizes Ansible settings.
 
-### 4. converge.yml 작성
+### 4. Writing converge.yml
 
-`/path/to/role/molecule/default/converge.yml`을 생성하고 환경 구성 코드를 추가합니다. Docker 컨테이너를 만든 후 Role을 수행하여 환경을 구성합니다:
+Create `/path/to/role/molecule/default/converge.yml` and add environment configuration code. After creating Docker containers, execute the Role to configure the environment:
 
 ```yaml
 ---
@@ -227,15 +227,15 @@ lint: |
         myrole_param: "{{ myrole_custom_var }}"
 ```
 
-**작성 팁:**
+**Writing Tips:**
 
-- `pre_tasks`를 사용하여 Role 실행 전 필요한 설정을 수행합니다.
-- `vars`를 사용하여 테스트용 변수를 정의합니다.
-- `become: true`로 권한 상승을 활성화합니다.
+- Use `pre_tasks` to perform necessary setup before Role execution.
+- Define test variables using `vars`.
+- Enable privilege escalation with `become: true`.
 
-### 5. verify.yml 작성
+### 5. Writing verify.yml
 
-`/path/to/role/molecule/default/verify.yml`을 생성하고 검증 코드를 추가합니다. 이 단계에서 실질적인 테스트를 수행합니다:
+Create `/path/to/role/molecule/default/verify.yml` and add verification code. This is where actual testing is performed:
 
 ```yaml
 ---
@@ -304,9 +304,9 @@ lint: |
         success_msg: "nginx.conf exists"
 ```
 
-### 6. 고급 검증 with Testinfra
+### 6. Advanced Verification with Testinfra
 
-Ansible 대신 Testinfra를 사용하면 더 강력한 테스트를 작성할 수 있습니다:
+Using Testinfra instead of Ansible allows you to write more powerful tests:
 
 ```yaml
 # molecule.yml
@@ -319,24 +319,24 @@ verifier:
 import pytest
 
 def test_nginx_is_installed(host):
-    """nginx가 설치되어 있는지 확인"""
+    """Check if nginx is installed"""
     nginx = host.package("nginx")
     assert nginx.is_installed
     assert nginx.version.startswith("1.")
 
 def test_nginx_running_and_enabled(host):
-    """nginx 서비스가 실행 중이고 활성화되어 있는지 확인"""
+    """Check if nginx service is running and enabled"""
     nginx = host.service("nginx")
     assert nginx.is_running
     assert nginx.is_enabled
 
 def test_nginx_listening_on_port_80(host):
-    """80 포트에서 수신 중인지 확인"""
+    """Check if listening on port 80"""
     socket = host.socket("tcp://0.0.0.0:80")
     assert socket.is_listening
 
 def test_nginx_config_exists(host):
-    """nginx 설정 파일이 존재하는지 확인"""
+    """Check if nginx config file exists"""
     config = host.file("/etc/nginx/nginx.conf")
     assert config.exists
     assert config.is_file
@@ -345,80 +345,80 @@ def test_nginx_config_exists(host):
     assert oct(config.mode) == "0o644"
 
 def test_nginx_response(host):
-    """HTTP 응답 확인"""
+    """Check HTTP response"""
     response = host.run("curl -s http://localhost")
     assert response.rc == 0
     assert "Welcome" in response.stdout
 ```
 
-## Molecule 명령어
+## Molecule Commands
 
-### 기본 명령어
+### Basic Commands
 
 ```sh
 $ cd /path/to/role
 
-# 테스트 인스턴스 생성
+# Create test instances
 $ molecule create
 
-# converge.yml 실행 (Role 적용)
+# Run converge.yml (apply Role)
 $ molecule converge
 
-# 인스턴스에 대한 변경 사항 확인
+# Check changes to instances
 $ molecule side-effect
 
-# verify.yml 실행 (테스트 검증)
+# Run verify.yml (test verification)
 $ molecule verify
 
-# 테스트 인스턴스 제거
+# Remove test instances
 $ molecule destroy
 
-# 위 모든 과정을 한 번에 수행
+# Run all the above steps at once
 $ molecule test
 ```
 
-### 유용한 명령어
+### Useful Commands
 
 ```sh
-# 특정 시나리오로 테스트
+# Test with specific scenario
 $ molecule test -s centos
 
-# 대화형 모드로 디버깅
+# Debug in interactive mode
 $ molecule create
 $ molecule login
 $ molecule destroy
 
-# lint 검사만 수행
+# Run lint checks only
 $ molecule lint
 
-# 의존성만 설치
+# Install dependencies only
 $ molecule dependency
 
-# 인스턴스 목록 확인
+# View instance list
 $ molecule list
 
-# 인스턴스에 명령 실행
+# Execute command on instance
 $ molecule exec -- ls -la /etc/nginx
 ```
 
-### 테스트 수명주기
+### Test Lifecycle
 
-Molecule의 `test` 명령은 다음 단계를 순차적으로 실행합니다:
+Molecule's `test` command executes the following stages sequentially:
 
-1. **lint**: 코드 품질 검사
-2. **destroy**: 기존 인스턴스 정리
-3. **dependency**: 의존성 설치
-4. **syntax**: playbook 문법 검사
-5. **create**: 테스트 인스턴스 생성
-6. **prepare**: 인스턴스 준비 (prepare.yml)
-7. **converge**: Role 적용 (converge.yml)
-8. **idempotence**: 멱등성 테스트
-9. **side-effect**: 부가 효과 테스트
-10. **verify**: 결과 검증 (verify.yml)
-11. **cleanup**: 정리 (cleanup.yml)
-12. **destroy**: 인스턴스 제거
+1. **lint**: Code quality check
+2. **destroy**: Clean up existing instances
+3. **dependency**: Install dependencies
+4. **syntax**: Check playbook syntax
+5. **create**: Create test instances
+6. **prepare**: Prepare instances (prepare.yml)
+7. **converge**: Apply Role (converge.yml)
+8. **idempotence**: Idempotence test
+9. **side-effect**: Side effect test
+10. **verify**: Verify results (verify.yml)
+11. **cleanup**: Clean up (cleanup.yml)
+12. **destroy**: Remove instances
 
-## CI/CD 통합
+## CI/CD Integration
 
 ### GitHub Actions
 
@@ -479,19 +479,19 @@ molecule:
     - docker
 ```
 
-## 모범 사례
+## Best Practices
 
-### 1. 멱등성 테스트
+### 1. Idempotence Testing
 
-Role이 여러 번 실행되어도 동일한 결과를 보장해야 합니다:
+Roles should guarantee the same result when executed multiple times:
 
 ```sh
-# converge를 두 번 실행하여 변경 사항이 없는지 확인
+# Run converge twice to ensure no changes on second run
 $ molecule converge
 $ molecule converge
 ```
 
-### 2. 다양한 OS 테스트
+### 2. Test Multiple Operating Systems
 
 ```yaml
 platforms:
@@ -503,7 +503,7 @@ platforms:
     image: docker.io/geerlingguy/docker-debian12-ansible:latest
 ```
 
-### 3. 명확한 검증
+### 3. Clear Verification
 
 ```yaml
 - name: Verify with clear messages
@@ -514,9 +514,9 @@ platforms:
     success_msg: "Command succeeded: {{ result.stdout }}"
 ```
 
-### 4. 테스트 격리
+### 4. Test Isolation
 
-각 테스트는 독립적으로 실행 가능해야 합니다:
+Each test should be independently executable:
 
 ```yaml
 - name: Clean up before test
@@ -525,28 +525,28 @@ platforms:
     state: absent
 ```
 
-### 5. 디버깅 활성화
+### 5. Enable Debugging
 
 ```sh
-# 상세 로그로 실행
+# Run with verbose logging
 $ MOLECULE_DEBUG=true molecule test
 
-# 인스턴스를 유지하며 디버깅
+# Debug while keeping instances
 $ molecule test --destroy=never
 ```
 
-## 문제 해결
+## Troubleshooting
 
-### Docker 권한 문제
+### Docker Permission Issues
 
 ```sh
 $ sudo usermod -aG docker $USER
 $ newgrp docker
 ```
 
-### systemd 지원 문제
+### systemd Support Issues
 
-Docker 컨테이너에서 systemd를 사용하려면:
+To use systemd in Docker containers:
 
 ```yaml
 platforms:
@@ -561,7 +561,7 @@ platforms:
       - /tmp
 ```
 
-### 메모리 부족
+### Memory Issues
 
 ```yaml
 platforms:
@@ -574,20 +574,20 @@ platforms:
       - nofile:262144:262144
 ```
 
-## 결론
+## Conclusion
 
-Molecule은 Ansible Role의 품질을 보장하기 위한 필수 도구입니다. 체계적인 테스트를 통해:
+Molecule is an essential tool for ensuring the quality of Ansible Roles. Through systematic testing, it provides:
 
-- **신뢰성**: Role이 의도한 대로 동작하는지 확인
-- **이식성**: 다양한 OS 및 환경에서의 호환성 보장
-- **유지보수성**: CI/CD 통합으로 지속적인 품질 관리
-- **생산성**: 수동 테스트 시간 단축
+- **Reliability**: Verify that Roles work as intended
+- **Portability**: Ensure compatibility across various OS and environments
+- **Maintainability**: Continuous quality management through CI/CD integration
+- **Productivity**: Reduce manual testing time
 
-Molecule을 프로젝트에 도입하여 Ansible Role의 품질을 한 단계 높이세요.
+Adopt Molecule in your projects to take Ansible Role quality to the next level.
 
-## 참고 자료
+## References
 
-- [Molecule 공식 문서](https://molecule.readthedocs.io/en/latest/)
+- [Molecule Official Documentation](https://molecule.readthedocs.io/en/latest/)
 - [Ansible Molecule GitHub](https://github.com/ansible-community/molecule)
-- [Testinfra 문서](https://testinfra.readthedocs.io/)
+- [Testinfra Documentation](https://testinfra.readthedocs.io/)
 - [Ansible Best Practices](https://docs.ansible.com/ansible/latest/user_guide/playbooks_best_practices.html)

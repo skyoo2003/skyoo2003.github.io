@@ -1,20 +1,20 @@
 ---
-title: Ansible Galaxy - Git 저장소를 활용하여 Role 의존성 관리하기
+title: Ansible Galaxy - Managing Role Dependencies Using Git Repositories
 date: 2017-02-16T17:31:36+09:00
 tags: [ansible, tutorial]
 ---
 
-## Git 저장소에 Ansible Role 올리기
+## Uploading Ansible Role to Git Repository
 
-먼저, Ansible Role 을 개발하기 위한 Git repository를 생성한다. 그리고, Ansible Role 초기 프로젝트 구조를 Ansible Galaxy 를 사용하여 생성한다.
+First, create a Git repository for developing an Ansible Role. Then, generate the initial Ansible Role project structure using Ansible Galaxy.
 
-* Git repository 를 로컬 머신에 복제한다.
+* Clone the Git repository to your local machine.
 
 ```bash
 $ git clone "https://github.com/xxxxx/sample-role.git"
 ```
 
-* Ansible Role 초기 디렉토리 및 파일 생성한다.
+* Generate Ansible Role initial directory and files.
 
 ```bash
 $ ansible-galaxy init --force sample-role
@@ -40,15 +40,15 @@ sample-role/
     └── main.yml
 ```
 
-* Ansible Role 개발을 진행 한 뒤에 Git repository 에 Push
+* After developing the Ansible Role, push to Git repository.
 
 ```bash
 $ git commit * -m "Add ansible role" && git push
 ```
 
-## Git 저장소로부터 Ansible Role 가져오기
+## Downloading Ansible Role from Git Repository
 
-* 방법 1) Ansible Galaxy CLI 명령을 통해 다운로드
+### Method 1) Download via Ansible Galaxy CLI
 
 ```bash
 $ ansible-galaxy install git+https://github.com/xxxx/sample-role.git,master -p roles/
@@ -73,7 +73,7 @@ roles/
         └── main.yml
 ```
 
-* 방법 2) 의존성 파일에 명시하고 CLI 명령을 통해 다운로드
+### Method 2) Specify in dependency file and download via CLI
 
 ```bash
 $ vi requirements.yml
@@ -104,20 +104,20 @@ roles/
         └── main.yml
 ```
 
-## 'requirements.yml' 작성하기
+## Writing 'requirements.yml'
 
 * src
-    * username.role_name : Ansible Galaxy 공식 저장소에 등록된 Ansible Role 을 다운로드할 때 사용.
-    * url : Ansible Galaxy 에서 지원하는 SCM으로부터 다운로드할 때 사용.
+    * username.role_name: Used to download Ansible Roles registered in the official Ansible Galaxy repository.
+    * url: Used to download from SCMs supported by Ansible Galaxy.
 * scm
-    * 연동할 SCM 이름을 명시. 디폴트 값은 'git' (ansible-galaxy 2.2.1.0 기준으로 git, hg 만 지원)
+    * Specify the SCM name to integrate. Default is 'git' (as of ansible-galaxy 2.2.1.0, only git and hg are supported)
 * version
-    * tag 명 / commit hash 값 / branch 이름을 명시. 디폴트는 'master'
-    * SCM 으로부터 가져올 때에만 사용.
+    * Specify tag name / commit hash / branch name. Default is 'master'
+    * Only used when downloading from SCM.
 * name
-    * 다운로드한 Ansible Role 의 이름을 명시. 기본적으로는 Ansible Galaxy에 등록된 이름 혹은 Git repository 의 이름을 사용.
+    * Specify the name of the downloaded Ansible Role. By default, uses the name registered in Ansible Galaxy or the Git repository name.
 
-아래 예시를 참고!
+See the examples below:
 
 ```yaml
 # from galaxy
@@ -149,9 +149,9 @@ roles/
   version: "0.1"  # quoted, so YAML doesn't parse this as a floating-point value
 ```
 
-## Private Git 저장소 활용하기
+## Using Private Git Repositories
 
-### SSH 키 기반 인증
+### SSH Key Based Authentication
 
 ```yaml
 # requirements.yml
@@ -162,15 +162,15 @@ roles/
 ```
 
 ```bash
-# SSH 키 설정
+# SSH key setup
 $ eval "$(ssh-agent -s)"
 $ ssh-add ~/.ssh/id_rsa
 
-# Role 설치
+# Install roles
 $ ansible-galaxy install -r requirements.yml
 ```
 
-### Personal Access Token 활용 (HTTPS)
+### Personal Access Token (HTTPS)
 
 ```yaml
 # requirements.yml
@@ -179,21 +179,21 @@ $ ansible-galaxy install -r requirements.yml
   name: private_role
 ```
 
-### 배포 키 설정
+### Deploy Key Setup
 
-GitHub/GitLab의 Deploy Key 기능을 활용하면 읽기 전용 접근을 안전하게 구성할 수 있다.
+You can use GitHub/GitLab's Deploy Key feature to securely configure read-only access.
 
 ```bash
-# 배포 키 생성
+# Generate deploy key
 $ ssh-keygen -t ed25519 -C "deploy@myserver" -f deploy_key
 
-# 공개 키를 Git 저장소에 등록
+# Register public key in Git repository
 # Settings > Deploy keys > Add deploy key
 ```
 
-## CI/CD 파이프라인 통합
+## CI/CD Pipeline Integration
 
-### Jenkins Pipeline 예시
+### Jenkins Pipeline Example
 
 ```groovy
 pipeline {
@@ -227,7 +227,7 @@ pipeline {
 }
 ```
 
-### GitHub Actions 예시
+### GitHub Actions Example
 
 ```yaml
 name: Ansible CI
@@ -260,29 +260,29 @@ jobs:
           molecule test
 ```
 
-## Role 버전 관리 전략
+## Role Version Management Strategy
 
-### 시맨틱 버저닝 (Semantic Versioning)
+### Semantic Versioning
 
 ```
 MAJOR.MINOR.PATCH
 
-MAJOR: 호환되지 않는 API 변경
-MINOR: 하위 호환되는 기능 추가
-PATCH: 하위 호환되는 버그 수정
+MAJOR: Incompatible API changes
+MINOR: Backwards-compatible feature additions
+PATCH: Backwards-compatible bug fixes
 ```
 
 ```yaml
-# requirements.yml에서 버전 범위 지정 (지원하지 않음)
-# 대신 정확한 버전 명시 권장
+# Version ranges not supported in requirements.yml
+# Instead, specify exact version
 - src: git+https://github.com/xxxx/sample-role.git
-  version: v1.2.3  # 정확한 버전
+  version: v1.2.3  # Exact version
 ```
 
-### 브랜치 전략
+### Branch Strategy
 
 ```
-main (또는 master)
+main (or master)
 ├── develop
 │   ├── feature/new-feature
 │   └── bugfix/issue-123
@@ -290,22 +290,22 @@ main (또는 master)
 └── hotfix/v1.1.1
 ```
 
-### 운영 환경에서의 버전 고정
+### Version Pinning in Production
 
 ```yaml
-# 운영 환경 requirements.yml
+# Production requirements.yml
 - src: git+https://github.com/xxxx/nginx-role.git
-  version: v2.1.0  # 태그로 고정
+  version: v2.1.0  # Pinned with tag
 
 - src: git+https://github.com/xxxx/mysql-role.git
-  version: abc123def456  # 커밋 해시로 고정 (더 안전)
+  version: abc123def456  # Pinned with commit hash (safer)
 ```
 
-## Role 의존성 관리 심화
+## Advanced Role Dependency Management
 
-### 중첩 의존성
+### Nested Dependencies
 
-Role 내에서 다른 Role에 대한 의존성을 정의할 수 있다.
+You can define dependencies on other Roles within a Role.
 
 ```yaml
 # roles/web-server/meta/main.yml
@@ -317,10 +317,10 @@ dependencies:
     when: web_server_type == 'nginx'
 ```
 
-### 조건부 의존성
+### Conditional Dependencies
 
 ```yaml
-# 특정 조건에서만 의존성 설치
+# Install dependencies only under certain conditions
 dependencies:
   - role: nginx
     when: web_server == 'nginx'
@@ -328,36 +328,36 @@ dependencies:
     when: web_server == 'apache'
 ```
 
-## 트러블슈팅
+## Troubleshooting
 
-### 자주 발생하는 문제
+### Common Problems
 
-**1. Role을 찾을 수 없음**
+**1. Role Not Found**
 
 ```bash
 ERROR! the role 'sample-role' was not found
 ```
 
-해결:
+Solution:
 ```bash
-# Role 경로 확인
+# Check role paths
 $ ansible-galaxy list
 # /etc/ansible/roles
 # /home/user/.ansible/roles
 
-# 경로 지정하여 설치
+# Install with specified path
 $ ansible-galaxy install -r requirements.yml -p ./roles
 ```
 
-**2. 버전 충돌**
+**2. Version Conflict**
 
 ```bash
 ERROR! conflicting role requirements
 ```
 
-해결:
+Solution:
 ```yaml
-# 서로 다른 버전이 필요한 경우, 이름을 구분
+# Use different names when different versions are needed
 - src: git+https://github.com/xxxx/nginx-role.git
   version: v1.0.0
   name: nginx_v1
@@ -367,45 +367,45 @@ ERROR! conflicting role requirements
   name: nginx_v2
 ```
 
-**3. Git 인증 실패**
+**3. Git Authentication Failure**
 
 ```bash
 Permission denied (publickey)
 ```
 
-해결:
+Solution:
 ```bash
-# SSH 키 확인
+# Check SSH key
 $ ssh -T git@github.com
 
-# SSH 에이전트에 키 추가
+# Add key to SSH agent
 $ eval "$(ssh-agent -s)"
 $ ssh-add ~/.ssh/id_rsa
 ```
 
-**4. 프록시 환경에서의 설치**
+**4. Installation in Proxy Environment**
 
 ```bash
-# 프록시 설정
+# Proxy settings
 $ export https_proxy=http://proxy.company.com:8080
 $ ansible-galaxy install -r requirements.yml
 ```
 
-## 모범 사례
+## Best Practices
 
-### 1. 명시적 버전 관리
+### 1. Explicit Version Management
 
 ```yaml
-# 좋은 예: 명시적 버전
+# Good: Explicit version
 - src: git+https://github.com/xxxx/role.git
   version: v1.2.3
 
-# 피해야 할 예: 브랜치명 사용 (운영 환경)
+# Avoid: Branch name (in production)
 - src: git+https://github.com/xxxx/role.git
-  version: main  # 브랜치는 변경될 수 있음
+  version: main  # Branch can change
 ```
 
-### 2. 로컬 개발 환경 구성
+### 2. Local Development Environment
 
 ```bash
 # ansible.cfg
@@ -414,24 +414,24 @@ roles_path = ./roles:~/.ansible/roles
 collections_path = ./collections:~/.ansible/collections
 ```
 
-### 3. Role 검증
+### 3. Role Validation
 
 ```bash
-# ansible-lint로 Role 검증
+# Validate with ansible-lint
 $ ansible-lint roles/sample-role/
 
-# molecule로 Role 테스트
+# Test with molecule
 $ molecule test
 ```
 
-### 4. 의존성 최소화
+### 4. Minimize Dependencies
 
 ```yaml
 # meta/main.yml
-dependencies: []  # 불필요한 의존성 피하기
+dependencies: []  # Avoid unnecessary dependencies
 ```
 
-## 참고 링크
+## References
 
 - [Ansible-Galaxy Document](http://docs.ansible.com/ansible/galaxy.html)
 - [Reusing ansible roles with private git repos and dependency management](https://opencredo.com/reusing-ansible-roles-with-private-git-repos-and-dependencies/)

@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.3.0: Redis 토폴로지 지원과 에러 핸들링 강화"
 date: 2026-03-17T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, deep-dive]
 ---
 
 ## 들어가며

@@ -1,7 +1,7 @@
 ---
 title: "KVS: Inside the Architecture of a Go Key-Value Store"
 date: 2026-03-18T00:00:00+09:00
-tags: [go, key-value, data-structures, rbtree, lsm-tree]
+tags: [go, data-structures, kvs, tutorial]
 ---
 
 ## Introduction

@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.1.0 Release: Migration to Go Modules and GitHub Actions"
 date: 2020-11-15T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick, go-modules, github-actions]
+tags: [go, redis, acor, release-notes]
 ---
 
 ## Introduction

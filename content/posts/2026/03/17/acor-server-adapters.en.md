@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.3.0: HTTP and gRPC Server Adapters"
 date: 2026-03-17T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, tutorial]
 ---
 
 ## Introduction

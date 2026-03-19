@@ -1,7 +1,7 @@
 ---
 title: "Introducing ACOR: Redis-backed Aho-Corasick Implementation"
 date: 2017-06-28T16:39:49+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, tutorial]
 ---
 
 ## Introduction

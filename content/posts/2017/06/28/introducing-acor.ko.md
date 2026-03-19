@@ -1,7 +1,7 @@
 ---
 title: "ACOR 소개: Redis 기반 Aho-Corasick 구현"
 date: 2017-06-28T16:39:49+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, tutorial]
 ---
 
 ## 들어가며

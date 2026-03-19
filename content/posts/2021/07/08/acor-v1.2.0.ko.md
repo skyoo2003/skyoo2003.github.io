@@ -1,7 +1,7 @@
 ---
 title: "ACOR v1.2.0 릴리즈: 표준 프로젝트 구조와 버그 수정"
 date: 2021-07-08T00:00:00+09:00
-tags: [go, redis, algorithm, aho-corasick]
+tags: [go, redis, acor, release-notes]
 ---
 
 ## 들어가며

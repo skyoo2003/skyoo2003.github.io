@@ -1,50 +1,50 @@
 ---
-title: "Ansible Molecule with Kind - 도커를 활용한 쿠버네티스 자동화 테스트 작성"
+title: "Ansible Molecule with Kind - Kubernetes Automation Testing with Docker"
 date: 2022-05-26T22:08:24+09:00
 tags: [ansible, kubernetes, testing, tutorial, devops]
 ---
 
-# Ansible Molecule with KIND 소개
+# Introduction to Ansible Molecule with KIND
 
-[Ansible Molecule](https://github.com/ansible-community/molecule)과 [KIND (Kubernetes IN Docker)](https://github.com/kubernetes-sigs/kind)를 조합하여 쿠버네티스 자동화 테스트 환경을 구축하는 방법을 소개합니다.
+Learn how to set up a Kubernetes automation testing environment by combining [Ansible Molecule](https://github.com/ansible-community/molecule) with [KIND (Kubernetes IN Docker)](https://github.com/kubernetes-sigs/kind).
 
-## 개요
+## Overview
 
 ### Ansible Molecule
 
-Ansible Molecule은 Ansible Roles를 가상화 기술을 통해 고립된 환경에서 테스트할 수 있게 도와주는 프레임워크입니다. 다양한 드라이버를 지원하며, Kubernetes 환경에서는 Delegated 드라이버를 사용하여 KIND와 통합할 수 있습니다.
+Ansible Molecule is a framework that helps test Ansible Roles in isolated environments using virtualization technologies. It supports various drivers and can integrate with KIND using the Delegated driver for Kubernetes environments.
 
 ### KIND (Kubernetes IN Docker)
 
-KIND는 Kubernetes 클러스터를 Docker 컨테이너로 동작시켜주는 도구입니다. 로컬 환경에서 빠르고 가볍게 Kubernetes 클러스터를 생성할 수 있어 다음과 같은 용도로 활용됩니다:
+KIND is a tool that runs Kubernetes clusters as Docker containers. It allows you to quickly and easily create Kubernetes clusters locally, making it useful for:
 
-- Helm Chart 테스트
-- Kubernetes 리소스 배포 검증
-- 어플리케이션 동작 확인
-- CI/CD 파이프라인 통합 테스트
+- Helm Chart testing
+- Kubernetes resource deployment verification
+- Application behavior validation
+- CI/CD pipeline integration testing
 
-### 왜 Molecule + KIND인가?
+### Why Molecule + KIND?
 
-| 장점 | 설명 |
-|------|------|
-| **빠른 피드백** | 로컬에서 몇 분 내에 전체 클러스터 테스트 가능 |
-| **비용 절감** | 클라우드 리소스 없이 Kubernetes 테스트 수행 |
-| **재현성** | 항상 동일한 테스트 환경 보장 |
-| **CI/CD 통합** | GitHub Actions, GitLab CI 등과 쉽게 통합 |
-| **멱등성 검증** | Role이 여러 번 실행되어도 안전한지 확인 |
+| Advantage | Description |
+|-----------|-------------|
+| **Fast Feedback** | Complete cluster testing locally in minutes |
+| **Cost Savings** | Perform Kubernetes tests without cloud resources |
+| **Reproducibility** | Always guarantee identical test environments |
+| **CI/CD Integration** | Easily integrate with GitHub Actions, GitLab CI, etc. |
+| **Idempotence Verification** | Ensure Roles are safe to run multiple times |
 
-## 사전 요구사항
+## Prerequisites
 
-### 시스템 요구사항
+### System Requirements
 
-- **운영체제**: Linux, macOS, Windows (WSL2)
-- **메모리**: 최소 8GB RAM (16GB 권장)
-- **CPU**: 최소 4코어
-- **디스크**: 최소 20GB 여유 공간
+- **Operating System**: Linux, macOS, Windows (WSL2)
+- **Memory**: Minimum 8GB RAM (16GB recommended)
+- **CPU**: Minimum 4 cores
+- **Disk**: Minimum 20GB free space
 
-### 필수 설치 항목
+### Required Installations
 
-#### 1. Docker Engine 설치
+#### 1. Docker Engine Installation
 
 ```sh
 # Ubuntu/Debian
@@ -54,12 +54,12 @@ $ sudo usermod -aG docker $USER
 # macOS
 $ brew install --cask docker
 
-# 설치 확인
+# Verify installation
 $ docker --version
 Docker version 24.0.7, build afdd53b
 ```
 
-#### 2. KIND 설치
+#### 2. KIND Installation
 
 ```sh
 # Linux
@@ -70,12 +70,12 @@ $ sudo mv ./kind /usr/local/bin/kind
 # macOS
 $ brew install kind
 
-# 설치 확인
+# Verify installation
 $ kind version
 kind v0.20.0 go1.20.10 linux/amd64
 ```
 
-#### 3. kubectl 설치
+#### 3. kubectl Installation
 
 ```sh
 # Linux
@@ -86,43 +86,43 @@ $ sudo mv kubectl /usr/local/bin/
 # macOS
 $ brew install kubectl
 
-# 설치 확인
+# Verify installation
 $ kubectl version --client
 ```
 
-#### 4. Python 라이브러리 설치
+#### 4. Python Libraries Installation
 
 ```sh
-# 가상 환경 생성 (권장)
+# Create virtual environment (recommended)
 $ python -m venv .venv
 $ source .venv/bin/activate
 
-# Molecule 및 관련 패키지 설치
-# 주의: molecule-docker 0.3.4 버전은 버그가 있어 사용 금지
+# Install Molecule and related packages
+# Note: molecule-docker version 0.3.4 has a bug and should not be used
 $ pip install 'molecule[docker,lint]' 'molecule-docker!=0.3.4' openshift
 
-# 설치 확인
+# Verify installation
 $ molecule --version
 molecule 24.9.0 using python 3.11
 ```
 
-#### 5. Ansible Collections 설치
+#### 5. Ansible Collections Installation
 
 ```sh
-# Kubernetes 관련 collections 설치
+# Install Kubernetes-related collections
 $ ansible-galaxy collection install community.kubernetes community.docker
 
-# 설치된 collections 확인
+# Verify installed collections
 $ ansible-galaxy collection list
 # community.kubernetes:2.0.0
 # community.docker:3.4.0
 ```
 
-## 테스트 시나리오 작성 및 실행
+## Writing and Running Test Scenarios
 
-### Step 0: Ansible Role 생성
+### Step 0: Create Ansible Role
 
-먼저 테스트할 Ansible Role을 생성합니다:
+First, create the Ansible Role to test:
 
 ```sh
 $ ansible-galaxy role init myrole
@@ -148,7 +148,7 @@ myrole
     └── main.yml
 ```
 
-Role의 `meta/main.yml`에 collection 의존성을 추가합니다:
+Add collection dependencies to the Role's `meta/main.yml`:
 
 ```yaml
 # myrole/meta/main.yml
@@ -173,7 +173,7 @@ galaxy_info:
         - jammy
 ```
 
-Role의 `tasks/main.yml`을 작성합니다:
+Write the Role's `tasks/main.yml`:
 
 ```yaml
 # myrole/tasks/main.yml
@@ -235,7 +235,7 @@ Role의 `tasks/main.yml`을 작성합니다:
   register: deployment_result
 ```
 
-### Step 1: Molecule Default 시나리오 초기화
+### Step 1: Initialize Molecule Default Scenario
 
 ```sh
 $ cd myrole
@@ -261,11 +261,11 @@ molecule
     └── verify.yml
 ```
 
-**드라이버 선택 설명:**
+**Driver Selection Explanation:**
 
-- `delegated`: KIND와 같은 외부 도구를 사용할 때 선택합니다. Molecule이 직접 인스턴스를 관리하지 않고 사용자 정의 플레이북에 위임합니다.
+- `delegated`: Choose this when using external tools like KIND. Molecule doesn't directly manage instances but delegates to custom playbooks.
 
-### Step 2: KIND Config 매니페스트 파일 생성
+### Step 2: Create KIND Config Manifest File
 
 ```sh
 $ mkdir -p molecule/default/manifests
@@ -302,17 +302,17 @@ nodes:
     image: kindest/node:v1.27.3@sha256:3966ac761ae0136263ffdb6cfd4db23ef8a83cba8a463690e98317add2c9ba72
 ```
 
-**KIND 설정 설명:**
+**KIND Configuration Explanation:**
 
-| 옵션 | 설명 |
-|------|------|
-| `kubeProxyMode` | kube-proxy 모드 (iptables, ipvs) |
-| `podSubnet` | Pod 네트워크 CIDR |
-| `serviceSubnet` | Service 네트워크 CIDR |
-| `extraPortMappings` | 호스트-컨테이너 포트 매핑 |
-| `kubeadmConfigPatches` | kubeadm 설정 패치 |
+| Option | Description |
+|--------|-------------|
+| `kubeProxyMode` | kube-proxy mode (iptables, ipvs) |
+| `podSubnet` | Pod network CIDR |
+| `serviceSubnet` | Service network CIDR |
+| `extraPortMappings` | Host-container port mappings |
+| `kubeadmConfigPatches` | kubeadm configuration patches |
 
-### Step 3: Molecule Default 시나리오 설정 수정
+### Step 3: Modify Molecule Default Scenario Configuration
 
 ```yaml
 # molecule/default/molecule.yml
@@ -352,7 +352,7 @@ lint: |
   ansible-lint -c ../../.ansible-lint
 ```
 
-### Step 4: Molecule Default 시나리오 생성 플레이북 수정
+### Step 4: Modify Molecule Default Scenario Create Playbook
 
 ```yaml
 # molecule/default/create.yml
@@ -414,7 +414,7 @@ lint: |
         var: cluster_info.stdout_lines
 ```
 
-### Step 5: Molecule Default 시나리오 삭제 플레이북 수정
+### Step 5: Modify Molecule Default Scenario Destroy Playbook
 
 ```yaml
 # molecule/default/destroy.yml
@@ -459,7 +459,7 @@ lint: |
       when: kind_name in existing_clusters.stdout
 ```
 
-### Step 6: Molecule Default 시나리오 환경 구축 플레이북 수정
+### Step 6: Modify Molecule Default Scenario Converge Playbook
 
 ```yaml
 # molecule/default/converge.yml
@@ -491,7 +491,7 @@ lint: |
         name: "myrole"
 ```
 
-### Step 7: Molecule Default 시나리오 검증 플레이북 수정
+### Step 7: Modify Molecule Default Scenario Verify Playbook
 
 ```yaml
 # molecule/default/verify.yml
@@ -598,32 +598,32 @@ lint: |
         success_msg: "All Pods are in Running state"
 ```
 
-### Step 8: Molecule Default 시나리오 테스트
+### Step 8: Run Molecule Default Scenario Test
 
 ```sh
-# 전체 테스트 수행 (생성 → 검증 → 삭제)
+# Run full test (create → verify → destroy)
 $ molecule test
 
-# 개별 단계 수행
-$ molecule create      # KIND 클러스터 생성
-$ molecule converge    # Role 적용
-$ molecule verify      # 테스트 검증
-$ molecule destroy     # 클러스터 삭제
+# Run individual steps
+$ molecule create      # Create KIND cluster
+$ molecule converge    # Apply Role
+$ molecule verify      # Test verification
+$ molecule destroy     # Delete cluster
 
-# 디버깅 모드
+# Debug mode
 $ molecule create
 $ molecule converge
 $ kubectl --kubeconfig /tmp/kind/kubeconfig.yaml get all -n myrole-ns
 $ molecule destroy
 
-# 인스턴스 유지하며 디버깅
+# Debug while keeping instances
 $ molecule test --destroy=never
-$ molecule login       # 컨테이너 접속
+$ molecule login       # Access container
 ```
 
-## 고급 구성
+## Advanced Configuration
 
-### 다중 클러스터 테스트
+### Multi-Cluster Testing
 
 ```yaml
 # molecule/multi-cluster/molecule.yml
@@ -653,7 +653,7 @@ provisioner:
         kind_image: kindest/node:v1.26.6
 ```
 
-### Helm Chart 테스트
+### Helm Chart Testing
 
 ```yaml
 # molecule/default/converge.yml (with Helm)
@@ -682,7 +682,7 @@ provisioner:
             type: ClusterIP
 ```
 
-## CI/CD 통합
+## CI/CD Integration
 
 ### GitHub Actions
 
@@ -730,74 +730,74 @@ jobs:
           KIND_NODE_VERSION: ${{ matrix.k8s-version }}
 ```
 
-## 문제 해결
+## Troubleshooting
 
-### KIND 클러스터 생성 실패
+### KIND Cluster Creation Failure
 
 ```sh
-# Docker 로그 확인
+# Check Docker logs
 $ docker logs <container_id>
 
-# KIND 상세 로그
+# KIND verbose logging
 $ kind create cluster --retain --verbosity 10
 
-# 리소스 정리
+# Clean up resources
 $ docker system prune -af
 $ kind delete clusters $(kind get clusters)
 ```
 
-### 메모리 부족 문제
+### Memory Issues
 
 ```yaml
-# KIND 설정에서 단일 노드로 변경
+# Change to single node in KIND config
 nodes:
   - role: control-plane
     image: kindest/node:v1.27.3
 ```
 
-### 네트워크 문제
+### Network Issues
 
 ```sh
-# Docker 네트워크 재생성
+# Recreate Docker network
 $ docker network prune
 $ kind delete cluster
 $ kind create cluster --config kindconfig.yaml
 ```
 
-## 주의사항
+## Important Notes
 
-### KIND 이미지 구성
+### KIND Image Composition
 
-KIND는 base 이미지와 node 이미지로 구성됩니다:
+KIND consists of base images and node images:
 
-- **[Base 이미지](https://kind.sigs.k8s.io/docs/design/base-image/)**: Ubuntu, systemd, containers 등 쿠버네티스가 동작할 수 있는 기반 프로그램이 설치된 이미지
-- **[Node 이미지](https://kind.sigs.k8s.io/docs/design/node-image/)**: Base 이미지를 기준으로 Kubernetes 클러스터 동작을 위한 이미지
+- **[Base Image](https://kind.sigs.k8s.io/docs/design/base-image/)**: Image with foundational programs installed for Kubernetes to run, such as Ubuntu, systemd, and containers
+- **[Node Image](https://kind.sigs.k8s.io/docs/design/node-image/)**: Image based on the base image with components for Kubernetes cluster operation
 
-Ubuntu 버전 등의 기반 패키지 버전을 실제 환경과 동일하게 맞추려면 KIND 문서를 참고하여 직접 이미지를 빌드해야 합니다.
+To match the version of base packages like Ubuntu with your actual environment, you need to build custom images by referring to the KIND documentation.
 
 ```sh
-# 커스텀 node 이미지 빌드
+# Build custom node image
 $ kind build node-image --base-image ubuntu:22.04
 ```
 
-### 리소스 제한
+### Resource Limitations
 
-KIND 클러스터는 Docker 컨테이너에서 실행되므로 호스트 시스템의 리소스를 공유합니다. 대규모 테스트 시 메모리와 CPU 사용량에 주의하세요.
+KIND clusters run in Docker containers and share the host system's resources. Be mindful of memory and CPU usage when running large-scale tests.
 
-## 결론
+## Conclusion
 
-Ansible Molecule과 KIND를 조합하면 로컬 환경에서 완전한 Kubernetes 테스트 환경을 구축할 수 있습니다. 이를 통해:
+Combining Ansible Molecule with KIND allows you to build a complete Kubernetes testing environment locally. This provides:
 
-- **개발 생산성 향상**: 빠른 피드백 루프로 개발 속도 개선
-- **비용 절감**: 클라우드 리소스 없이 완전한 테스트 수행
-- **CI/CD 통합**: 자동화된 파이프라인에서 안정적인 테스트 수행
-- **코드 품질 향상**: 체계적인 테스트로 Ansible Role 신뢰성 확보
+- **Improved Development Productivity**: Faster development with quick feedback loops
+- **Cost Savings**: Complete testing without cloud resources
+- **CI/CD Integration**: Reliable testing in automated pipelines
+- **Higher Code Quality**: Ensured Ansible Role reliability through systematic testing
 
-이 조합을 활용하여 Kubernetes 자동화 코드의 품질을 한 단계 높이세요.
+Use this combination to take your Kubernetes automation code quality to the next level.
 
-## 참고 자료
+## References
 
-- [Molecule 공식 문서](https://molecule.readthedocs.io/)
-- [KIND 공식 문서](https://kind.sigs.k8s.io/)
+- [Molecule Official Documentation](https://molecule.readthedocs.io/)
+- [KIND Official Documentation](https://kind.sigs.k8s.io/)
 - [Ansible Kubernetes Collection](https://docs.ansible.com/ansible/latest/collections/community/kubernetes/)
 - [KIND Node Images](https://github.com/kubernetes-sigs/kind/releases)
