@@ -1,0 +1,40 @@
+{{- define "main" }}
+<div class="not-found">404</div>
+<script>
+(function() {
+  var path = window.location.pathname;
+  var search = window.location.search;
+  var hash = window.location.hash;
+  
+  // Skip if already has language prefix
+  if (path.match(/^\/(ko|en)(\/|$)/)) {
+    return;
+  }
+  
+  // Patterns to redirect (with or without trailing slash)
+  var patterns = ['posts', 'about', 'tags', 'search'];
+  var shouldRedirect = patterns.some(function(p) {
+    return path === '/' + p || path === '/' + p + '/' || path.indexOf('/' + p + '/') === 0;
+  });
+  
+  if (!shouldRedirect) {
+    return;
+  }
+  
+  // Normalize path with trailing slash
+  if (!path.endsWith('/')) {
+    path = path + '/';
+  }
+  
+  // Detect language
+  var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+  var prefix = lang.indexOf('ko') === 0 ? '/ko' : '/en';
+  
+  // Redirect with query and hash preserved
+  window.location.replace(prefix + path + search + hash);
+})();
+</script>
+<noscript>
+  <p style="text-align: center; margin-top: 1rem;">The page you're looking for doesn't exist.</p>
+</noscript>
+{{- end }}

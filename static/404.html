@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>404 - Page Not Found</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; text-align: center; padding: 2rem; }
+        .not-found { font-size: 8rem; font-weight: bold; color: #666; }
+    </style>
+</head>
+<body>
+<div class="not-found">404</div>
+<script>
+(function() {
+  var path = window.location.pathname;
+  var search = window.location.search;
+  var hash = window.location.hash;
+  
+  if (path.match(/^\/(ko|en)(\/|$)/)) {
+    return;
+  }
+  
+  var patterns = ['posts', 'about', 'tags', 'search'];
+  var shouldRedirect = patterns.some(function(p) {
+    return path === '/' + p || path === '/' + p + '/' || path.indexOf('/' + p + '/') === 0;
+  });
+  
+  if (!shouldRedirect) {
+    return;
+  }
+  
+  if (!path.endsWith('/')) {
+    path = path + '/';
+  }
+  
+  var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+  var prefix = lang.indexOf('ko') === 0 ? '/ko' : '/en';
+  
+  window.location.replace(prefix + path + search + hash);
+})();
+</script>
+<noscript>
+  <p style="text-align: center; margin-top: 1rem;">The page you're looking for doesn't exist.</p>
+</noscript>
+</body>
+</html>
