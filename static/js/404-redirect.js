@@ -22,6 +22,7 @@
   }
   
   var lang = (navigator.language || navigator.userLanguage || '').toLowerCase();
+  // NOTE: Currently only ko/en supported; defaults to 'en' for all other languages
   var prefix = lang.indexOf('ko') === 0 ? '/ko' : '/en';
   
   window.location.replace(prefix + path + search + hash);
