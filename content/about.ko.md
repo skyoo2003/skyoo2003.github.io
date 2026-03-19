@@ -10,6 +10,12 @@ title: "소개"
 
 ### 경력
 
+**Kurly** | 스태프 백엔드 엔지니어 | 2025.12 - 현재
+
+- 컬리 검색/추천 서비스 개발/운영
+- 추천 시스템을 위한 MLOps 플랫폼 개발
+- 색인 자동화 및 검색/추천 데이터 저장 플랫폼 개발
+
 **SKTelecom** | 백엔드 엔지니어 | 2022.09 - 2025.10
 
 - 에이닷 및 ICT Family 검색서비스 개발/운영
@@ -29,13 +35,13 @@ title: "소개"
 
 ### 사용 기술
 
-| 분야       | 기술                                     |
-| ---------- | ---------------------------------------- |
-| Languages  | Python, Golang, Java                     |
-| Frameworks | FastAPI                                  |
-| DevOps     | Kubernetes, Helm, Kustomize, Ansible     |
-| Solutions  | Elasticsearch, Prometheus/Thanos, ArgoCD |
-| OS         | RHEL, Ubuntu                             |
+| 분야       | 기술                                          |
+| ---------- | --------------------------------------------- |
+| Languages  | Python, Golang, Java                          |
+| Frameworks | FastAPI                                       |
+| DevOps     | Kubernetes, Helm, Kustomize, Ansible          |
+| Solutions  | Elasticsearch, Prometheus/Thanos, ArgoCD, AWS |
+| OS         | RHEL, Ubuntu                                  |
 
 ### 교육
 

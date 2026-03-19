@@ -10,6 +10,12 @@ I am a backend software engineer with over 10 years of experience in search serv
 
 ### Experience
 
+**Kurly** | Staff Backend Engineer | December 2025 – Present
+
+- Development and operation of Kurly’s search and recommendation services
+- Development of an MLOps platform for the recommendation system
+- Development of an automated indexing system and a data storage platform for search and recommendation data
+
 **SKTelecom** | Backend Engineer | Sep 2022 - Oct 2025
 
 - A. and ICT Family search service development/operations
@@ -29,13 +35,13 @@ I am a backend software engineer with over 10 years of experience in search serv
 
 ### Skills
 
-| Category   | Technologies                             |
-| ---------- | ---------------------------------------- |
-| Languages  | Python, Golang, Java                     |
-| Frameworks | FastAPI                                  |
-| DevOps     | Kubernetes, Helm, Kustomize, Ansible     |
-| Solutions  | Elasticsearch, Prometheus/Thanos, ArgoCD |
-| OS         | RHEL, Ubuntu                             |
+| Category   | Technologies                                  |
+| ---------- | --------------------------------------------- |
+| Languages  | Python, Golang, Java                          |
+| Frameworks | FastAPI                                       |
+| DevOps     | Kubernetes, Helm, Kustomize, Ansible          |
+| Solutions  | Elasticsearch, Prometheus/Thanos, ArgoCD, AWS |
+| OS         | RHEL, Ubuntu                                  |
 
 ### Education
 
