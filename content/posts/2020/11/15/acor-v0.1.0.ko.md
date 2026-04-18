@@ -1,12 +1,12 @@
 ---
-title: "ACOR v1.1.0 릴리즈: Go modules와 GitHub Actions로의 전환"
+title: "ACOR v0.1.0 릴리즈: Go modules와 GitHub Actions로의 전환"
 date: 2020-11-15T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
 ## 들어가며
 
-[ACOR](https://github.com/skyoo2003/acor) v1.1.0을 릴리즈했다. 이번 버전은 새로운 기능 추가보다는 프로젝트의 기반을 현대화하는 데 집중했다. Go 생태계의 변화에 맞춰 의존성 관리와 CI/CD 시스템을 최신 표준으로 전환했다.
+[ACOR](https://github.com/skyoo2003/acor) v0.1.0을 릴리즈했다. 이번 버전은 새로운 기능 추가보다는 프로젝트의 기반을 현대화하는 데 집중했다. Go 생태계의 변화에 맞춰 의존성 관리와 CI/CD 시스템을 최신 표준으로 전환했다.
 
 ## 왜 Go modules로 전환했는가
 
@@ -70,13 +70,13 @@ Travis CI 설정 파일(`.travis.yml`)은 더 이상 필요 없어 제거했다.
 기존 ACOR 사용자는 다음과 같이 업그레이드할 수 있다:
 
 ```bash
-go get github.com/skyoo2003/acor@v1.1.0
+go get github.com/skyoo2003/acor@v0.1.0
 ```
 
 Go modules를 사용 중이라면 `go.mod` 파일이 자동으로 업데이트된다.
 
 ## 마치며
 
-v1.1.0은 기능적으로는 큰 변화가 없지만, 프로젝트의 지속 가능성을 위해 중요한 업데이트다. 최신 도구와 표준을 사용함으로써 향후 유지보수가 더 쉬워질 것이다.
+v0.1.0은 기능적으로는 큰 변화가 없지만, 프로젝트의 지속 가능성을 위해 중요한 업데이트다. 최신 도구와 표준을 사용함으로써 향후 유지보수가 더 쉬워질 것이다.
 
-더 자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v1.1.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.
+더 자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v0.1.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.

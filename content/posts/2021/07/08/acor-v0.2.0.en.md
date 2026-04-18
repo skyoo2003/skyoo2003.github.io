@@ -1,16 +1,16 @@
 ---
-title: "ACOR v1.2.0 Release: Standard Project Structure and Bug Fixes"
+title: "ACOR v0.2.0 Release: Standard Project Structure and Bug Fixes"
 date: 2021-07-08T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
 ## Introduction
 
-I've released [ACOR](https://github.com/skyoo2003/acor) v1.2.0. This version focuses on restructuring the project to follow Go standards and fixing a few bugs.
+I've released [ACOR](https://github.com/skyoo2003/acor) v0.2.0. This version focuses on restructuring the project to follow Go standards and fixing a few bugs.
 
 ## Standard Project Structure
 
-v1.2.0 restructures the project to follow the standard Go project layout ([#2](https://github.com/skyoo2003/acor/issues/2)).
+v0.2.0 restructures the project to follow the standard Go project layout ([#2](https://github.com/skyoo2003/acor/issues/2)).
 
 As the project grew, managing the file structure systematically became necessary. Following the [Standard Go Project Layout](https://github.com/golang-standards/project-layout) guidelines:
 
@@ -43,13 +43,13 @@ The bug caused string conversion to be missing under certain conditions, which c
 Existing ACOR users can upgrade with:
 
 ```bash
-go get github.com/skyoo2003/acor@v1.2.0
+go get github.com/skyoo2003/acor@v0.2.0
 ```
 
 If you're using Go modules, the `go.mod` file will be updated automatically.
 
 ## Conclusion
 
-While v1.2.0 doesn't bring major functional changes, it standardizes the project structure and includes meaningful bug fixes. These improvements will help with future maintenance and contributor onboarding.
+While v0.2.0 doesn't bring major functional changes, it standardizes the project structure and includes meaningful bug fixes. These improvements will help with future maintenance and contributor onboarding.
 
-For more details, see the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v1.2.0) and the [repository](https://github.com/skyoo2003/acor).
+For more details, see the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v0.2.0) and the [repository](https://github.com/skyoo2003/acor).

@@ -1,38 +1,38 @@
 ---
-title: "What's New in ACOR v1.3.0"
+title: "ACOR v0.3.0: 새로운 기능 소개"
 date: 2026-03-17T00:00:00+09:00
 tags: [go, redis, acor]
 ---
 
-## Introduction
+## 들어가며
 
-[ACOR](https://github.com/skyoo2003/acor) is a Go library that implements the Aho-Corasick algorithm with Redis as the backend storage. The latest version introduces four major features:
+[ACOR](https://github.com/skyoo2003/acor)은 Aho-Corasick 알고리즘을 Go로 구현하고 Redis를 백엔드 저장소로 사용하는 라이브러리다. 최신 버전에서는 네 가지 주요 기능이 추가되었다:
 
-1. **Index APIs** - Provides match position information
-2. **Redis Topology Support** - Supports Sentinel, Cluster, and Ring
-3. **Command-Line Tool** - Use directly from the terminal
-4. **Server Adapters** - Deploy as HTTP and gRPC services
+1. **Index APIs** - 매칭된 키워드의 위치 정보 제공
+2. **Redis 토폴로지 지원** - Sentinel, Cluster, Ring 지원
+3. **커맨드라인 도구** - 터미널에서 바로 사용 가능
+4. **서버 어댑터** - HTTP와 gRPC로 서비스 배포
 
-This post covers the usage and features of each.
+이 포스트에서는 각 기능의 사용법과 특징을 살펴본다.
 
 ## Index APIs
 
-### Comparison with Existing APIs
+### 기존 API와의 차이점
 
-Previously, `Find` and `Suggest` APIs only told you which keywords matched. For text highlighting or position-based analysis, you had to calculate indices separately.
+이전에는 `Find`와 `Suggest` API가 어떤 키워드가 매칭되었는지만 알려줬다. 텍스트 하이라이팅이나 위치 기반 분석을 위해서는 별도로 인덱스를 계산해야 했다.
 
-The new Index APIs solve this problem:
+새로운 Index APIs는 이 문제를 해결한다:
 
 ```go
-// Existing: Returns only matched keywords
+// 기존: 키워드 목록만 반환
 func (ac *AhoCorasick) Find(text string) ([]string, error)
 
-// New: Returns keywords with their start indices
+// 새로운: 키워드와 시작 인덱스를 함께 반환
 func (ac *AhoCorasick) FindIndex(text string) (map[string][]int, error)
 func (ac *AhoCorasick) SuggestIndex(input string) (map[string][]int, error)
 ```
 
-### Usage Example
+### 사용 예제
 
 ```go
 package main
@@ -59,35 +59,35 @@ func main() {
 
     matched, _ := ac.FindIndex("he is him and she is her")
     fmt.Println(matched)
-    // Output: map[he:[0] him:[6] her:[21]]
+    // 출력: map[he:[0] him:[6] her:[21]]
 }
 ```
 
-### Unicode Handling
+### Unicode 처리
 
-Index APIs properly handle Unicode. Go's `range` statement iterates over strings in rune units, ensuring correct indexing for multi-byte characters like Korean and emojis:
+Index APIs는 Unicode를 올바르게 처리한다. Go의 `range` 문은 문자열을 rune 단위로 순회하여 한글, 이모지 등 멀티바이트 문자에서도 올바른 인덱스를 보장한다:
 
 ```go
 matched, _ := ac.FindIndex("가한글")
-// Result: map[string][]int{"한글": {1}}  // Character index, not byte index
+// 결과: map[string][]int{"한글": {1}}  // 바이트가 아닌 문자 인덱스
 ```
 
-### Performance Considerations
+### 성능 고려사항
 
-Index APIs have overhead from storing index information in `map[string][]int` and calculating rune length at each match. For simple existence checks where index information isn't needed, use the original `Find`/`Suggest` APIs for better efficiency.
+Index APIs는 `map[string][]int` 구조로 인덱스 정보를 저장하고, 매칭 시점마다 rune 길이를 계산하는 오버헤드가 있다. 인덱스 정보가 필요하지 않은 단순 존재 여부 확인에는 기존 `Find`/`Suggest`를 사용하는 것이 효율적이다.
 
-## Redis Topology Support
+## Redis 토폴로지 지원
 
-### Supported Topologies
+### 지원하는 토폴로지
 
-Various Redis deployment modes are now supported:
+이제 다양한 Redis 배포 방식을 지원한다:
 
 ```go
 type AhoCorasickArgs struct {
     Addr       string            // Standalone
-    Addrs      []string          // Sentinel or Cluster
-    MasterName string            // Sentinel master name
-    RingAddrs  map[string]string // Ring shards
+    Addrs      []string          // Sentinel 또는 Cluster
+    MasterName string            // Sentinel 마스터 이름
+    RingAddrs  map[string]string // Ring 샤드
     Password   string
     DB         int
     Name       string
@@ -141,41 +141,41 @@ args := &acor.AhoCorasickArgs{
 }
 ```
 
-### Cluster-Safe Key Design
+### Cluster 안전 키 설계
 
-In Redis Cluster, keys are distributed across multiple shards. ACOR uses hash tags to ensure all keys belonging to a single collection are stored on the same shard:
+Redis Cluster에서는 키가 여러 샤드에 분산된다. ACOR은 하나의 컬렉션에 속한 모든 키가 같은 샤드에 저장되도록 hash tag를 사용한다:
 
 ```
 {collection-name}:prefix:state
 {collection-name}:output:keyword
 ```
 
-### Error Handling
+### 에러 핸들링
 
-All Redis-related APIs now explicitly return errors:
+모든 Redis 관련 API가 명시적으로 에러를 반환하도록 개선되었다:
 
 ```go
 ac, err := acor.Create(args)
 if err != nil {
-    log.Fatalf("Redis connection failed: %v", err)
+    log.Fatalf("Redis 연결 실패: %v", err)
 }
 defer ac.Close()
 
 matched, err := ac.Find("he is him")
 if err != nil {
-    log.Printf("Error during search: %v", err)
+    log.Printf("검색 중 에러 발생: %v", err)
     return
 }
 fmt.Println(matched)
 ```
 
-The `Add` method performs rollback on failure to ensure data consistency.
+`Add` 메서드는 실패 시 롤백을 수행하여 데이터 일관성을 보장한다.
 
-## Command-Line Tool
+## 커맨드라인 도구
 
-### Installation
+### 설치
 
-**Binary Download**
+**바이너리 다운로드**
 
 ```bash
 # macOS (Apple Silicon)
@@ -189,7 +189,7 @@ tar xzf acor_linux_amd64.tar.gz
 sudo mv acor /usr/local/bin/
 ```
 
-**Build from Source**
+**소스에서 빌드**
 
 ```bash
 git clone https://github.com/skyoo2003/acor.git
@@ -197,60 +197,60 @@ cd acor
 make build
 ```
 
-### Basic Usage
+### 기본 사용법
 
 ```bash
-# Add keywords
+# 키워드 추가
 acor -addr localhost:6379 -name sample add "he"
 acor -addr localhost:6379 -name sample add "her"
 acor -addr localhost:6379 -name sample add "him"
 
-# Search text
+# 텍스트 검색
 acor -addr localhost:6379 -name sample find "he is him"
-# Output: he
-#         him
+# 출력: he
+#       him
 
-# Search with position info
+# 위치 정보와 함께 검색
 acor -addr localhost:6379 -name sample find-index "he is him"
-# Output: he: [0]
-#         him: [6]
+# 출력: he: [0]
+#       him: [6]
 
-# Autocomplete suggestions
+# 자동완성 제안
 acor -addr localhost:6379 -name sample suggest "he"
-# Output: he
-#         her
+# 출력: he
+#       her
 ```
 
-### Main Commands
+### 주요 명령어
 
-| Command         | Description                     |
-| --------------- | ------------------------------- |
-| `add`           | Add keyword                     |
-| `remove`        | Remove keyword                  |
-| `find`          | Search text                     |
-| `find-index`    | Search with position info       |
-| `suggest`       | Autocomplete suggestions        |
-| `suggest-index` | Autocomplete with position info |
-| `info`          | Collection info                 |
-| `flush`         | Delete collection               |
+| 명령어          | 설명                      |
+| --------------- | ------------------------- |
+| `add`           | 키워드 추가               |
+| `remove`        | 키워드 삭제               |
+| `find`          | 텍스트 검색               |
+| `find-index`    | 위치 정보와 함께 검색     |
+| `suggest`       | 자동완성 제안             |
+| `suggest-index` | 위치 정보와 함께 자동완성 |
+| `info`          | 컬렉션 정보               |
+| `flush`         | 컬렉션 삭제               |
 
-### Common Options
+### 공통 옵션
 
-| Option         | Description                | Default          |
+| 옵션           | 설명                       | 기본값           |
 | -------------- | -------------------------- | ---------------- |
-| `-addr`        | Single Redis address       | `localhost:6379` |
-| `-addrs`       | Sentinel/Cluster addresses |                  |
-| `-master-name` | Sentinel master name       |                  |
-| `-ring-addrs`  | Ring shards                |                  |
-| `-password`    | Redis password             |                  |
-| `-db`          | Redis database number      | `0`              |
-| `-name`        | ACOR collection name       | (required)       |
+| `-addr`        | Redis 단일 주소            | `localhost:6379` |
+| `-addrs`       | Sentinel/Cluster 주소 목록 |                  |
+| `-master-name` | Sentinel 마스터 이름       |                  |
+| `-ring-addrs`  | Ring 샤드                  |                  |
+| `-password`    | Redis 비밀번호             |                  |
+| `-db`          | Redis 데이터베이스 번호    | `0`              |
+| `-name`        | ACOR 컬렉션 이름           | (필수)           |
 
-## Server Adapters
+## 서버 어댑터
 
-### Architecture
+### 아키텍처
 
-The `pkg/server` package exposes the existing `pkg/acor` APIs over HTTP JSON and gRPC:
+`pkg/server` 패키지가 기존 `pkg/acor` API를 HTTP JSON과 gRPC로 노출한다:
 
 ```
 ┌─────────────┐     ┌─────────────┐
@@ -267,7 +267,7 @@ The `pkg/server` package exposes the existing `pkg/acor` APIs over HTTP JSON and
                     └─────────────┘
 ```
 
-### HTTP Server
+### HTTP 서버
 
 ```go
 package main
@@ -298,20 +298,20 @@ func main() {
 }
 ```
 
-**API Endpoints**
+**API 엔드포인트**
 
-| Method | Path             | Description                     |
-| ------ | ---------------- | ------------------------------- |
-| POST   | `/add`           | Add keyword                     |
-| POST   | `/remove`        | Remove keyword                  |
-| POST   | `/find`          | Search text                     |
-| POST   | `/find-index`    | Search with position info       |
-| POST   | `/suggest`       | Autocomplete suggestions        |
-| POST   | `/suggest-index` | Autocomplete with position info |
-| GET    | `/info`          | Collection info                 |
-| POST   | `/flush`         | Delete collection               |
+| Method | Path             | 설명                      |
+| ------ | ---------------- | ------------------------- |
+| POST   | `/add`           | 키워드 추가               |
+| POST   | `/remove`        | 키워드 삭제               |
+| POST   | `/find`          | 텍스트 검색               |
+| POST   | `/find-index`    | 위치 정보와 함께 검색     |
+| POST   | `/suggest`       | 자동완성 제안             |
+| POST   | `/suggest-index` | 위치 정보와 함께 자동완성 |
+| GET    | `/info`          | 컬렉션 정보               |
+| POST   | `/flush`         | 컬렉션 삭제               |
 
-**Request Example**
+**요청 예제**
 
 ```bash
 curl -X POST http://localhost:8080/find \
@@ -325,9 +325,9 @@ curl -X POST http://localhost:8080/find \
 }
 ```
 
-### gRPC Server
+### gRPC 서버
 
-**Server Implementation**
+**서버 구현**
 
 ```go
 package main
@@ -364,7 +364,7 @@ func main() {
 }
 ```
 
-**Client Example**
+**클라이언트 예제**
 
 ```go
 conn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
@@ -375,18 +375,18 @@ resp, _ := client.Find(context.Background(), &pb.FindRequest{Text: "he is him"})
 fmt.Println(resp.Matched) // [he, him]
 ```
 
-### HTTP vs gRPC Selection Guide
+### HTTP vs gRPC 선택 가이드
 
-| Criteria    | HTTP            | gRPC              |
-| ----------- | --------------- | ----------------- |
-| Protocol    | HTTP/1.1 + JSON | HTTP/2 + Protobuf |
-| Performance | Moderate        | High              |
-| Debugging   | Easy with curl  | Requires tools    |
-| Streaming   | Not supported   | Supported         |
+| 기준     | HTTP             | gRPC              |
+| -------- | ---------------- | ----------------- |
+| 프로토콜 | HTTP/1.1 + JSON  | HTTP/2 + Protobuf |
+| 성능     | 보통             | 높음              |
+| 디버깅   | curl 등으로 쉬움 | 도구 필요         |
+| 스트리밍 | 미지원           | 지원              |
 
-HTTP is suitable for debugging and quick prototyping, while gRPC is ideal for high-performance production environments.
+HTTP는 디버깅과 빠른 프로토타이핑에, gRPC는 고성능이 필요한 프로덕션 환경에 적합하다.
 
-### Deployment
+### 배포
 
 **Docker**
 
@@ -435,13 +435,13 @@ spec:
               value: "redis-service:6379"
 ```
 
-## Conclusion
+## 마치며
 
-This update significantly expands ACOR's capabilities:
+이번 업데이트로 ACOR의 활용 범위가 크게 확장되었다:
 
-- **Index APIs**: Enable text highlighting and position-based analysis
-- **Redis Topology Support**: Provides high availability and scalability in production
-- **CLI**: Enables automation with scripts and quick testing
-- **Server Adapters**: Easy integration into microservice architectures
+- **Index APIs**: 텍스트 하이라이팅, 위치 기반 분석 가능
+- **Redis 토폴로지**: 프로덕션 환경에서 고가용성과 확장성 확보
+- **CLI**: 스크립트와 결합한 자동화, 빠른 테스트 가능
+- **서버 어댑터**: 마이크로서비스 아키텍처에 쉽게 통합
 
-For more details, visit the [ACOR GitHub repository](https://github.com/skyoo2003/acor) and [official documentation](https://skyoo2003.github.io/acor/).
+더 자세한 내용은 [ACOR GitHub 저장소](https://github.com/skyoo2003/acor)와 [공식 문서](https://skyoo2003.github.io/acor/)를 참고하자.

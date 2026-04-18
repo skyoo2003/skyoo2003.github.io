@@ -1,12 +1,12 @@
 ---
-title: "ACOR v1.1.0 Release: Migration to Go Modules and GitHub Actions"
+title: "ACOR v0.1.0 Release: Migration to Go Modules and GitHub Actions"
 date: 2020-11-15T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
 ## Introduction
 
-I've released [ACOR](https://github.com/skyoo2003/acor) v1.1.0. This version focuses on modernizing the project foundation rather than adding new features. Following the evolution of the Go ecosystem, I migrated the dependency management and CI/CD systems to current standards.
+I've released [ACOR](https://github.com/skyoo2003/acor) v0.1.0. This version focuses on modernizing the project foundation rather than adding new features. Following the evolution of the Go ecosystem, I migrated the dependency management and CI/CD systems to current standards.
 
 ## Why Go Modules
 
@@ -70,13 +70,13 @@ The Travis CI configuration file (`.travis.yml`) was removed as it's no longer n
 Existing ACOR users can upgrade with:
 
 ```bash
-go get github.com/skyoo2003/acor@v1.1.0
+go get github.com/skyoo2003/acor@v0.1.0
 ```
 
 If you're using Go modules, the `go.mod` file will be updated automatically.
 
 ## Conclusion
 
-While v1.1.0 doesn't bring major functional changes, it's an important update for the project's sustainability. Using modern tools and standards will make future maintenance easier.
+While v0.1.0 doesn't bring major functional changes, it's an important update for the project's sustainability. Using modern tools and standards will make future maintenance easier.
 
-For more details, see the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v1.1.0) and the [repository](https://github.com/skyoo2003/acor).
+For more details, see the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v0.1.0) and the [repository](https://github.com/skyoo2003/acor).

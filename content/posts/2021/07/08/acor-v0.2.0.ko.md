@@ -1,16 +1,16 @@
 ---
-title: "ACOR v1.2.0 릴리즈: 표준 프로젝트 구조와 버그 수정"
+title: "ACOR v0.2.0 릴리즈: 표준 프로젝트 구조와 버그 수정"
 date: 2021-07-08T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
 ## 들어가며
 
-[ACOR](https://github.com/skyoo2003/acor) v1.2.0을 릴리즈했다. 이번 버전은 프로젝트 구조를 Go 표준으로 정리하고 몇 가지 버그를 수정하는 데 집중했다.
+[ACOR](https://github.com/skyoo2003/acor) v0.2.0을 릴리즈했다. 이번 버전은 프로젝트 구조를 Go 표준으로 정리하고 몇 가지 버그를 수정하는 데 집중했다.
 
 ## 표준 프로젝트 구조로 변경
 
-v1.2.0에서는 Go 커뮤니티의 표준 프로젝트 레이아웃을 따르도록 구조를 변경했다 ([#2](https://github.com/skyoo2003/acor/issues/2)). 
+v0.2.0에서는 Go 커뮤니티의 표준 프로젝트 레이아웃을 따르도록 구조를 변경했다 ([#2](https://github.com/skyoo2003/acor/issues/2)). 
 
 Go 프로젝트가 성장하면서 파일 구조를 체계적으로 관리할 필요가 있었다. [Standard Go Project Layout](https://github.com/golang-standards/project-layout) 가이드라인을 참고하여:
 
@@ -43,13 +43,13 @@ NodeKey 메서드에서 출력이 제대로 작성되지 않는 버그를 수정
 기존 ACOR 사용자는 다음과 같이 업그레이드할 수 있다:
 
 ```bash
-go get github.com/skyoo2003/acor@v1.2.0
+go get github.com/skyoo2003/acor@v0.2.0
 ```
 
 Go modules를 사용 중이라면 `go.mod` 파일이 자동으로 업데이트된다.
 
 ## 마치며
 
-v1.2.0은 기능적으로는 큰 변화가 없지만, 프로젝트 구조를 표준화하고 알찬 버그 수정을 포함한다. 이러한 개선은 향후 유지보수와 기여자 유입에 도움이 될 것이다.
+v0.2.0은 기능적으로는 큰 변화가 없지만, 프로젝트 구조를 표준화하고 알찬 버그 수정을 포함한다. 이러한 개선은 향후 유지보수와 기여자 유입에 도움이 될 것이다.
 
-더 자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v1.2.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.
+더 자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v0.2.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.
