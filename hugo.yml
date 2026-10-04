@@ -1,176 +1,110 @@
 baseURL: "https://skyoo2003.github.io/"
 title: "Devlog in the SKY"
-theme: PaperMod
+theme: hextra
 
 enableRobotsTXT: true
 buildDrafts: false
 buildFuture: false
 buildExpired: false
-
 minify:
   disableXML: true
   minifyOutput: true
-
 defaultContentLanguage: ko
 defaultContentLanguageInSubdir: true
-
-services:
-  disqus:
-    shortname: devlog-in-the-sky
-
 languages:
   ko:
     languageName: "한국어"
     weight: 1
     title: "Devlog in the SKY"
-    params:
-      profileMode:
-        enabled: true
-        title: "유성규"
-        subtitle: "백엔드 소프트웨어 엔지니어"
-        imageUrl: "/images/logo.jpg"
-        imageTitle: "Profile"
-        buttons:
-          - name: "글"
-            url: "posts"
-          - name: "소개"
-            url: "about"
     menu:
       main:
         - name: "홈"
-          url: "/"
+          pageRef: /
           weight: 1
         - name: "글"
-          url: "/posts/"
+          pageRef: /posts
           weight: 2
         - name: "태그"
-          url: "/tags/"
+          pageRef: /tags
           weight: 3
         - name: "검색"
-          url: "/search/"
           weight: 4
+          params:
+            type: search
         - name: "소개"
-          url: "/about/"
+          pageRef: /about
           weight: 5
   en:
     languageName: "English"
     weight: 2
     title: "Devlog in the SKY"
-    params:
-      profileMode:
-        enabled: true
-        title: "Sung-Kyu Yoo"
-        subtitle: "Backend Software Engineer"
-        imageUrl: "/images/logo.jpg"
-        imageTitle: "Profile"
-        buttons:
-          - name: "Posts"
-            url: "posts"
-          - name: "About"
-            url: "about"
     menu:
       main:
-        - name: "Home"
-          url: "/en/"
+        - name: Home
+          pageRef: /
           weight: 1
-        - name: "Posts"
-          url: "/en/posts/"
+        - name: Posts
+          pageRef: /posts
           weight: 2
-        - name: "Tags"
-          url: "/en/tags/"
+        - name: Tags
+          pageRef: /tags
           weight: 3
-        - name: "Search"
-          url: "/en/search/"
+        - name: Search
           weight: 4
-        - name: "About"
-          url: "/en/about/"
+          params:
+            type: search
+        - name: About
+          pageRef: /about
           weight: 5
-
 params:
-  env: production
-  analytics:
-    google:
-      id: G-YVJGV6NPZX
   description: "Devlog in the SKY - Yet another developer's blog"
-  author: "Sung-Kyu Yoo"
-  defaultTheme: auto
-  ShowReadingTime: true
-  ShowWordCount: true
-  DateFormat: "2006-01-02"
-  displayFullLangName: true
-  ShareButtons:
-    - x
-    - linkedin
-    - reddit
-    - facebook
-  ShowShareButtons: true
-  ShowPostNavLinks: true
-  ShowBreadCrumbs: true
-  ShowCodeCopyButtons: true
-  ShowFullTextinRSS: true
-  ShowRssButtonInSectionTermList: true
-  UseHugoToc: true
-  disableSpecial1stPost: false
-  disableScrollToTop: false
-  comments: true
-  hidemeta: false
-  hideSummary: false
-  showtoc: true
-  tocopen: false
-
-  socialIcons:
-    - name: github
-      url: "https://github.com/skyoo2003"
-    - name: linkedin
-      url: "https://www.linkedin.com/in/skyoo2003"
-    - name: email
-      url: "mailto:skyoo2003@gmail.com"
-
-  assets:
-    favicon: "/favicon.ico"
-    favicon16x16: "/favicon-16x16.png"
-    favicon32x32: "/favicon-32x32.png"
-    apple_touch_icon: "/apple-touch-icon.png"
-
-  label:
-    text: "Devlog in the SKY"
-
-  profileMode:
-    enabled: true
-
-  cover:
-    hidden: false
-    hiddenInList: false
-    hiddenInSingle: false
-    linkFullImages: true
-
-  editPost:
-    URL: "https://github.com/skyoo2003/skyoo2003.github.io/tree/main/content"
-    Text: "Suggest Changes"
-    appendFilePath: true
-
-  schema:
-    publisherType: "Person"
-
-  fuseOpts:
-    isCaseSensitive: false
-    shouldSort: true
-    location: 0
-    distance: 1000
-    threshold: 0.4
-    minMatchCharLength: 0
-    keys: ["title", "permalink", "summary", "content"]
-
+  author:
+    name: "Sung-Kyu Yoo"
+    email: "skyoo2003@gmail.com"
+  navbar:
+    displayTitle: true
+    displayLogo: false
+  theme:
+    default: system
+    displayToggle: true
+  page:
+    width: wide
+  footer:
+    enable: true
+    displayCopyright: true
+    displayPoweredBy: true
+  blog:
+    list:
+      displayTags: true
+      sortBy: date
+      sortOrder: desc
+      pagerSize: 10
+    article:
+      displayPagination: true
+  toc:
+    displayTags: true
+  search:
+    enable: true
+    type: flexsearch
+    flexsearch:
+      index: content
+      tokenize: forward
+  highlight:
+    copy:
+      enable: true
+      display: always
+  comments:
+    enable: false
+services:
+  googleAnalytics:
+    id: G-YVJGV6NPZX
 outputs:
   home:
     - HTML
     - RSS
-    - JSON
-
 taxonomies:
   tag: tags
   category: categories
-
 markup:
   goldmark:
     renderer:
@@ -179,4 +113,5 @@ markup:
     codeFences: true
     guessSyntax: true
     lineNos: true
-    style: dracula
+    noClasses: false
+    style: github
