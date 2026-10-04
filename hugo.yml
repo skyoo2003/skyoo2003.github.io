@@ -68,7 +68,7 @@ params:
     default: system
     displayToggle: true
   page:
-    width: normal
+    width: wide
   footer:
     enable: true
     displayCopyright: true
@@ -113,4 +113,5 @@ markup:
     codeFences: true
     guessSyntax: true
     lineNos: true
-    style: dracula
+    noClasses: false
+    style: github
