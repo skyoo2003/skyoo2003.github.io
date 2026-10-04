@@ -13,6 +13,7 @@
   {{- $ld := dict "@context" "https://schema.org" "@type" "BlogPosting" "headline" .Title "description" (partial "utils/page-description.html" . | strings.TrimSpace | htmlUnescape) "datePublished" (.PublishDate.Format $iso) "dateModified" (.Lastmod.Format $iso) "inLanguage" .Language.Lang "mainEntityOfPage" .Permalink "url" .Permalink "image" (index site.Params.images 0 | absURL) "keywords" (delimit (.Params.tags | default slice) ", ") "author" $author "publisher" $author }}
   <script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
 {{- else if .IsHome }}
+  <meta name="naver-site-verification" content="c91c2f4cce3d74c43886decdda10064a3f78fb50" />
   {{- $ld := dict "@context" "https://schema.org" "@type" "WebSite" "name" site.Title "url" .Permalink "inLanguage" .Language.Lang }}
   <script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
 {{- end }}
