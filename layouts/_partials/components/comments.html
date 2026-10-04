@@ -1,0 +1,3 @@
+{{ if and .IsPage (eq .Section "posts") }}
+  {{ partial "devlog/disqus.html" . }}
+{{ end }}

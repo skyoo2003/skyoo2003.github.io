@@ -95,9 +95,9 @@ params:
       display: always
   comments:
     enable: false
-  analytics:
-    google:
-      id: G-YVJGV6NPZX
+services:
+  googleAnalytics:
+    id: G-YVJGV6NPZX
 outputs:
   home:
     - HTML

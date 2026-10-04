@@ -1,0 +1,14 @@
+<div id="disqus_thread"></div>
+<script>
+  var disqus_config = function () {
+    this.page.url = {{ .Permalink | jsonify | safeJS }};
+    this.page.identifier = {{ .RelPermalink | jsonify | safeJS }};
+  };
+  (function () {
+    var script = document.createElement('script');
+    script.src = 'https://devlog-in-the-sky.disqus.com/embed.js';
+    script.setAttribute('data-timestamp', Date.now());
+    (document.head || document.body).appendChild(script);
+  })();
+</script>
+<noscript>Please enable JavaScript to view the comments powered by Disqus.</noscript>
