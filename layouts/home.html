@@ -1,0 +1,25 @@
+{{ define "main" }}
+  {{- $ko := eq .Language.Lang "ko" -}}
+  <main id="content" class="devlog-home">
+    <header class="devlog-intro">
+      <p class="devlog-eyebrow">DEVLOG IN THE SKY</p>
+      <h1>{{ .Title }}</h1>
+      <div class="content">{{ .Content }}</div>
+      <a href="{{ "about/" | relLangURL }}">{{ if $ko }}작성자 소개{{ else }}About the author{{ end }} →</a>
+    </header>
+    <section aria-labelledby="latest-posts">
+      <div class="devlog-section-heading">
+        <h2 id="latest-posts">{{ if $ko }}최근 글{{ else }}Latest posts{{ end }}</h2>
+        <a href="{{ "posts/" | relLangURL }}">{{ if $ko }}전체 글{{ else }}All posts{{ end }} →</a>
+      </div>
+      {{ range first 6 (where .Site.RegularPages "Section" "posts").ByDate.Reverse }}
+        <article class="devlog-post-preview">
+          <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>
+          <h2><a href="{{ .RelPermalink }}">{{ .Title }}</a></h2>
+          <p class="devlog-summary">{{ partial "utils/page-description.html" . }}</p>
+          <div class="devlog-tags">{{ partial "tags.html" (dict "context" .) }}</div>
+        </article>
+      {{ end }}
+    </section>
+  </main>
+{{ end }}

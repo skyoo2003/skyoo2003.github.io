@@ -1,0 +1,7 @@
+{{ if and .IsPage (eq .Section "posts") }}
+  {{ with .Translations }}
+    <nav class="devlog-translations" aria-label="{{ if eq $.Language.Lang "ko" }}다른 언어로 읽기{{ else }}Read in another language{{ end }}">
+      {{ range . }}<a href="{{ .RelPermalink }}" lang="{{ .Language.Lang }}" hreflang="{{ .Language.Lang }}">{{ .Language.LanguageName }} →</a>{{ end }}
+    </nav>
+  {{ end }}
+{{ end }}
