@@ -35,7 +35,7 @@ a:focus-visible, button:focus-visible, input:focus-visible { outline: 2px solid 
 .content code, .content pre { font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; font-variant-ligatures: none; }
 .content table:not(.lntable) { font-size: 15px; line-height: 1.65; }
 .content table:not(.lntable) th, .content table:not(.lntable) td { min-width: 96px; }
-#content > .content + div > p:first-of-type { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+#content > .hx\:mb-10 > p:first-of-type { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
 
 /* Paired GitHub-style palettes: every token and line number stays readable. */
 :root {
