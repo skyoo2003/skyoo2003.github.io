@@ -26,11 +26,11 @@ Callback Plugin은 다양한 용도로 활용할 수 있습니다:
 
 기본적으로 Callback Plugin 들은 **callback_whitelist** 라는 Ansible 환경 변수에 등록된 플러그인에 대해서만 콜백 함수가 동작하도록 되어 있습니다. 단, 콜백 모듈을 CALLBACK\_NEEDS\_WHITELIST = False 로 설정한 경우에는 무관합니다.
 
-그리고, Callback Plugin 의 실행 순서는 Alphanumeric 순으로 실행됩니다. (e.g. 1.py → 2.py → a.py) 설정에 등록된 콜백 리스트 순서와는 무관합니다.
+Callback Plugin은 설정에 등록된 콜백 리스트 순서와 관계없이 Alphanumeric 순(e.g. 1.py → 2.py → a.py)으로 실행됩니다.
 
 ## 환경 설정
 
-Callback Plugin 을 사용하기 위한 각종 Ansible 환경 설정을 정리합니다. 이 환경변수들은 ansible.cfg 파일에 정의해서 사용해도 되며, 커맨드라인을 통해 전달하는 방식도 가능합니다.
+Callback Plugin을 사용할 때 필요한 Ansible 환경 설정을 정리합니다. 환경변수는 ansible.cfg 파일에 정의하거나 커맨드라인으로 전달할 수 있습니다.
 
 ### 주요 설정 변수
 

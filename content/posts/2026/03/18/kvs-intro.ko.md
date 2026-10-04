@@ -1,10 +1,13 @@
 ---
 title: "KVS: Go로 구현하는 Key-Value 스토어의 내부 아키텍처"
 date: 2026-03-18T00:00:00+09:00
+lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, data-structures, kvs, tutorial]
 ---
 
 ## 들어가며
+
+참고로 이 글은 2026-03-18 당시 v1.0.0 기준이다. 이후 `pkg/rbt`, `pkg/lsm` 등은 제거됐고 라이브러리 경로와 서버 구성도 바뀌었다. 아래 구조와 예제를 현재 버전의 사용법으로 참고하지 않도록 주의해야 한다. 변경된 서버 구성은 [RESP2와 Lua 글](/ko/posts/2026/10/03/kvs-resp2-server-lua/), 내구성과 클러스터링은 [append log와 Raft 글](/ko/posts/2026/10/03/kvs-append-log-raft/)에서 다룬다.
 
 [KVS](https://github.com/skyoo2003/kvs) v1.0.0이 출시되었다. KVS는 Go로 작성된 간단한 인메모리 키-값 스토어로, Go 모듈로 임포트하여 사용하거나 독립형 서버로 배포할 수 있다. 이 글에서는 v1.0.0에 포함된 주요 기능들을 소개하고, 특히 핵심 데이터 구조인 Red-Black Tree와 LSM Tree의 구현을 심층적으로 살펴본다.
 
@@ -119,7 +122,7 @@ func main() {
 
 ### Red-Black Tree 기본 개념
 
-Red-Black Tree는 자가 균형 이진 탐색 트리다. 각 노드가 빨간색 또는 검은색으로 표시되며, 다음 불변 조건을 유지한다:
+Red-Black Tree는 각 노드가 빨간색 또는 검은색으로 표시되는 자가 균형 이진 탐색 트리로, 다음 불변 조건을 유지한다:
 
 1. **루트는 검은색**: 트리의 루트 노드는 항상 검은색이다
 2. **빨간색 제약**: 빨간색 노드의 자식은 모두 검은색이어야 한다
@@ -149,7 +152,7 @@ type RBNode struct {
 }
 ```
 
-흥미로운 점은 `compareKey` 함수를 주입받는다는 것이다. 이를 통해 어떤 타입의 키든 비교할 수 있다:
+`compareKey` 함수를 주입받아 어떤 타입의 키든 비교할 수 있다는 점이 흥미롭다:
 
 ```go
 type Compare func(a, b interface{}) int
@@ -290,7 +293,7 @@ func (n *RBNode) rotateLeft() {
 | Remove | O(n)        | 현재 구현은 재구축 방식 |
 | Clear  | O(1)        | 루트를 nil로 설정       |
 
-`Remove` 연산이 O(n)인 이유는 현재 구현이 단순화되어 있기 때문이다. 삭제된 키를 제외한 모든 엔트리를 수집하여 트리를 다시 구축한다:
+현재 `Remove` 연산은 구현을 단순화해, 삭제된 키를 제외한 모든 엔트리를 수집하고 트리를 다시 구축하므로 O(n)이 걸린다:
 
 ```go
 func (t *RBTree) Remove(key interface{}) error {
@@ -375,7 +378,7 @@ func (t *Tree) flushIfNeeded() error {
 }
 ```
 
-쓰기는 항상 memtable에 이루어진다. `memtableLimit`(기본값 4)에 도달하면 자동으로 플러시된다.
+쓰기는 항상 memtable에 이루어지며 `memtableLimit`(기본값 4)에 도달하면 자동으로 플러시된다.
 
 #### 플러시 연산
 
@@ -446,7 +449,7 @@ func (s segment) get(key string) (entry, bool) {
 
 #### 삭제와 툼스톤
 
-LSM Tree에서 삭제는 즉시 물리적으로 제거하지 않는다. 대신 툼스톤(tombstone)이라는 삭제 마커를 기록한다:
+LSM Tree는 삭제할 때 데이터를 즉시 물리적으로 제거하는 대신 툼스톤(tombstone)이라는 삭제 마커를 기록한다:
 
 ```go
 func (t *Tree) Delete(key string) error {
@@ -534,7 +537,7 @@ curl -X DELETE http://localhost:8080/mykey
 
 ### gRPC 서버
 
-`internal/server/grpc.go`는 gRPC 서비스를 제공한다. Protocol Buffers 정의는 `api/kvsv1/`에 있다:
+`internal/server/grpc.go`는 gRPC 서비스를 제공하며 Protocol Buffers 정의는 `api/kvsv1/`에 있다:
 
 ```protobuf
 service KVStore {
@@ -666,7 +669,7 @@ go test -bench=BenchmarkLSM -benchmem ./pkg/lsm/
 | Get | 10,000 | 8ms | 32 B/op |
 | Get | 100,000 | 110ms | 32 B/op |
 
-LSM Tree는 쓰기 연산에서 RBTree보다 약 3-4배 빠르다. 반면 읽기는 여러 세그먼트를 검색해야 하므로 약간 느리다.
+LSM Tree는 쓰기 연산에서 RBTree보다 약 3-4배 빠르지만 읽을 때는 여러 세그먼트를 검색해야 하므로 약간 느리다.
 
 ### HashMap vs RBTree vs LSM Tree 비교
 

@@ -65,7 +65,7 @@ func main() {
 
 ### Unicode 처리
 
-Index APIs는 Unicode를 올바르게 처리한다. Go의 `range` 문은 문자열을 rune 단위로 순회하여 한글, 이모지 등 멀티바이트 문자에서도 올바른 인덱스를 보장한다:
+Index APIs는 Go의 `range` 문으로 문자열을 rune 단위로 순회해 Unicode를 처리하므로, 한글이나 이모지 같은 멀티바이트 문자에서도 올바른 인덱스를 보장한다:
 
 ```go
 matched, _ := ac.FindIndex("가한글")
@@ -143,7 +143,7 @@ args := &acor.AhoCorasickArgs{
 
 ### Cluster 안전 키 설계
 
-Redis Cluster에서는 키가 여러 샤드에 분산된다. ACOR은 하나의 컬렉션에 속한 모든 키가 같은 샤드에 저장되도록 hash tag를 사용한다:
+Redis Cluster에서는 키가 여러 샤드에 분산되므로, ACOR은 하나의 컬렉션에 속한 모든 키를 같은 샤드에 저장하려고 hash tag를 사용한다:
 
 ```
 {collection-name}:prefix:state

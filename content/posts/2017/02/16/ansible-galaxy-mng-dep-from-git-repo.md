@@ -6,7 +6,7 @@ tags: [ansible, tutorial]
 
 ## Git 저장소에 Ansible Role 올리기
 
-먼저, Ansible Role 을 개발하기 위한 Git repository를 생성한다. 그리고, Ansible Role 초기 프로젝트 구조를 Ansible Galaxy 를 사용하여 생성한다.
+먼저 Ansible Role을 개발할 Git repository를 만든 뒤, Ansible Galaxy로 Role의 초기 프로젝트 구조를 생성한다.
 
 * Git repository 를 로컬 머신에 복제한다.
 
