@@ -1,5 +1,6 @@
 ---
 title: Ansible Module 개발하기
+description: "Ansible 커스텀 모듈의 개발 환경 구축, 명세 작성, 구현과 테스트, 파라미터 검증, Check Mode와 Diff Mode 지원까지 정리한다."
 date: 2017-11-14T21:44:56+09:00
 tags: [ansible, tutorial]
 ---

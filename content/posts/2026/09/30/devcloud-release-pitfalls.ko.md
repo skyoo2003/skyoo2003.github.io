@@ -1,5 +1,6 @@
 ---
 title: "테스트는 통과했는데 바이너리는 죽어 있었다: DevCloud 릴리즈 회고"
+description: "boto3 테스트를 통과하고도 실행 즉시 죽는 DevCloud 바이너리를 두 번 배포한 원인인 CGO_ENABLED=0과 GoReleaser 설정, 재발 방지책을 회고한다."
 date: 2026-09-30T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, devcloud, release-engineering, security]

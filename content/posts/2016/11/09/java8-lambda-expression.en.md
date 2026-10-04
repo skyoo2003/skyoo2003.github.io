@@ -1,5 +1,6 @@
 ---
 title: Deep Dive into Java 8 Lambda Expressions
+description: "Java 8 lambda expressions in depth: functional programming basics, syntax, behavior parameterization, Optional, and standard and custom functional interfaces."
 date: 2016-11-09T18:02:24+09:00
 tags: [java, tutorial]
 ---

@@ -1,5 +1,6 @@
 ---
 title: "ACOR 소개: Redis 기반 Aho-Corasick 구현"
+description: "여러 키워드를 한 번에 찾는 Aho-Corasick 알고리즘의 트라이와 실패 함수 원리, Redis를 저장소로 쓰는 Go 구현체 ACOR의 설계와 사용법을 소개한다."
 date: 2017-06-28T16:39:49+09:00
 tags: [go, redis, acor, tutorial]
 ---

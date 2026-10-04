@@ -1,5 +1,6 @@
 ---
 title: "Testing Ansible Roles with Molecule"
+description: "An introduction to Molecule for testing Ansible roles: installation and its core concepts of scenarios, drivers, provisioners, and verifiers."
 date: 2022-05-26T21:48:32+09:00
 tags: [ansible, testing, tutorial, devops]
 ---

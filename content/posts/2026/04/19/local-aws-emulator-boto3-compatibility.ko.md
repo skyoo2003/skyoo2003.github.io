@@ -1,5 +1,6 @@
 ---
 title: "로컬 AWS 에뮬레이터에서 boto3 호환성 달성하기"
+description: "로컬 AWS 에뮬레이터 DevCloud가 5가지 AWS 프로토콜을 한 게이트웨이에서 감지하고 직렬화해 boto3 호환성 테스트 96%를 통과한 방법을 설명한다."
 date: 2026-04-19T00:00:00+09:00
 tags: [aws, emulator, boto3, python, devcloud]
 ---

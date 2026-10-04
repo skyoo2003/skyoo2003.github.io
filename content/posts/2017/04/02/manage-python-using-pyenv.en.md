@@ -1,5 +1,6 @@
 ---
 title: Managing Python Virtual Environments with pyenv
+description: "How pyenv's shims work, plus installation, environment variables, and key commands for managing multiple Python versions per project on one machine."
 date: 2017-04-02T01:36:27+09:00
 tags: [python, tutorial]
 ---

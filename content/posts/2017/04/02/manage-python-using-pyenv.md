@@ -1,5 +1,6 @@
 ---
 title: pyenv 파이썬 버전 가상 환경 관리
+description: "pyenv의 shim 동작 원리와 설치, 환경변수, 주요 명령어를 정리해 한 시스템에서 여러 파이썬 버전을 프로젝트별로 관리하는 방법을 소개한다."
 date: 2017-04-02T01:36:27+09:00
 tags: [python, tutorial]
 ---

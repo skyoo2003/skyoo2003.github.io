@@ -1,5 +1,6 @@
 ---
 title: "Achieving boto3 Compatibility in a Local AWS Emulator"
+description: "How the local AWS emulator DevCloud detects and serializes five AWS protocols behind one gateway to pass 96% of its boto3 compatibility tests."
 date: 2026-04-19T00:00:00+09:00
 tags: [aws, emulator, boto3, python, devcloud]
 ---

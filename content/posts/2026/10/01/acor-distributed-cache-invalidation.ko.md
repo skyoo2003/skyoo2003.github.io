@@ -1,5 +1,6 @@
 ---
 title: "ACOR의 로컬 캐시 무효화: Redis Pub/Sub로 여러 인스턴스를 맞추기"
+description: "Redis Pub/Sub로 여러 ACOR 인스턴스의 로컬 캐시를 무효화하며 겪은 자기 메시지, 카운터 누수, 유실된 무효화, 잘못된 재빌드 문제와 해결 방법을 정리한다."
 date: 2026-10-01T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, caching]

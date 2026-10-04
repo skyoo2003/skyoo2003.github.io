@@ -1,5 +1,6 @@
 ---
 title: Java 8 살펴보기
+description: "Java 8에 추가된 람다 표현식, Stream API, 디폴트 메서드, java.time 날짜 API, 동시성·NIO 개선과 PermGen 제거를 한눈에 정리한다."
 date: 2016-10-25T21:33:00+09:00
 tags: [java, tutorial]
 ---

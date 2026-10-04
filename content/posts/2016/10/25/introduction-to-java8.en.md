@@ -1,5 +1,6 @@
 ---
 title: Exploring Java 8
+description: "An overview of what Java 8 added: lambda expressions, the Stream API, default methods, the java.time date API, concurrency and NIO improvements, and PermGen removal."
 date: 2016-10-25T21:33:00+09:00
 tags: [java, tutorial]
 ---

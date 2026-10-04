@@ -1,5 +1,6 @@
 ---
 title: "ACOR V3: Versioned Dictionaries, Snapshots, and a Million Keywords"
+description: "ACOR V3 versioned dictionaries for million-keyword workloads: bucket, chunk, and manifest storage, snapshots and sharding, the reverted delta search, and benchmarks."
 date: 2026-10-02T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, valkey, acor, performance]

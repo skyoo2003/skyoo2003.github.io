@@ -1,5 +1,6 @@
 ---
 title: "KVS: Inside the Architecture of a Go Key-Value Store"
+description: "The architecture of the Go key-value store KVS v1.0.0: package layout, module and server modes, data flow, and its Red-Black Tree and LSM Tree. Later versions differ."
 date: 2026-03-18T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, data-structures, kvs, tutorial]

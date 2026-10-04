@@ -1,5 +1,6 @@
 ---
 title: "v1이라고 말하는 비용: 세 Go 프로젝트에서 호환성 약속을 기계로 지키는 법"
+description: "ACOR, KVS, DevCloud를 v1으로 올리며 retract로 유령 버전을 회수하고 공개 API 목록, 데이터 포맷, 설정 호환성을 CI로 검사한 방법을 정리한다."
 date: 2026-10-04T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, api-compatibility, acor, kvs, devcloud]

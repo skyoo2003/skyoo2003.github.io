@@ -1,5 +1,6 @@
 ---
 title: "추측 대신 측정: ACOR 매칭 엔진을 빠르게 만든 변경과 되돌린 변경"
+description: "ACOR v0.9.0~v1.5.0에서 Redis 왕복 감소, ASCII 직접 인덱스, 전이 표 평탄화로 매칭을 빠르게 한 변경과 측정 후 제거한 Bloom 필터를 정리한다."
 date: 2026-10-01T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, acor, performance, aho-corasick]

@@ -1,5 +1,6 @@
 ---
 title: Various Terminology Used in the Workplace
+description: "A glossary of workplace terms from business and engineering, including MECE, dogfooding, ISO 8601, SLA/SLO/SLI, thundering herd, and technical debt."
 date: 2022-05-26T14:32:18+09:00
 tags: [terminology, business, software-engineering]
 ---

@@ -1,5 +1,6 @@
 ---
 title: "Measure, Don't Guess: What Made ACOR's Matcher Faster (and What We Removed)"
+description: "ACOR performance work from v0.9.0 to v1.5.0: fewer Redis round trips, ASCII direct indexing, flattened transition tables, and the Bloom filter removed after measuring."
 date: 2026-10-01T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, acor, performance, aho-corasick]

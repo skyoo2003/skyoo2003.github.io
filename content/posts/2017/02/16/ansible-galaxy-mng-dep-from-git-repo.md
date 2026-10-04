@@ -1,5 +1,6 @@
 ---
 title: Ansible Galaxy - Git 저장소를 활용하여 Role 의존성 관리하기
+description: "Ansible Role을 Git 저장소에 올리고 requirements.yml로 가져오는 방법, private 저장소 인증과 Jenkins·GitHub Actions 연동을 정리한다."
 date: 2017-02-16T17:31:36+09:00
 tags: [ansible, tutorial]
 ---

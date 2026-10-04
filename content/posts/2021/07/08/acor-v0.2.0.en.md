@@ -1,5 +1,6 @@
 ---
 title: "ACOR v0.2.0 Release: Standard Project Structure and Bug Fixes"
+description: "ACOR v0.2.0 adopts the standard Go project layout, updates supported Go versions and error names, fixes a NodeKey output bug, and explains how to upgrade."
 date: 2021-07-08T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---

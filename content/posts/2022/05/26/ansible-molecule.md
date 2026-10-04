@@ -1,5 +1,6 @@
 ---
 title: "Ansible Molecule으로 테스트 작성하기"
+description: "Ansible Role 테스트 프레임워크 Molecule의 설치 방법과 시나리오, 드라이버, 프로비저너, 베리파이어 개념을 정리한다."
 date: 2022-05-26T21:48:32+09:00
 tags: [ansible, testing, tutorial, devops]
 ---

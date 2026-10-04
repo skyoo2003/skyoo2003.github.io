@@ -1,5 +1,6 @@
 ---
 title: "ACOR 스키마 V2: Redis 키 99%를 줄이고 V1에서 안전하게 옮기기"
+description: "ACOR 스키마 V2가 해시와 Lua 스크립트로 Redis 키를 컬렉션당 3개로 줄인 설계, V1 마이그레이션 API, 롤백 주의사항과 V1 은퇴 과정을 정리한다."
 date: 2026-10-02T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, data-migration]

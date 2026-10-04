@@ -1,5 +1,6 @@
 ---
 title: "Before You Say 431 Services: DevCloud's Fidelity Manifest and Coverage Figures"
+description: "Instead of headline service counts, DevCloud grades each operation in three tiers in a generated manifest and has CI check the coverage numbers in its docs."
 date: 2026-09-29T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, devcloud, testing, documentation]

@@ -1,5 +1,6 @@
 ---
 title: "Introducing ACOR: Redis-backed Aho-Corasick Implementation"
+description: "How the Aho-Corasick algorithm matches many keywords at once using a trie and failure links, and how ACOR implements it in Go with Redis as storage."
 date: 2017-06-28T16:39:49+09:00
 tags: [go, redis, acor, tutorial]
 ---

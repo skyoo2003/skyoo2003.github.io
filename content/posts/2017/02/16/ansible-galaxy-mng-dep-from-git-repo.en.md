@@ -1,5 +1,6 @@
 ---
 title: Ansible Galaxy - Managing Role Dependencies Using Git Repositories
+description: "How to publish Ansible roles to Git repositories and pull them in with requirements.yml, including private repository auth and Jenkins and GitHub Actions integration."
 date: 2017-02-16T17:31:36+09:00
 tags: [ansible, tutorial]
 ---

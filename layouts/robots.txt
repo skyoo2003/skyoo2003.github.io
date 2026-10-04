@@ -1,8 +1,5 @@
 User-agent: *
-Disallow: /about/
-{{- range .Site.Languages }}
-Disallow: {{ printf "/%s/about/" .Lang }}
-{{- end }}
+Allow: /
 Sitemap: {{ "sitemap.xml" | absURL }}
 {{- range .Site.Languages }}
 Sitemap: {{ printf "/%s/sitemap.xml" .Lang | absURL }}

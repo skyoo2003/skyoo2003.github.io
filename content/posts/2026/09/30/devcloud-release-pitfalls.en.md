@@ -1,5 +1,6 @@
 ---
 title: "Tests Passed, Binary Was Dead: A DevCloud Release Post-Mortem"
+description: "A post-mortem of two DevCloud releases that passed every boto3 test but crashed on start, caused by CGO_ENABLED=0 and a GoReleaser config, and how to prevent a repeat."
 date: 2026-09-30T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, devcloud, release-engineering, security]

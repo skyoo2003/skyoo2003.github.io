@@ -1,5 +1,6 @@
 ---
 title: Understanding the alternatives Command
+description: "How to use alternatives (update-alternatives) to manage symlink groups and switch default command versions, with Maven examples for --install, --config, and more."
 date: 2017-03-17T11:13:43+09:00
 tags: [linux, tutorial]
 ---

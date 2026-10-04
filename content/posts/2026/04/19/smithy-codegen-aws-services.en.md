@@ -1,5 +1,6 @@
 ---
 title: "Auto-Generating AWS Services from Smithy Models"
+description: "How DevCloud parses AWS Smithy model JSON and renders Go templates to generate per-service types, routers, and serialization code for a local AWS emulator."
 date: 2026-04-19T00:00:00+09:00
 tags: [aws, smithy, codegen, go, devcloud]
 ---

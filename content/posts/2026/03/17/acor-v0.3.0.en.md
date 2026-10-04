@@ -1,5 +1,6 @@
 ---
 title: "What's New in ACOR v0.3.0"
+description: "New in ACOR: Index APIs that return match positions, Redis Sentinel, Cluster, and Ring support, a command-line tool, and HTTP and gRPC server adapters."
 date: 2026-03-17T00:00:00+09:00
 tags: [go, redis, acor]
 ---

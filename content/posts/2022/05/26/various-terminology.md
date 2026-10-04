@@ -1,5 +1,6 @@
 ---
 title: 현업에서 사용했던 각종 용어들 정리
+description: "MECE, Dogfooding, ISO 8601, SLA/SLO/SLI, Thundering Herd, Technical Debt 등 현업에서 자주 쓰는 비즈니스·엔지니어링 용어를 정리했다."
 date: 2022-05-26T14:32:18+09:00
 tags: [terminology, business, software-engineering]
 ---

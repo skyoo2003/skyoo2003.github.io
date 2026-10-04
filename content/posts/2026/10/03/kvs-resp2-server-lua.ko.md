@@ -1,5 +1,6 @@
 ---
 title: "KVS에 Redis 프로토콜 붙이기: RESP2 서버와 Lua 스크립팅"
+description: "KVS에 RESP2 서버와 Lua 스크립팅을 붙이며 정한 리스너 기본값, 길이를 믿지 않는 파싱, SCAN 커서, 원자성과 타임아웃, 샌드박스를 설명한다."
 date: 2026-10-03T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, redis-protocol, lua]

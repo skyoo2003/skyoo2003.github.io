@@ -1,5 +1,6 @@
 ---
 title: Ansible Callback Plugin 소개
+description: "Ansible 이벤트를 후킹해 로그를 남기거나 Slack으로 알림을 보내는 Callback Plugin의 동작 방식, ansible.cfg 설정, 이벤트 종류를 정리한다."
 date: 2017-11-14T21:44:56+09:00
 tags: [ansible, tutorial]
 ---

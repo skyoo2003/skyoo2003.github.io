@@ -1,5 +1,6 @@
 ---
 title: "Answering Thousands of AWS Operations from Models Alone: DevCloud's Generic CRUD Engine"
+description: "How DevCloud's generic CRUD engine answers thousands of AWS operations by classifying them at codegen time, and why it refuses rather than faking success."
 date: 2026-09-28T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, smithy, go, devcloud, emulator]

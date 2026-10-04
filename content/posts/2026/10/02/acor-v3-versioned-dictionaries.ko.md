@@ -1,5 +1,6 @@
 ---
 title: "ACOR V3: 버전이 있는 사전, 스냅샷, 그리고 100만 키워드"
+description: "100만 키워드 사전을 위한 ACOR V3의 버전 있는 사전, 버킷·청크·매니페스트 저장 구조, 스냅샷과 샤딩, 되돌린 delta 검색과 측정 결과를 정리한다."
 date: 2026-10-02T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, valkey, acor, performance]

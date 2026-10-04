@@ -1,5 +1,8 @@
 ---
 title: "소개"
+noindex: true
+sitemap:
+  disable: true
 ---
 
 ## 유성규

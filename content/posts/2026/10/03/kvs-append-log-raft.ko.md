@@ -1,5 +1,6 @@
 ---
 title: "KVS 내구성과 클러스터링: Append Log, Raft, 그리고 4시간 soak test"
+description: "KVS에 append log로 단일 노드 내구성을, Raft로 클러스터링을 더한 과정과 보장 범위, 4시간 soak test에서 찾은 하네스 버그를 정리한다."
 date: 2026-10-03T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, raft, distributed-systems]

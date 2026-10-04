@@ -58,6 +58,8 @@ languages:
           weight: 5
 params:
   description: "Devlog in the SKY - Yet another developer's blog"
+  images:
+    - /images/logo.jpg
   author:
     name: "Sung-Kyu Yoo"
     email: "skyoo2003@gmail.com"
@@ -104,7 +106,6 @@ outputs:
     - RSS
 taxonomies:
   tag: tags
-  category: categories
 markup:
   goldmark:
     renderer:

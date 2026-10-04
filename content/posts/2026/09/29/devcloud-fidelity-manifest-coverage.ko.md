@@ -1,5 +1,6 @@
 ---
 title: "서비스 431개라고 말하기 전에: DevCloud의 Fidelity Manifest와 커버리지 지표"
+description: "서비스 수 대신 오퍼레이션 단위 세 등급과 자동 생성 manifest로 DevCloud 커버리지를 세고, 문서의 숫자를 CI로 검사하는 방법을 다룬다."
 date: 2026-09-29T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, devcloud, testing, documentation]

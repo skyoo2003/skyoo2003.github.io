@@ -1,5 +1,6 @@
 ---
 title: "Durability and Clustering in KVS: Append Log, Raft, and a Four-Hour Soak Test"
+description: "Adding durability to KVS with an append log and clustering with Raft, which guarantees it makes and doesn't, and harness bugs found in a four-hour soak test."
 date: 2026-10-03T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, raft, distributed-systems]

@@ -1,5 +1,6 @@
 ---
 title: Java 8 람다 표현식 자세히 살펴보기
+description: "함수형 프로그래밍 개념부터 Java 8 람다 표현식의 문법, 행위 파라미터화, Optional 조합, 표준·커스텀 함수형 인터페이스까지 자세히 살펴본다."
 date: 2016-11-09T18:02:24+09:00
 tags: [java, tutorial]
 ---

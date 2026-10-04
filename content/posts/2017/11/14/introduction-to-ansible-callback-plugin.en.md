@@ -1,5 +1,6 @@
 ---
 title: Introduction to Ansible Callback Plugin
+description: "How Ansible callback plugins hook into playbook events to log results or notify Slack, covering how they work, ansible.cfg settings, and available events."
 date: 2017-11-14T21:44:56+09:00
 tags: [ansible, tutorial]
 ---

@@ -1,5 +1,6 @@
 ---
 title: "Speaking Redis: Adding a RESP2 Server and Lua Scripting to KVS"
+description: "Adding a RESP2 server and Lua scripting to the Go key-value store KVS: safe listener defaults, defensive parsing, SCAN cursors, atomicity, timeouts, and sandboxing."
 date: 2026-10-03T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, redis-protocol, lua]

@@ -1,5 +1,8 @@
 ---
 title: "About"
+noindex: true
+sitemap:
+  disable: true
 ---
 
 ## Sung-Kyu Yoo

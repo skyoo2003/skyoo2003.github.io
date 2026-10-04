@@ -1,5 +1,6 @@
 ---
 title: "ACOR Schema V2: 99% Fewer Redis Keys and a Safe Path Off V1"
+description: "How ACOR schema V2 cuts Redis keys to three per collection with hashes and Lua scripts, plus the V1 migration API, rollback caveats, and retiring V1."
 date: 2026-10-02T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, data-migration]

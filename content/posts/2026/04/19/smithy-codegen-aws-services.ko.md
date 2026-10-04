@@ -1,5 +1,6 @@
 ---
 title: "Smithy 모델로 AWS 서비스를 자동 생성하는 방법"
+description: "AWS Smithy 모델 JSON을 파싱하고 Go 템플릿으로 서비스별 타입, 라우터, 직렬화 코드를 생성하는 DevCloud의 코드 생성 파이프라인을 설명한다."
 date: 2026-04-19T00:00:00+09:00
 tags: [aws, smithy, codegen, go, devcloud]
 ---

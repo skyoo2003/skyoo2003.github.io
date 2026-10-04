@@ -1,5 +1,6 @@
 ---
 title: "Ansible Molecule with Kind - Kubernetes Automation Testing with Docker"
+description: "Step by step, combine Ansible Molecule's delegated driver with KIND to automatically test Ansible roles against a Kubernetes cluster running in Docker."
 date: 2022-05-26T22:08:24+09:00
 tags: [ansible, kubernetes, testing, tutorial, devops]
 ---

@@ -1,5 +1,6 @@
 ---
 title: "Ansible Molecule with Kind - 도커를 활용한 쿠버네티스 자동화 테스트 작성"
+description: "Ansible Molecule의 delegated 드라이버와 KIND를 조합해 도커 위 쿠버네티스 클러스터에서 Ansible Role을 자동 테스트하는 과정을 단계별로 정리한다."
 date: 2022-05-26T22:08:24+09:00
 tags: [ansible, kubernetes, testing, tutorial, devops]
 ---

@@ -1,5 +1,6 @@
 ---
 title: "ACOR v0.1.0 릴리즈: Go modules와 GitHub Actions로의 전환"
+description: "ACOR v0.1.0에서 Glide를 Go modules로, Travis CI를 GitHub Actions로 옮긴 과정과 업그레이드 방법을 정리한다."
 date: 2020-11-15T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---

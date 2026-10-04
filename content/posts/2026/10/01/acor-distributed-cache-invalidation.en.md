@@ -1,5 +1,6 @@
 ---
 title: "Keeping Local Caches Consistent Across ACOR Instances with Redis Pub/Sub"
+description: "Keeping ACOR's local caches consistent with Redis Pub/Sub: self-invalidation, counter leaks, lost invalidations, wrong rebuilds, and how each was fixed."
 date: 2026-10-01T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, caching]

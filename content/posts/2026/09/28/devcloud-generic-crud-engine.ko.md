@@ -1,5 +1,6 @@
 ---
 title: "모델만으로 수천 개 AWS 오퍼레이션에 응답하기: DevCloud의 Generic CRUD 엔진"
+description: "코드 생성 시점의 오퍼레이션 분류만으로 수천 개 AWS API에 응답하는 DevCloud Generic CRUD 엔진의 구조와 가짜 성공을 거절하는 원칙을 설명한다."
 date: 2026-09-28T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, smithy, go, devcloud, emulator]

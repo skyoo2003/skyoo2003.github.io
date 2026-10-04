@@ -1,5 +1,6 @@
 ---
 title: "The Cost of Saying v1: Enforcing Compatibility Promises in Three Go Projects"
+description: "Taking ACOR, KVS, and DevCloud to v1: retracting ghost versions and using CI to check public API lists, data formats, and config compatibility."
 date: 2026-10-04T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, api-compatibility, acor, kvs, devcloud]

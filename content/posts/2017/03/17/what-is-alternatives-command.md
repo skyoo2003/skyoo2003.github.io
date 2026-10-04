@@ -1,5 +1,6 @@
 ---
 title: alternatives 명령어 알아보기
+description: "alternatives(update-alternatives)로 심볼릭 링크 그룹을 만들고 기본 명령 버전을 바꾸는 방법을 Maven 예제와 옵션별로 정리한다."
 date: 2017-03-17T11:13:43+09:00
 tags: [linux, tutorial]
 ---

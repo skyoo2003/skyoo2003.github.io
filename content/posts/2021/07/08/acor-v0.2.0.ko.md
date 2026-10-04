@@ -1,5 +1,6 @@
 ---
 title: "ACOR v0.2.0 릴리즈: 표준 프로젝트 구조와 버그 수정"
+description: "ACOR v0.2.0의 Go 표준 프로젝트 구조 전환, 지원 Go 버전과 에러 이름 변경, NodeKey 출력 버그 수정과 업그레이드 방법을 정리한다."
 date: 2021-07-08T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---

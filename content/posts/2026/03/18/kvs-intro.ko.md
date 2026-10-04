@@ -1,5 +1,6 @@
 ---
 title: "KVS: Go로 구현하는 Key-Value 스토어의 내부 아키텍처"
+description: "Go 키-값 스토어 KVS v1.0.0의 패키지 구조, 모듈·서버 모드, 데이터 흐름과 Red-Black Tree·LSM Tree 구현을 살펴본다. 이후 버전은 구조가 다르다."
 date: 2026-03-18T00:00:00+09:00
 lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, data-structures, kvs, tutorial]

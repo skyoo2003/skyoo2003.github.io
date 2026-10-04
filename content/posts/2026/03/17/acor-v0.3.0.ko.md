@@ -1,5 +1,6 @@
 ---
 title: "ACOR v0.3.0: 새로운 기능 소개"
+description: "ACOR에 추가된 매칭 위치를 돌려주는 Index API, Redis Sentinel·Cluster·Ring 지원, 커맨드라인 도구, HTTP·gRPC 서버 어댑터를 소개한다."
 date: 2026-03-17T00:00:00+09:00
 tags: [go, redis, acor]
 ---

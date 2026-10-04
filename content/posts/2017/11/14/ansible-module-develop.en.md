@@ -1,5 +1,6 @@
 ---
 title: Developing Ansible Modules
+description: "A walkthrough of building a custom Ansible module: dev setup, documentation spec, implementation, testing, parameter validation, and Check and Diff mode support."
 date: 2017-11-14T21:44:56+09:00
 tags: [ansible, tutorial]
 ---
