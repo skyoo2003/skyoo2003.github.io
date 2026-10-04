@@ -1,5 +1,6 @@
 {{ define "main" }}
   {{- $ko := eq .Language.Lang "ko" -}}
+  {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
   <main id="content" class="devlog-home">
     <header class="devlog-intro">
       <p class="devlog-eyebrow">DEVLOG IN THE SKY</p>

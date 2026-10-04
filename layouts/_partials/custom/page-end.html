@@ -1,0 +1,4 @@
+{{ if eq .Layout "search" }}
+  {{ $entry := resources.Get "js/search-entry.js" | minify | fingerprint }}
+  <script defer src="{{ $entry.RelPermalink }}" integrity="{{ $entry.Data.Integrity }}"></script>
+{{ end }}

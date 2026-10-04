@@ -1,0 +1,13 @@
+{{ define "main" }}
+  {{- $ko := eq .Language.Lang "ko" -}}
+  {{ partial "sidebar.html" (dict "context" . "disableSidebar" true) }}
+  <main id="content" class="devlog-home">
+    <header class="devlog-intro">
+      <h1>{{ .Title }}</h1>
+      <div class="content"><p>{{ if $ko }}글 제목과 본문에서 검색합니다. 검색창을 닫았다면 아래 버튼으로 다시 열 수 있습니다.{{ else }}Search post titles and content. Use the button below to reopen the search dialog.{{ end }}</p></div>
+      {{ partial "components/search-trigger.html" (dict) }}
+    </header>
+    <p>{{ if $ko }}검색이 작동하지 않으면{{ else }}If search is unavailable,{{ end }} <a href="{{ "posts/" | relLangURL }}">{{ if $ko }}전체 글 보기{{ else }}browse all posts{{ end }} →</a></p>
+  </main>
+  {{ partial "custom/page-end.html" . }}
+{{ end }}
