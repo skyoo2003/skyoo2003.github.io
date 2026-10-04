@@ -28,7 +28,7 @@ tags: [terminology, business, software-engineering]
 ![MECE의 특징](https://img1.daumcdn.net/thumb/R1280x0/?scode=mtistory2&fname=https%3A%2F%2Fk.kakaocdn.net%2Fdn%2FbYCnyj%2FbtqJOzL4NOj%2F8agJdkErNXz8GC58hNZttk%2Fimg.png)
 출처: [중복과 누락없는 논리적 분석 MECE](https://techness.tistory.com/m/entry/%EC%A4%91%EB%B3%B5%EA%B3%BC-%EB%88%84%EB%9D%BD%EC%97%86%EB%8A%94-%EB%85%BC%EB%A6%AC%EC%A0%81-%EB%B6%84%EC%84%9D-MECE)
 
-[`Mutually Exclusive Collectively Exhaustive`](https://ko.wikipedia.org/wiki/MECE)의 약자로 어떤 문제를 해결하기 위한 방안이 겹치지 않으면서 빠짐없이 나누는 것을 의미한다. `중복과 누락 없이`라고 할 수 있을 것이다.
+[`Mutually Exclusive Collectively Exhaustive`](https://ko.wikipedia.org/wiki/MECE)의 약자로, 어떤 문제를 해결하기 위한 방안을 겹치지 않으면서 빠짐없이 나눈다는 의미다. `중복과 누락 없이`라고 이해하면 될 것이다.
 
 ### 정의
 
@@ -146,7 +146,7 @@ const isoString = now.toISOString();  // 2024-01-15T14:30:00.123Z
 
 ### 실무에서의 활용
 
-아무래도 공식적인 논의나 업무 상에는 경직되고 사무적인 관계가 형성되는 경우가 있는데, 아이스 브레이킹 기법들을 잘 활용하면 효과적이다.
+공식적인 논의나 업무에서는 관계가 경직되고 사무적으로 흐를 때가 있어, 아이스 브레이킹 기법을 활용하면 분위기를 풀기에 효과적이다.
 
 **간단한 아이스 브레이킹 기법들:**
 

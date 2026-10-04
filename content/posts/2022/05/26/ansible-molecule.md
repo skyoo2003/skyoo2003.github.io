@@ -70,7 +70,7 @@ $ pip install molecule[ec2]
 
 ### 시나리오 (Scenario)
 
-시나리오는 테스트 수명주기를 정의합니다. 기본 시나리오는 `default`이며, 필요에 따라 여러 시나리오를 생성할 수 있습니다. 예를 들어:
+시나리오는 테스트 수명주기를 정의하며 기본값은 `default`입니다. 필요에 따라 여러 시나리오를 생성할 수도 있습니다. 예를 들어:
 
 - `default`: 기본 Docker 기반 테스트
 - `centos`: CentOS 특화 테스트
@@ -89,7 +89,7 @@ $ pip install molecule[ec2]
 
 ### 프로비저너 (Provisioner)
 
-Role을 적용하는 방법을 정의합니다. 기본적으로 Ansible을 사용합니다.
+Role을 적용하는 방법을 정의하며 기본적으로 Ansible을 사용합니다.
 
 ### 베리파이어 (Verifier)
 
@@ -196,7 +196,7 @@ lint: |
 
 ### 4. converge.yml 작성
 
-`/path/to/role/molecule/default/converge.yml`을 생성하고 환경 구성 코드를 추가합니다. Docker 컨테이너를 만든 후 Role을 수행하여 환경을 구성합니다:
+`/path/to/role/molecule/default/converge.yml`을 생성해 환경 구성 코드를 추가합니다. 이 코드는 Docker 컨테이너를 만든 뒤 Role을 수행하여 환경을 구성합니다:
 
 ```yaml
 ---

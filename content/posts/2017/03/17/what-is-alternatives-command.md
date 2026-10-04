@@ -17,7 +17,7 @@ Linux 시스템에서는 여러 버전의 동일한 프로그램이 설치될 �
 - Python: Python 2.7, Python 3.6, Python 3.9
 - Maven: 3.3.9, 3.6.3, 3.8.1
 
-이때 `java`, `python`, `mvn` 같은 명령어가 어떤 버전을 가리킬지 결정해야 한다. `alternatives`는 이 문제를 심볼릭 링크를 통해 우아하게 해결한다.
+이때 `java`, `python`, `mvn` 같은 명령어가 어떤 버전을 가리킬지 결정해야 하는데, `alternatives`로 심볼릭 링크를 관리하면 이를 해결할 수 있다.
 
 ### 동작 원리
 
@@ -37,7 +37,7 @@ Linux 시스템에서는 여러 버전의 동일한 프로그램이 설치될 �
 
 `--install` 액션을 통해 심볼릭 링크를 생성할 수 있다. Redhat 기준으로 `alternatives` 는 기본적으로 `/etc/alternatives/<name>` 의 경로에 심볼릭 링크가 생성되고, mode, priority, link, path 에 대한 정보를 `/var/lib/alternatives/<name>` 의 경로에 저장 한다. 심볼릭 링크가 처음 생성되는 경우에는 `<link>`의 경로에 `/etc/alternatives/<name>`에 대한 심볼릭 링크가 생성된다. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
 
-`--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
+`--slave` 옵션은 마스터 심볼릭 링크와 부수적인 명령어를 함께 관리할 때 사용한다. 예를 들어 `java`의 심볼릭 링크를 생성하면서 `javac`, `javadoc`도 같이 관리할 수 있도록 `--slave` 옵션을 여러 번 정의할 수 있다.
 
 ```bash
 $ alternatives --install <link> <name> <path> <priority> [--slave <link> <name> <path>]*

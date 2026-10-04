@@ -1,10 +1,13 @@
 ---
 title: "KVS: Inside the Architecture of a Go Key-Value Store"
 date: 2026-03-18T00:00:00+09:00
+lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, data-structures, kvs, tutorial]
 ---
 
 ## Introduction
+
+This post describes v1.0.0 as it existed on 2026-03-18. Packages such as `pkg/rbt` and `pkg/lsm` have since been removed, and the library path and server layout have changed. The structure and examples below should be read as historical descriptions. See the [RESP2 and Lua post](/en/posts/2026/10/03/kvs-resp2-server-lua/) for the revised server and the [append log and Raft post](/en/posts/2026/10/03/kvs-append-log-raft/) for durability and clustering.
 
 [KVS](https://github.com/skyoo2003/kvs) v1.0.0 has been released. KVS is a simple in-memory key-value store written in Go that can be used as a Go module or deployed as a standalone server. This post introduces the major features included in v1.0.0 and takes a deep dive into the core data structures: Red-Black Tree and LSM Tree implementations.
 

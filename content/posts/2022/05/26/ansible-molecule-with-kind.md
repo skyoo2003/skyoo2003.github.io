@@ -12,7 +12,7 @@ tags: [ansible, kubernetes, testing, tutorial, devops]
 
 ### Ansible Molecule
 
-Ansible Molecule은 Ansible Roles를 가상화 기술을 통해 고립된 환경에서 테스트할 수 있게 도와주는 프레임워크입니다. 다양한 드라이버를 지원하며, Kubernetes 환경에서는 Delegated 드라이버를 사용하여 KIND와 통합할 수 있습니다.
+Ansible Molecule은 가상화 기술로 고립된 환경을 만들어 Ansible Roles를 테스트할 수 있게 도와주는 프레임워크입니다. 다양한 드라이버를 지원하며 Kubernetes 환경에서는 Delegated 드라이버로 KIND와 통합할 수 있습니다.
 
 ### KIND (Kubernetes IN Docker)
 
@@ -782,7 +782,7 @@ $ kind build node-image --base-image ubuntu:22.04
 
 ### 리소스 제한
 
-KIND 클러스터는 Docker 컨테이너에서 실행되므로 호스트 시스템의 리소스를 공유합니다. 대규모 테스트 시 메모리와 CPU 사용량에 주의하세요.
+KIND 클러스터는 Docker 컨테이너에서 실행되어 호스트 시스템의 리소스를 공유하므로, 대규모 테스트에서는 메모리와 CPU 사용량에 주의하세요.
 
 ## 결론
 

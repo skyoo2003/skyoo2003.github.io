@@ -100,8 +100,7 @@ t -> { t.start(); }          // Single inferred-type parameter
 
 ## 람다 표현식 활용
 
-위에서 자바의 함수형 프로그래밍과 람다 표현식에 대해서 자세하게 살펴보았고, 이번에는 람다의 구체적인 명세에 대해서 정리해보고자 한다.
-람다식을 활용함에 있어 어떤 부분이 문법적인 제약이 있는지, 어떤 방법으로 활용될 수 있는지에 대해서 정리해보는 부분이라고 이해하면 좋다.
+자바의 함수형 프로그래밍과 람다 표현식을 살펴보았으니, 이제 람다의 구체적인 명세를 정리해보려 한다. 람다식을 활용할 때 어떤 문법적인 제약이 있고 어떤 방법으로 사용할 수 있는지 알아보자.
 
 ### 파라미터에 행위 전달 (Parameterized Behaviors)
 
@@ -464,7 +463,7 @@ public class ClosureExample {
 
 ### Java의 클로저 제약
 
-Java의 람다는 사실상 제한된 클로저다. 포획한 변수는 반드시 effectively final이어야 한다.
+Java의 람다는 포획한 변수가 반드시 effectively final이어야 한다는 점에서 제한된 클로저다.
 
 ```java
 public class ClosureLimitation {
@@ -503,7 +502,7 @@ Runnable r = () -> counter.value++;
 
 ### JVM 최적화
 
-Java 8의 람다는 `invokedynamic` 바이트코드를 사용하여 구현된다. 이를 통해 JVM이 런타임에 최적화를 수행할 수 있다.
+Java 8의 람다는 `invokedynamic` 바이트코드로 구현되어 JVM이 런타임에 최적화를 수행할 수 있다.
 
 ```java
 // 람다는 익명 클래스와 다르다
