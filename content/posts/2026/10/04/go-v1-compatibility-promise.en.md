@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, api-compatibility, acor, kvs, devcloud]
 ---
 
-## Introduction
-
 This year, three of my open-source projects reached v1: the Aho-Corasick library [ACOR](https://github.com/skyoo2003/acor), the key-value store [KVS](https://github.com/skyoo2003/kvs), and the AWS emulator [DevCloud](https://github.com/skyoo2003/devcloud). One caveat: KVS later retracted v1.0.0 for reasons covered below, so the release in which its promise actually takes effect is still being prepared.
 
 In Go, v1 is not just a number. Under the [import compatibility rule for Go modules](https://go.dev/blog/module-compatibility), code that used an older version of a package must keep working with a newer version at the same import path. A breaking change requires a new path such as `/v2`. Anything could change in v0, but from v1 on, whatever you publish has to be carried until v2.
@@ -153,6 +151,6 @@ DevCloud also defines a deprecation procedure. Deprecate in a minor release, whe
 | Docs verification | Audit of 180 godoc entries, 38 fixed | Surface file + exemption list | Wire promise = suite assertions |
 | Data format | V2 additive only | Not promised; unknown formats refused | Not promised |
 
-## Conclusion
+## Wrapping Up
 
 Before upgrading, check the compatibility exceptions and data-format conditions as well as the public API list. API snapshots expose changes; behavioral tests and audit records check the documentation. DevCloud's response guarantees also cover only properties asserted by its compatibility suite.

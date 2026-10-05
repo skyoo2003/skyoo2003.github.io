@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, redis-protocol, lua]
 ---
 
-## 들어가며
-
 [KVS](https://github.com/skyoo2003/kvs)는 Go로 만든 키-값 스토어로, [처음 소개한 글](/ko/posts/2026/03/18/kvs-intro/)에서는 Red-Black Tree와 LSM Tree 같은 자료구조를 중심으로 설명했다. 이후 실제로 쓸 수 있는 서버를 만드는 쪽으로 방향이 바뀌면서 저장 엔진은 append log와 Raft로 옮겨 갔고 아무도 import하지 않게 된 `pkg/rbt`, `pkg/lsm`, `pkg/bitset`, `pkg/cuckoofilter`도 정리했다.
 
 그 변화의 첫 단계가 **Redis 프로토콜(RESP2)** 지원이었다. 이 글에서는 프로토콜을 붙이며 정한 동작과 겪었던 문제를 살펴보고 내구성과 클러스터링은 [다음 글](/ko/posts/2026/10/03/kvs-append-log-raft/)에서 이어서 다루려 한다.
@@ -102,7 +100,7 @@ KVS에서는 마지막으로 도달한 키를 가리키는 **불투명한 핸들
 
 ### 쓰기 잠금으로 원자성 보장하기
 
-Lua 스크립팅에서는 `EVAL`, `EVALSHA`, `SCRIPT LOAD/EXISTS/FLUSH`를 지원하며 인터프리터로 Lua 5.1을 구현한 [gopher-lua](https://github.com/yuin/gopher-lua)를 사용하며, 스크립트의 `redis.call`도 클라이언트 명령과 같은 디스패치 테이블에서 처리한다.
+Lua 스크립팅은 `EVAL`, `EVALSHA`, `SCRIPT LOAD/EXISTS/FLUSH`를 지원한다. 인터프리터는 Lua 5.1을 Go로 구현한 [gopher-lua](https://github.com/yuin/gopher-lua)를 사용했고, 스크립트 안의 `redis.call`도 클라이언트 명령과 같은 디스패치 테이블에서 처리한다.
 
 Redis 스크립트의 원자성 약속을 지키려면 실행 중에 다른 명령이 끼어들지 않아야 한다. 이를 위해 KVS에서는 스크립트가 실행을 시작할 때 **스토어의 쓰기 잠금 하나**를 잡고 끝날 때까지 유지하도록 했다.
 
@@ -180,7 +178,7 @@ RESP2로 연결할 수 있다고 해서 모든 동작이 Redis와 같은 것은 
 
 Functions(`FCALL`), 스트림, 블로킹 명령(`BLPOP` 등), RESP3 push, `MONITOR`, 비트 연산, `GEO`, HyperLogLog, `SCRIPT KILL` 등은 지원하지 않는 기능으로 공개했고, 해당 명령에는 모두 에러로 답해 클라이언트가 잘못된 결과를 받아들이지 않고 지원 여부를 알 수 있게 했다.
 
-## 마치며
+## 정리
 
 기존 Redis 도구로 KVS에 연결할 때는 사용할 명령과 Lua 기능이 지원 목록에 있는지 먼저 확인하는 편이 좋다. 특히 스크립트는 5초가 지나면 중단되더라도 이미 수행한 쓰기가 남는다는 점을 고려해야 한다. 이렇게 만든 키 공간을 디스크에 보존하고 여러 노드로 복제한 과정은 [다음 글](/ko/posts/2026/10/03/kvs-append-log-raft/)에서 이어 가려 한다.
 

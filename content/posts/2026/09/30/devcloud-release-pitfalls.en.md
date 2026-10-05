@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, devcloud, release-engineering, security]
 ---
 
-## Introduction
-
 Updated on 2026-10-05. The implementation described here is main at [`734b839`](https://github.com/skyoo2003/devcloud/tree/734b83995a3f750f0db827ec9299bc8ed81a530c), after v1.2.0.
 
 [DevCloud](https://github.com/skyoo2003/devcloud) runs its boto3 compatibility suite before it ships a binary; at v1.0.0 that suite had 775 tests. Yet on the way to v1.0.0, binaries that passed this gate **died on startup** twice. The causes were different, but the root was the same: the binary the gate tested was not the binary users downloaded.
@@ -152,7 +150,7 @@ These are the release rules I follow after the three incidents:
 4. **When swapping a driver, compare defaults.** Even with the same interface, hidden defaults like timeouts, pragmas, and pool sizes can differ.
 5. **Put path checks on the narrowest boundary.** Check per tenant, not per root directory.
 
-## Conclusion
+## Wrapping Up
 
 Release checks now build the package without CGO and run smoke tests against that artifact. SQLite waiting time is explicit in the DSN. S3 paths are checked for bucket containment; filesystem symlinks, which `IsLocal` does not inspect, still need consideration in the deployment environment.
 

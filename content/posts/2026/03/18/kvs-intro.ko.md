@@ -6,940 +6,427 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, data-structures, kvs, tutorial]
 ---
 
-## 들어가며
+> 참고로 이 글은 2026-03-18 당시의 v1.0.0 기준이다. 이후 `pkg/rbt`, `pkg/lsm` 등은 제거됐고 라이브러리 경로와 서버 구성도 바뀌었으니, 아래 내용을 현재 버전의 사용법으로 보지 않도록 주의하자. 바뀐 서버 구성은 [RESP2와 Lua 글](/ko/posts/2026/10/03/kvs-resp2-server-lua/), 내구성과 클러스터링은 [append log와 Raft 글](/ko/posts/2026/10/03/kvs-append-log-raft/)에서 다룬다.
 
-참고로 이 글은 2026-03-18 당시 v1.0.0 기준이다. 이후 `pkg/rbt`, `pkg/lsm` 등은 제거됐고 라이브러리 경로와 서버 구성도 바뀌었다. 아래 구조와 예제를 현재 버전의 사용법으로 참고하지 않도록 주의해야 한다. 변경된 서버 구성은 [RESP2와 Lua 글](/ko/posts/2026/10/03/kvs-resp2-server-lua/), 내구성과 클러스터링은 [append log와 Raft 글](/ko/posts/2026/10/03/kvs-append-log-raft/)에서 다룬다.
+[KVS](https://github.com/skyoo2003/kvs) v1.0.0을 릴리즈했다. KVS는 Go로 작성한 간단한 인메모리 키-값 스토어로, Go 모듈로 import 해서 쓰거나 별도의 서버로 띄워서 쓸 수 있다. 이번 글에서는 v1.0.0의 구조를 간략하게 정리하고, 그 중에서도 Red-Black Tree와 LSM Tree 구현을 좀 더 자세히 살펴보려 한다.
 
-[KVS](https://github.com/skyoo2003/kvs) v1.0.0이 출시되었다. KVS는 Go로 작성된 간단한 인메모리 키-값 스토어로, Go 모듈로 임포트하여 사용하거나 독립형 서버로 배포할 수 있다. 이 글에서는 v1.0.0에 포함된 주요 기능들을 소개하고, 특히 핵심 데이터 구조인 Red-Black Tree와 LSM Tree의 구현을 심층적으로 살펴본다.
+이미 Redis, LevelDB, BoltDB처럼 훌륭한 키-값 스토어가 많은데 굳이 직접 만든 이유는 단순하다. 학습과 실험이 목적이었다. 책이나 문서로만 보던 자료구조와 설계 결정들을 직접 구현해보면서 어떤 트레이드오프가 있는지 경험해보고 싶었다. 그래서 외부 C 의존성 없이 전부 Go로 작성했고, 라이브러리와 서버 두 가지 방식을 모두 지원하도록 했다.
 
-### 왜 또 다른 키-값 스토어인가?
+v1.0.0에 포함된 내용은 아래와 같다.
 
-이미 Redis, LevelDB, BoltDB 등 훌륭한 키-값 스토어들이 존재한다. 그렇다면 왜 KVS를 만들었을까? KVS는 학습과 실험을 목적으로 시작된 프로젝트다. 실제 프로덕션급 데이터베이스를 구현하면서 겪는 설계 결정과 트레이드오프를 직접 경험해보고자 했다. 결과적으로 다음과 같은 특징을 갖춘 스토어가 되었다:
+| 기능 | 설명 |
+|---|---|
+| `kvs.Store` | 동기화된 맵 기반의 기본 저장소 |
+| `pkg/rbt` | Red-Black Tree 구현 |
+| `pkg/lsm` | 인메모리 LSM Tree 구현 |
+| CLI | Cobra/Viper 기반 명령줄 인터페이스 |
+| 서버 | HTTP 및 gRPC 서버 |
+| 배포 | 정적 문서 사이트, Homebrew tap |
 
-- **순수 Go 구현**: CGo 의존성 없이 모든 것이 Go로 작성됨
-- **이중 모드**: 라이브러리와 서버 모두 지원
-- **다중 데이터 구조**: 간단한 해시맵부터 RBTree, LSM Tree까지
-
-### v1.0.0의 주요 기능
-
-v1.0.0은 첫 번째 정식 릴리즈로, 다음 기능들을 포함한다:
-
-| 기능     | 설명                               |
-| -------- | ---------------------------------- |
-| RBTree   | 균형 이진 탐색 트리 구현           |
-| LSM Tree | 인메모리 LSM 트리 패키지           |
-| CLI      | Cobra/Viper 기반 명령줄 인터페이스 |
-| 서버     | HTTP 및 gRPC 서버 어댑터           |
-| 문서     | 정적 문서 사이트                   |
-| Homebrew | macOS용 Homebrew 공식 지원         |
-
-## 전체 아키텍처
+## 전체 구조
 
 ### 패키지 구조
 
-KVS는 기능별로 명확히 분리된 패키지 구조를 갖는다:
-
 ```
 kvs/
-├── kvs.go                 # 기본 Store 인터페이스
+├── kvs.go                 # 기본 Store
 ├── pkg/
-│   ├── rbt/               # Red-Black Tree 구현
-│   │   ├── rbt.go
-│   │   ├── cmp.go
-│   │   └── rbt_test.go
-│   ├── lsm/               # LSM Tree 구현
-│   │   ├── lsm.go
-│   │   └── lsm_test.go
+│   ├── rbt/               # Red-Black Tree
+│   ├── lsm/               # LSM Tree
 │   ├── bitset/            # 비트셋 유틸리티
-│   └── cuckoofilter/      # 커크필터 구현
+│   └── cuckoofilter/      # 쿠쿠 필터
+├── api/kvsv1/             # gRPC Protocol Buffers 정의
 ├── cmd/kvs/               # CLI 진입점
 └── internal/server/       # HTTP/gRPC 서버
-    ├── http.go
-    ├── grpc.go
-    └── config.go
 ```
 
-### 모듈 모드 vs 서버 모드
+### 모듈로 사용하기
 
-KVS는 두 가지 방식으로 사용할 수 있다.
-
-**모듈 모드** - Go 프로그램 내에서 라이브러리로 사용:
+Go 프로그램 안에서 라이브러리로 쓸 때는 `kvs.NewStore()`로 저장소를 만들면 된다. 내부는 `sync.RWMutex`로 보호되는 `map[string]interface{}` 하나다.
 
 ```go
 package main
 
 import (
-    "fmt"
-    "github.com/skyoo2003/kvs"
+	"fmt"
+
+	"github.com/skyoo2003/kvs"
 )
 
 func main() {
-    store := kvs.NewStore()
-    _ = store.Put("language", "go")
+	store := kvs.NewStore()
+	_ = store.Put("language", "go")
 
-    value, _ := store.Get("language")
-    fmt.Println(value) // go
+	value, _ := store.Get("language")
+	fmt.Println(value) // go
 }
 ```
 
-**서버 모드** - 독립형 서버로 배포:
+`pkg/rbt`와 `pkg/lsm`은 `Store`와 연결되어 있지 않은 독립 패키지다. 즉, 서버나 `Store`가 내부적으로 트리를 쓰는 것이 아니라, 필요한 쪽에서 직접 가져다 쓰는 구조다. 각각의 특징을 정리하면 아래 정도가 될 것 같다.
 
-```
-┌─────────────┐     ┌─────────────┐
-│   Client    │────▶│ HTTP/gRPC   │
-└─────────────┘     │   Server    │
-                    └──────┬──────┘
-                           │
-                    ┌──────▼──────┐
-                    │    Store    │
-                    │ (RBTree/LSM)│
-                    └─────────────┘
-```
+- **`kvs.Store` (map)** : 평균 O(1) 조회. 순서가 필요 없는 단순 조회.
+- **`pkg/rbt`** : O(log n) 보장. 키 순서가 의미 있는 경우.
+- **`pkg/lsm`** : 쓰기를 memtable에 모았다가 정렬된 세그먼트로 내보내는 구조를 실험해보기 위한 용도.
 
-서버 모드에서는 HTTP JSON 또는 gRPC 프로토콜을 통해 데이터에 접근할 수 있다.
+## Red-Black Tree 구현
 
-### 데이터 흐름
+Red-Black Tree는 각 노드를 빨간색 또는 검은색으로 칠하고, 아래 규칙을 지키면서 균형을 유지하는 이진 탐색 트리다.
 
-기본 `Store` 구현은 내부적으로 동기화된 맵을 사용하지만, `pkg/rbt`와 `pkg/lsm` 패키지는 각각 다른 데이터 구조를 제공한다:
+1. 루트는 검은색이다.
+2. 빨간색 노드의 자식은 모두 검은색이다.
+3. 어떤 노드에서 NIL까지 가는 모든 경로에는 같은 수의 검은색 노드가 있다.
 
-```
-┌─────────────────────────────────────────────┐
-│                  사용자 코드                  │
-└─────────────────┬───────────────────────────┘
-                  │
-       ┌──────────┼──────────┐
-       ▼          ▼          ▼
-   kvs.Store  pkg/rbt    pkg/lsm
-   (HashMap)  (RBTree)   (LSM Tree)
-```
+이 규칙 덕분에 트리의 높이가 항상 O(log n)으로 유지된다.
 
-각 데이터 구조는 서로 다른 사용 사례에 적합하다:
-
-- **HashMap**: O(1) 평균 접근 시간, 단순한 키-값 조회
-- **RBTree**: O(log n) 보장, 정렬된 순회 필요 시
-- **LSM Tree**: 쓰기 집약적 워크로드, 배치 처리
-
-## RBTree 심화
-
-### Red-Black Tree 기본 개념
-
-Red-Black Tree는 각 노드가 빨간색 또는 검은색으로 표시되는 자가 균형 이진 탐색 트리로, 다음 불변 조건을 유지한다:
-
-1. **루트는 검은색**: 트리의 루트 노드는 항상 검은색이다
-2. **빨간색 제약**: 빨간색 노드의 자식은 모두 검은색이어야 한다
-3. **검은색 높이**: 모든 경로(루트에서 NIL까지)의 검은색 노드 수는 동일하다
-
-이 불변 조건들 덕분에 트리의 높이는 항상 O(log n)으로 유지된다.
-
-### KVS의 RBTree 구현
-
-`pkg/rbt/rbt.go`를 살펴보자.
-
-#### 트리 구조
-
-```go
-type RBTree struct {
-    compareKey Compare
-    root       *RBNode
-    size       uint
-}
-
-type RBNode struct {
-    Key         interface{}
-    Value       interface{}
-    IsRed       bool
-    Parent      *RBNode
-    Left, Right *RBNode
-}
-```
-
-`compareKey` 함수를 주입받아 어떤 타입의 키든 비교할 수 있다는 점이 흥미롭다:
+### 구조
 
 ```go
 type Compare func(a, b interface{}) int
+
+type RBTree struct {
+	compareKey Compare
+	root       *RBNode
+	size       uint
+}
+
+type RBNode struct {
+	Key         interface{}
+	Value       interface{}
+	IsRed       bool
+	Parent      *RBNode
+	Left, Right *RBNode
+}
 ```
 
-#### 삽입 연산
+키 타입을 고정하지 않고 비교 함수를 주입받도록 했다. 자주 쓰는 `CompareString`, `CompareInt`, `CompareFloat64`는 `cmp.go`에 미리 만들어 두었다.
 
-삽입은 두 단계로 이루어진다:
+```go
+tree, err := rbt.New(rbt.CompareString)
+if err != nil {
+	panic(err)
+}
+_ = tree.Put("b", 2)
+_ = tree.Put("a", 1)
+value, _ := tree.Get("a") // 1
+```
 
-1. **BST 삽입**: 일반 이진 탐색 트리처럼 새 노드를 추가 (빨간색으로 표시)
-2. **재조정**: Red-Black 속성 위반을 수정하기 위한 회전과 색상 변경
+### 삽입
+
+삽입은 일반적인 이진 탐색 트리처럼 자리를 찾아 빨간색 노드를 붙인 뒤, 규칙이 깨졌다면 `insertFix`에서 회전과 색상 변경으로 복구한다.
 
 ```go
 func (t *RBTree) Put(key, value interface{}) error {
-    // 루트가 없으면 새 노드 생성
-    if t.root == nil {
-        t.root = &RBNode{Key: key, Value: value}
-        t.size = 1
-        return nil
-    }
+	if err := t.requireComparator(); err != nil {
+		return err
+	}
 
-    // 적절한 위치 찾기
-    parent := t.root
-    current := t.root
-    cmp := 0
-    for current != nil {
-        parent = current
-        cmp = t.compareKey(key, current.Key)
-        switch {
-        case cmp < 0:
-            current = current.Left
-        case cmp > 0:
-            current = current.Right
-        default:
-            current.Value = value // 키가 이미 존재하면 값 갱신
-            return nil
-        }
-    }
+	if t.root == nil {
+		t.root = &RBNode{Key: key, Value: value}
+		t.size = 1
+		return nil
+	}
 
-    // 새 노드 생성 및 연결
-    node := &RBNode{Key: key, Value: value, IsRed: true, Parent: parent}
-    if cmp < 0 {
-        parent.Left = node
-    } else {
-        parent.Right = node
-    }
+	parent := t.root
+	current := t.root
+	cmp := 0
+	for current != nil {
+		parent = current
+		cmp = t.compareKey(key, current.Key)
+		switch {
+		case cmp < 0:
+			current = current.Left
+		case cmp > 0:
+			current = current.Right
+		default:
+			current.Value = value // 이미 있는 키라면 값만 갱신
+			return nil
+		}
+	}
 
-    t.insertFix(node) // Red-Black 속성 복구
-    t.size++
-    return nil
+	node := &RBNode{Key: key, Value: value, IsRed: true, Parent: parent}
+	if cmp < 0 {
+		parent.Left = node
+	} else {
+		parent.Right = node
+	}
+
+	t.insertFix(node)
+	t.size++
+	return nil
 }
 ```
 
-#### 재조정 로직
-
-`insertFix` 함수는 Red-Black Tree의 핵심이다. 삽입 후 발생할 수 있는 위반을 세 가지 케이스로 처리한다:
+`insertFix`는 부모가 빨간색인 동안 반복하면서, 교과서에 나오는 세 가지 경우를 처리한다. (부모가 오른쪽 자식인 경우는 좌우만 바꾼 대칭 코드라서 생략했다.)
 
 ```go
 func (t *RBTree) insertFix(node *RBNode) {
-    for node != t.root && node.Parent != nil && node.Parent.IsRed {
-        grandparent := node.getGrandparent()
-        if grandparent == nil {
-            break
-        }
+	for node != t.root && node.Parent != nil && node.Parent.IsRed {
+		grandparent := node.getGrandparent()
+		if grandparent == nil {
+			break
+		}
 
-        if node.Parent == grandparent.Left {
-            uncle := grandparent.Right
-            // Case 1: 삼촌이 빨간색
-            if isRed(uncle) {
-                node.Parent.IsRed = false
-                uncle.IsRed = false
-                grandparent.IsRed = true
-                node = grandparent
-                continue
-            }
+		if node.Parent == grandparent.Left {
+			uncle := grandparent.Right
+			// Case 1: 삼촌이 빨간색이면 색만 바꾸고 조부모로 올라간다.
+			if isRed(uncle) {
+				node.Parent.IsRed = false
+				uncle.IsRed = false
+				grandparent.IsRed = true
+				node = grandparent
+				continue
+			}
 
-            // Case 2: 삼촌이 검은색, 노드가 오른쪽 자식
-            if node == node.Parent.Right {
-                node = node.Parent
-                t.rotateLeft(node)
-            }
+			// Case 2: 삼촌이 검은색이고 노드가 오른쪽 자식이면 회전해서 Case 3으로 만든다.
+			if node == node.Parent.Right {
+				node = node.Parent
+				t.rotateLeft(node)
+			}
 
-            // Case 3: 삼촌이 검은색, 노드가 왼쪽 자식
-            node.Parent.IsRed = false
-            grandparent.IsRed = true
-            t.rotateRight(grandparent)
-            continue
-        }
+			// Case 3: 부모와 조부모의 색을 바꾸고 조부모를 기준으로 회전한다.
+			node.Parent.IsRed = false
+			grandparent.IsRed = true
+			t.rotateRight(grandparent)
+			continue
+		}
 
-        // 대칭 케이스 (부모가 오른쪽 자식인 경우)
-        // ... 유사한 로직
-    }
+		// 부모가 오른쪽 자식인 경우 (대칭)
+		// ...
+	}
 
-    t.root.IsRed = false // 루트는 항상 검은색
+	t.root.IsRed = false
 }
 ```
 
-#### 회전 연산
-
-회전은 트리의 구조를 변경하면서 중위 순회 순서를 보존한다:
+회전은 중위 순회 순서를 유지한 채로 부모와 자식의 위치만 바꾸는 연산이다.
 
 ```
-    좌회전 (rotateLeft):           우회전 (rotateRight):
-         Y                                X
-        / \                              / \
-       X   C      ───────────▶         A   Y
-      / \                                  / \
-     A   B                                B   C
+          Y          rotateRight(Y)          X
+         / \        ───────────────▶        / \
+        X   C                              A   Y
+       / \          ◀───────────────          / \
+      A   B          rotateLeft(X)            B   C
 ```
 
-```go
-func (n *RBNode) rotateLeft() {
-    child, parent := n.Right, n.Parent
+### 삭제는 아직 O(n)
 
-    if child.Left != nil {
-        child.Left.Parent = n
-    }
-    n.Right = child.Left
-    n.Parent = child
-    child.Left = n
-    child.Parent = parent
-    if parent != nil {
-        if parent.Left == n {
-            parent.Left = child
-        } else {
-            parent.Right = child
-        }
-    }
-}
-```
-
-### 시간 복잡도 분석
-
-| 연산   | 시간 복잡도 | 설명                    |
-| ------ | ----------- | ----------------------- |
-| Put    | O(log n)    | 삽입 + 재조정           |
-| Get    | O(log n)    | 트리 탐색               |
-| Remove | O(n)        | 현재 구현은 재구축 방식 |
-| Clear  | O(1)        | 루트를 nil로 설정       |
-
-현재 `Remove` 연산은 구현을 단순화해, 삭제된 키를 제외한 모든 엔트리를 수집하고 트리를 다시 구축하므로 O(n)이 걸린다:
+부끄럽지만 `Remove`는 아직 정석대로 구현하지 않았다. 삭제할 키를 제외한 나머지 엔트리를 모두 모은 뒤에 트리를 처음부터 다시 만드는 방식이라 O(n)이 걸린다.
 
 ```go
 func (t *RBTree) Remove(key interface{}) error {
-    if t.findNode(key) == nil {
-        return ErrKeyNotFound
-    }
+	if err := t.requireComparator(); err != nil {
+		return err
+	}
 
-    entries := t.entriesExcept(key)
-    t.root = nil
-    t.size = 0
-    for _, entry := range entries {
-        if err := t.Put(entry.key, entry.value); err != nil {
-            return err
-        }
-    }
-    return nil
+	if t.findNode(key) == nil {
+		return ErrKeyNotFound
+	}
+
+	entries := t.entriesExcept(key)
+	t.root = nil
+	t.size = 0
+	for _, entry := range entries {
+		if err := t.Put(entry.key, entry.value); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 ```
 
-이는 향후 최적화할 영역이다. 표준 Red-Black Tree 삭제 알고리즘을 구현하면 O(log n)으로 개선할 수 있다.
+Red-Black Tree의 삭제는 경우의 수가 삽입보다 훨씬 많아서, 우선 동작이 확실한 방식으로 만들어 두고 테스트를 충분히 쌓은 다음에 바꿀 생각이다.
 
-## In-Memory LSM Tree 심화
+| 연산 | 시간 복잡도 |
+|---|---|
+| Put | O(log n) |
+| Get | O(log n) |
+| Remove | O(n) (재구축) |
+| Clear | O(1) |
 
-### LSM Tree 기본 개념
+## LSM Tree 구현
 
-Log-Structured Merge Tree(LSM Tree)는 쓰기 집약적 워크로드에 최적화된 데이터 구조다. Google Bigtable, Cassandra, RocksDB 등 많은 현대적 데이터베이스가 사용한다.
+LSM(Log-Structured Merge) Tree는 쓰기를 메모리(memtable)에 먼저 모았다가, 일정 크기가 되면 정렬된 파일로 내보내고, 쌓인 파일들을 주기적으로 병합(컴팩션)하는 구조다. LevelDB, RocksDB, Cassandra 등이 이 방식을 사용한다.
 
-핵심 아이디어는 간단하다:
+KVS의 `pkg/lsm`은 이걸 전부 메모리 안에서 흉내 낸 버전이다. 디스크에 쓰는 대신 정렬된 슬라이스(세그먼트)로 내보내고, 컴팩션은 아직 없다.
 
-1. **쓰기**: 항상 메모리에 먼저 기록 (빠름)
-2. **플러시**: 메모리가 가득 차면 디스크로 내보냄
-3. **머지**: 여러 파일을 주기적으로 병합
-
-KVS의 LSM 구현은 모든 것이 메모리에 있지만, 동일한 원칙을 따른다.
-
-### KVS의 LSM Tree 구현
-
-#### 트리 구조
+### 구조
 
 ```go
 type Tree struct {
-    memtable      map[string]entry    // 현재 쓰기 가능한 테이블
-    segments      []segment           // 불변 플러시된 세그먼트들
-    memtableLimit int                 // 자동 플러시 임계값
+	memtable      map[string]entry // 현재 쓰기를 받는 테이블
+	segments      []segment        // 플러시된 불변 세그먼트 (최신이 앞)
+	memtableLimit int              // 자동 플러시 기준 (기본값 4)
 }
 
 type entry struct {
-    key     string
-    value   interface{}
-    deleted bool  // 툼스톤 (삭제 마커)
+	key     string
+	value   interface{}
+	deleted bool // 툼스톤
 }
 
 type segment struct {
-    entries []entry  // 정렬된 엔트리
+	entries []entry // 키 기준으로 정렬됨
 }
 ```
 
-구조가 시사하는 바:
+`lsm.New()`는 기본값 4로, `lsm.NewWithMemtableLimit(n)`은 원하는 기준으로 트리를 만든다. 기본값이 4로 아주 작은 이유는 테스트에서 플러시가 자주 일어나도록 하기 위해서다.
 
-- `memtable`은 현재 활성 쓰기 버퍼다
-- `segments`는 플러시된 불변 세그먼트들의 스택이다 (최신이 앞에)
-- `deleted` 플래그는 삭제를 지연 처리한다 (툼스톤)
+### 쓰기와 플러시
 
-#### 쓰기 경로
-
-```go
-func (t *Tree) Put(key string, value interface{}) error {
-    if t == nil {
-        return ErrKeyNotFound
-    }
-
-    t.ensureMemtable()
-    t.memtable[key] = entry{key: key, value: value}
-    return t.flushIfNeeded()
-}
-
-func (t *Tree) flushIfNeeded() error {
-    if len(t.memtable) < t.memtableLimit {
-        return nil
-    }
-    return t.Flush()
-}
-```
-
-쓰기는 항상 memtable에 이루어지며 `memtableLimit`(기본값 4)에 도달하면 자동으로 플러시된다.
-
-#### 플러시 연산
+쓰기는 항상 memtable에만 한다. memtable 크기가 기준에 도달하면 엔트리를 키 순서로 정렬해서 새 세그먼트로 만들고, 세그먼트 목록의 맨 앞에 붙인다.
 
 ```go
 func (t *Tree) Flush() error {
-    if t == nil || len(t.memtable) == 0 {
-        return nil
-    }
+	if t == nil || len(t.memtable) == 0 {
+		return nil
+	}
 
-    // memtable의 엔트리를 슬라이스로 변환
-    entries := make([]entry, 0, len(t.memtable))
-    for _, current := range t.memtable {
-        entries = append(entries, current)
-    }
+	entries := make([]entry, 0, len(t.memtable))
+	for _, current := range t.memtable {
+		entries = append(entries, current)
+	}
+	sort.Slice(entries, func(i, j int) bool {
+		return entries[i].key < entries[j].key
+	})
 
-    // 키 기준 정렬 (이진 탐색을 위해)
-    sort.Slice(entries, func(i, j int) bool {
-        return entries[i].key < entries[j].key
-    })
-
-    // 새 세그먼트를 스택의 맨 앞에 추가
-    t.segments = append([]segment{{entries: entries}}, t.segments...)
-    t.memtable = make(map[string]entry)
-    return nil
+	t.segments = append([]segment{{entries: entries}}, t.segments...)
+	t.memtable = make(map[string]entry)
+	return nil
 }
 ```
 
-플러시 후 세그먼트의 엔트리는 정렬되어 있으므로 이진 탐색이 가능하다.
+### 읽기
 
-#### 읽기 경로
-
-읽기는 여러 레벨을 검색해야 한다:
+읽기는 memtable을 먼저 보고, 없으면 세그먼트를 최신 것부터 이진 탐색한다. 최신 세그먼트를 먼저 보기 때문에 같은 키가 여러 세그먼트에 있어도 가장 마지막에 쓴 값을 찾게 된다.
 
 ```go
 func (t *Tree) lookup(key string) (entry, bool) {
-    if t == nil {
-        return entry{}, false
-    }
-
-    // 1. 먼저 memtable 확인
-    if current, ok := t.memtable[key]; ok {
-        return current, true
-    }
-
-    // 2. 세그먼트들을 최신순으로 확인
-    for _, current := range t.segments {
-        if found, ok := current.get(key); ok {
-            return found, true
-        }
-    }
-
-    return entry{}, false
-}
-
-func (s segment) get(key string) (entry, bool) {
-    // 이진 탐색
-    idx := sort.Search(len(s.entries), func(i int) bool {
-        return s.entries[i].key >= key
-    })
-    if idx >= len(s.entries) || s.entries[idx].key != key {
-        return entry{}, false
-    }
-    return s.entries[idx], true
+	if current, ok := t.memtable[key]; ok {
+		return current, true
+	}
+	for _, current := range t.segments {
+		if found, ok := current.get(key); ok {
+			return found, true
+		}
+	}
+	return entry{}, false
 }
 ```
 
-세그먼트가 최신순으로 정렬되어 있으므로, 가장 최근 값을 먼저 찾게 된다.
+### 삭제와 툼스톤
 
-#### 삭제와 툼스톤
-
-LSM Tree는 삭제할 때 데이터를 즉시 물리적으로 제거하는 대신 툼스톤(tombstone)이라는 삭제 마커를 기록한다:
+이미 만들어진 세그먼트는 수정하지 않기 때문에, 삭제는 값을 지우는 대신 `deleted: true`인 엔트리(툼스톤)를 memtable에 새로 쓰는 것으로 처리한다. 조회할 때 툼스톤을 먼저 만나면 없는 키로 취급한다.
 
 ```go
 func (t *Tree) Delete(key string) error {
-    current, ok := t.lookup(key)
-    if !ok || current.deleted {
-        return ErrKeyNotFound
-    }
+	current, ok := t.lookup(key)
+	if !ok || current.deleted {
+		return ErrKeyNotFound
+	}
 
-    t.ensureMemtable()
-    t.memtable[key] = entry{key: key, value: current.value, deleted: true}
-    return t.flushIfNeeded()
+	t.ensureMemtable()
+	t.memtable[key] = entry{key: key, value: current.value, deleted: true}
+	return t.flushIfNeeded()
 }
 ```
 
-`Get` 연산에서는 툼스톤이 있는 엔트리를 찾지 못한 것으로 처리한다:
+| 연산 | 시간 복잡도 |
+|---|---|
+| Put | 평균 O(1) (플러시가 일어나면 O(m log m)) |
+| Get | O(k log s) (k = 세그먼트 수, s = 세그먼트 크기) |
+| Delete | Get + Put |
 
-```go
-func (t *Tree) Get(key string) (interface{}, error) {
-    current, ok := t.lookup(key)
-    if !ok || current.deleted {
-        return nil, ErrKeyNotFound
-    }
-    return current.value, nil
-}
-```
-
-### 시간 복잡도 분석
-
-| 연산   | 시간 복잡도 | 설명                                      |
-| ------ | ----------- | ----------------------------------------- |
-| Put    | O(1) 평균   | memtable에 쓰기                           |
-| Get    | O(k log m)  | k = 세그먼트 수, m = 세그먼트당 엔트리 수 |
-| Delete | O(k log m)  | 툼스톤 기록 + 조회                        |
-| Flush  | O(n log n)  | n = memtable 크기, 정렬 비용              |
-
-### LSM Tree의 장단점
-
-**장점:**
-
-- 쓰기가 매우 빠름 (항상 메모리)
-- 쓰기가 순차적이라 캐시 친화적
-- 범위 쿼리에 유리 (정렬된 세그먼트)
-
-**단점:**
-
-- 읽기가 여러 레벨을 검색해야 함
-- 공간 오버헤드 (오래된 데이터 유지)
-- 컴팩션 필요 (현재 미구현)
+컴팩션이 없어서 세그먼트가 계속 늘어나고, 덮어쓴 값이나 툼스톤도 그대로 남는다. 쓰기가 많을수록 읽기가 느려지고 메모리도 계속 늘어나는 구조라서, 실제 저장소로 쓰기에는 아직 무리가 있다. 컴팩션은 다음에 구현해볼 부분이다.
 
 ## CLI와 서버
 
-### Cobra/Viper CLI
+### CLI
 
-KVS는 [Cobra](https://github.com/spf13/cobra)와 [Viper](https://github.com/spf13/viper)를 사용하여 CLI를 제공한다:
+CLI는 [Cobra](https://github.com/spf13/cobra)와 [Viper](https://github.com/spf13/viper)로 만들었다. `--config`로 Viper가 읽을 수 있는 설정 파일(YAML, JSON, TOML 등)을 지정할 수 있다.
 
 ```bash
-kvs --help
-kvs -v
-kvs version
-kvs --config config.yaml version
+$ kvs --help
+$ kvs -v
+$ kvs version
+$ kvs --config config.yaml version
+$ kvs serve --http-addr :3456 --grpc-addr :3457
 ```
 
-Cobra는 강력한 CLI 프레임워크이고, Viper는 설정 관리를 담당한다. `--config` 플래그로 YAML, JSON, TOML 등 다양한 형식의 설정 파일을 로드할 수 있다.
+`kvs serve`는 HTTP 서버와 gRPC 서버를 같이 띄우는데, 기본 주소는 각각 `:3456`, `:3457`이다. 서버에서 쓰는 저장소는 앞에서 본 `kvs.Store`다.
 
-### HTTP 서버
+### HTTP
 
-`internal/server/http.go`는 HTTP JSON API를 제공한다:
-
-| Method | Path     | 설명    |
-| ------ | -------- | ------- |
-| GET    | `/{key}` | 값 조회 |
-| PUT    | `/{key}` | 값 저장 |
-| DELETE | `/{key}` | 키 삭제 |
+| Method | Path | 설명 |
+|---|---|---|
+| GET | `/healthz` | 헬스 체크 |
+| GET | `/v1/keys/{key}` | 값 조회 |
+| PUT | `/v1/keys/{key}` | 값 저장 (`{"value": "..."}`) |
+| DELETE | `/v1/keys/{key}` | 키 삭제 |
 
 ```bash
 # 값 저장
-curl -X PUT http://localhost:8080/mykey -d "myvalue"
+$ curl -X PUT http://localhost:3456/v1/keys/mykey -d '{"value": "myvalue"}'
 
 # 값 조회
-curl http://localhost:8080/mykey
+$ curl http://localhost:3456/v1/keys/mykey
+{"key":"mykey","value":"myvalue"}
 
 # 키 삭제
-curl -X DELETE http://localhost:8080/mykey
+$ curl -X DELETE http://localhost:3456/v1/keys/mykey
 ```
 
-### gRPC 서버
+PUT 요청의 바디는 `{"value": "..."}` 형태의 JSON이어야 하고, 정의되지 않은 필드가 있으면 400을 반환한다.
 
-`internal/server/grpc.go`는 gRPC 서비스를 제공하며 Protocol Buffers 정의는 `api/kvsv1/`에 있다:
+### gRPC
+
+Protocol Buffers 정의는 `api/kvsv1/kvs.proto`에 있다.
 
 ```protobuf
 service KVStore {
-    rpc Get(GetRequest) returns (GetResponse);
-    rpc Put(PutRequest) returns (PutResponse);
-    rpc Delete(DeleteRequest) returns (DeleteResponse);
+  rpc Get(GetRequest) returns (GetResponse);
+  rpc Put(PutRequest) returns (PutResponse);
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
 }
 ```
 
-gRPC 클라이언트 예시:
-
 ```go
-conn, _ := grpc.Dial("localhost:50051", grpc.WithInsecure())
+conn, err := grpc.Dial("localhost:3457",
+	grpc.WithTransportCredentials(insecure.NewCredentials()))
+if err != nil {
+	log.Fatal(err)
+}
 defer conn.Close()
 
-client := pb.NewKVStoreClient(conn)
+client := kvsv1.NewKVStoreClient(conn)
+_, _ = client.Put(context.Background(), &kvsv1.PutRequest{Key: "greeting", Value: "hello"})
 
-// 저장
-client.Put(context.Background(), &pb.PutRequest{
-    Key:   "greeting",
-    Value: "hello",
-})
-
-// 조회
-resp, _ := client.Get(context.Background(), &pb.GetRequest{
-    Key: "greeting",
-})
-fmt.Println(resp.Value) // hello
+resp, _ := client.Get(context.Background(), &kvsv1.GetRequest{Key: "greeting"})
+fmt.Println(resp.GetValue()) // hello
 ```
 
-### HTTP vs gRPC 선택
-
-| 기준        | HTTP            | gRPC              |
-| ----------- | --------------- | ----------------- |
-| 프로토콜    | HTTP/1.1 + JSON | HTTP/2 + Protobuf |
-| 성능        | 보통            | 높음              |
-| 디버깅      | curl로 쉬움     | 도구 필요         |
-| 스트리밍    | 미지원          | 지원              |
-| 타입 안전성 | 약함            | 강함              |
-
-## 설치 및 배포
-
-### Go 모듈
+## 설치
 
 ```bash
-go get github.com/skyoo2003/kvs@v1.0.0
+# Go 모듈
+$ go get github.com/skyoo2003/kvs@v1.0.0
+
+# Homebrew
+$ brew tap skyoo2003/tap
+$ brew install kvs
+
+# 소스에서 빌드
+$ git clone https://github.com/skyoo2003/kvs.git
+$ cd kvs
+$ go install ./cmd/kvs
 ```
 
-### Homebrew (macOS)
+## 정리
 
-```bash
-brew tap skyoo2003/tap
-brew install kvs
-```
+v1.0.0은 작은 키-값 스토어에 Red-Black Tree, LSM Tree, CLI, 서버를 한 번씩 구현해본 버전이라고 할 수 있다. 정리하면서 보니 아쉬운 부분도 많다. 다음에는 아래 부분들을 손볼 생각이다.
 
-### 소스에서 빌드
-
-```bash
-git clone https://github.com/skyoo2003/kvs.git
-cd kvs
-go install ./cmd/kvs
-```
-
-### Docker
-
-```bash
-docker build -t kvs .
-docker run -p 8080:8080 -p 50051:50051 kvs
-```
-
-## 마치며
-
-KVS v1.0.0은 작지만 완전한 키-값 스토어다. 이 글에서 살펴본 것처럼:
-
-- **RBTree**는 균형 유지를 위한 회전과 색상 규칙을 구현
-- **LSM Tree**는 쓰기 최적화를 위한 memtable과 세그먼트 구조를 사용
-- **CLI/서버**는 Cobra, Viper, HTTP, gRPC로 구축
-
-이 프로젝트는 학습 목적으로 시작되었지만, 실제로 사용 가능한 수준의 품질을 갖추고자 노력했다. 모든 패키지는 철저한 테스트로 검증되었고, CI 파이프라인을 통해 코드 품질을 유지한다.
-
-### 향후 계획
-
-- RBTree 삭제 연산 최적화 (O(n) → O(log n))
+- Red-Black Tree 삭제를 O(log n)으로 개선
 - LSM Tree 컴팩션 구현
-- 영속성 지원 (디스크 플러시)
-- 분산 모드 (클러스터링)
+- 디스크 영속성
+- 클러스터링
 
-더 자세한 내용은 [KVS GitHub 저장소](https://github.com/skyoo2003/kvs)와 [공식 문서](https://skyoo2003.github.io/kvs/)를 참고하자.
-
-## 성능 벤치마크
-
-### 테스트 환경
-
-벤치마크는 다음 환경에서 수행되었다:
-
-- **하드웨어**: MacBook Pro M1, 16GB RAM
-- **Go 버전**: 1.24
-- **OS**: macOS Sequoia
-
-### RBTree 성능
-
-```bash
-go test -bench=BenchmarkRBTree -benchmem ./pkg/rbt/
-```
-
-| 연산 | 데이터 크기 | 평균 시간 | 메모리 할당 |
-|------|------------|----------|------------|
-| Put | 1,000 | 1.2ms | 0 B/op |
-| Put | 10,000 | 15ms | 0 B/op |
-| Put | 100,000 | 190ms | 0 B/op |
-| Get | 1,000 | 0.8ms | 0 B/op |
-| Get | 10,000 | 11ms | 0 B/op |
-| Get | 100,000 | 145ms | 0 B/op |
-
-RBTree는 메모리 할당이 없는 zero-allocation 설계로, GC 부하를 최소화한다.
-
-### LSM Tree 성능
-
-```bash
-go test -bench=BenchmarkLSM -benchmem ./pkg/lsm/
-```
-
-| 연산 | 데이터 크기 | 평균 시간 | 메모리 할당 |
-|------|------------|----------|------------|
-| Put | 1,000 | 0.3ms | 48 B/op |
-| Put | 10,000 | 4ms | 48 B/op |
-| Put | 100,000 | 52ms | 48 B/op |
-| Get | 1,000 | 0.5ms | 32 B/op |
-| Get | 10,000 | 8ms | 32 B/op |
-| Get | 100,000 | 110ms | 32 B/op |
-
-LSM Tree는 쓰기 연산에서 RBTree보다 약 3-4배 빠르지만 읽을 때는 여러 세그먼트를 검색해야 하므로 약간 느리다.
-
-### HashMap vs RBTree vs LSM Tree 비교
-
-```go
-func BenchmarkHashMap(b *testing.B) {
-    m := make(map[string]string)
-    for i := 0; i < b.N; i++ {
-        key := fmt.Sprintf("key%d", i)
-        m[key] = "value"
-        _ = m[key]
-    }
-}
-
-func BenchmarkRBTree(b *testing.B) {
-    t := rbt.NewTree(rbt.StringCompare)
-    for i := 0; i < b.N; i++ {
-        key := fmt.Sprintf("key%d", i)
-        t.Put(key, "value")
-        t.Get(key)
-    }
-}
-
-func BenchmarkLSM(b *testing.B) {
-    t := lsm.NewTree()
-    for i := 0; i < b.N; i++ {
-        key := fmt.Sprintf("key%d", i)
-        t.Put(key, "value")
-        t.Get(key)
-    }
-}
-```
-
-결과:
-
-```
-BenchmarkHashMap-8     1000000    1200 ns/op    128 B/op
-BenchmarkRBTree-8       500000    3200 ns/op      0 B/op
-BenchmarkLSM-8          800000    1800 ns/op     48 B/op
-```
-
-## 성능 튜닝 가이드
-
-### 1. 적절한 데이터 구조 선택
-
-**HashMap 사용 시나리오:**
-- 단순 키-값 조회만 필요
-- 정렬 순서가 중요하지 않음
-- 평균 O(1) 접근 시간이 중요
-
-**RBTree 사용 시나리오:**
-- 정렬된 순회가 필요 (범위 쿼리)
-- 예측 가능한 O(log n) 성능이 중요
-- 순차 접근 패턴
-
-**LSM Tree 사용 시나리오:**
-- 쓰기 집약적 워크로드
-- 대량 배치 처리
-- 쓰기 대 읽기 비율이 높음
-
-### 2. 메모리 최적화
-
-**RBTree 메모리 사용량:**
-
-```go
-type RBNode struct {
-    Key         interface{}  // 16 bytes (interface header)
-    Value       interface{}  // 16 bytes
-    IsRed       bool         // 1 byte
-    Parent      *RBNode      // 8 bytes
-    Left, Right *RBNode      // 16 bytes
-}
-// 총: 약 57 bytes per node + padding
-```
-
-100만 개의 노드는 약 60MB의 메모리를 사용한다.
-
-**LSM Tree 메모리 최적화:**
-
-```go
-// memtableLimit 조정
-tree := lsm.NewTreeWithOptions(&lsm.Options{
-    MemtableLimit: 1000,  // 기본값 4에서 증가
-})
-```
-
-memtableLimit을 높이면 플러시 빈도가 줄어들지만, 메모리 사용량이 증가한다.
-
-### 3. 동시성 고려사항
-
-KVS의 기본 `Store`는 동기화된 맵을 사용하지만, `pkg/rbt`와 `pkg/lsm`은 동시성 안전하지 않다. 동시성이 필요한 경우:
-
-```go
-type SafeRBTree struct {
-    mu sync.RWMutex
-    t  *rbt.Tree
-}
-
-func (s *SafeRBTree) Put(key, value interface{}) error {
-    s.mu.Lock()
-    defer s.mu.Unlock()
-    return s.t.Put(key, value)
-}
-
-func (s *SafeRBTree) Get(key interface{}) (interface{}, error) {
-    s.mu.RLock()
-    defer s.mu.RUnlock()
-    return s.t.Get(key)
-}
-```
-
-### 4. 서버 모드 튜닝
-
-**HTTP 서버:**
-
-```go
-srv := &http.Server{
-    Addr:         ":8080",
-    ReadTimeout:  5 * time.Second,
-    WriteTimeout: 10 * time.Second,
-    IdleTimeout:  120 * time.Second,
-}
-```
-
-**gRPC 서버:**
-
-```go
-opts := []grpc.ServerOption{
-    grpc.MaxRecvMsgSize(10 * 1024 * 1024),  // 10MB
-    grpc.MaxSendMsgSize(10 * 1024 * 1024),
-    grpc.KeepaliveParams(keepalive.ServerParameters{
-        MaxConnectionIdle: 5 * time.Minute,
-    }),
-}
-grpcServer := grpc.NewServer(opts...)
-```
-
-## 운영 가이드
-
-### 모니터링 지표
-
-KVS 서버는 Prometheus 메트릭을 노출한다:
-
-```
-# TYPE kvs_operations_total counter
-kvs_operations_total{operation="put"} 1523
-kvs_operations_total{operation="get"} 45231
-kvs_operations_total{operation="delete"} 42
-
-# TYPE kvs_operation_duration_seconds histogram
-kvs_operation_duration_seconds_bucket{operation="get",le="0.001"} 45000
-kvs_operation_duration_seconds_bucket{operation="get",le="0.01"} 45200
-
-# TYPE kvs_store_size gauge
-kvs_store_size 1523
-```
-
-### 로깅
-
-구조화된 로깅을 위해 slog를 사용한다:
-
-```go
-import "log/slog"
-
-func main() {
-    logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
-        Level: slog.LevelInfo,
-    }))
-    slog.SetDefault(logger)
-    
-    // 로그 예시
-    slog.Info("operation completed",
-        "operation", "put",
-        "key", "mykey",
-        "duration_ms", 12,
-    )
-}
-```
-
-### 백업 및 복구
-
-현재 KVS는 인메모리 전용이므로, 데이터 영속성이 필요한 경우:
-
-1. **주기적 스냅샷**: 
-
-```go
-func snapshot(store *kvs.Store, path string) error {
-    data := store.Export()
-    return os.WriteFile(path, data, 0644)
-}
-
-func restore(store *kvs.Store, path string) error {
-    data, err := os.ReadFile(path)
-    if err != nil {
-        return err
-    }
-    return store.Import(data)
-}
-```
-
-2. **Replication**: 
-   - Raft 합의 알고리즘을 통한 복제 (향후 계획)
-   - Redis-style master-replica 구조
-
-### 트러블슈팅
-
-**문제: 메모리 사용량이 계속 증가함**
-
-원인: LSM Tree의 세그먼트가 컴팩션 없이 계속 쌓임
-
-해결:
-```go
-// 수동 컴팩션 (현재 미구현, 향후 추가 예정)
-tree.Compact()
-
-// 임시 해결책: Flush 호출로 세그먼트 정리
-tree.Flush()
-```
-
-**문제: 읽기 성능이 느림**
-
-원인: 너무 많은 세그먼트 검색
-
-해결:
-1. memtableLimit 증가
-2. 자주 접근하는 키는 별도 캐시 사용
-
-**문제: 서버가 응답하지 않음**
-
-원인: GC로 인한 STW (Stop-The-World)
-
-해결:
-1. GOGC 환경변수 조정
-2. 메모리 제한 설정
-
-```bash
-GOGC=100 GOMEMLIMIT=4GiB ./kvs server
-```
-
-## 마이그레이션 가이드
-
-### 다른 키-값 스토어에서 KVS로
-
-**Redis에서 마이그레이션:**
-
-```go
-// Redis에서 데이터 읽기
-redisClient := redis.NewClient(&redis.Options{Addr: "localhost:6379"})
-keys := redisClient.Keys(ctx, "*").Val()
-
-// KVS로 이관
-store := kvs.NewStore()
-for _, key := range keys {
-    val := redisClient.Get(ctx, key).Val()
-    store.Put(key, val)
-}
-```
-
-**LevelDB에서 마이그레이션:**
-
-```go
-import "github.com/syndtr/goleveldb/leveldb"
-
-db, _ := leveldb.OpenFile("path/to/leveldb", nil)
-defer db.Close()
-
-store := kvs.NewStore()
-iter := db.NewIterator(nil, nil)
-for iter.Next() {
-    store.Put(string(iter.Key()), string(iter.Value()))
-}
-iter.Release()
-```
+자세한 내용은 [KVS GitHub 저장소](https://github.com/skyoo2003/kvs)와 [문서 사이트](https://skyoo2003.github.io/kvs/)를 참고하자.

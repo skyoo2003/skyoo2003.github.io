@@ -5,79 +5,83 @@ date: 2020-11-15T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
-## 들어가며
+오랜만에 [ACOR](https://github.com/skyoo2003/acor)를 다시 손보게 되었다. 2017년에 처음 공개한 이후로 거의 그대로 두었더니, 그 사이에 Go 생태계가 많이 바뀌어서 빌드 환경부터 손을 봐야 하는 상황이었다. 때문에 이번 v0.1.0은 기능 추가보다는 의존성 관리와 CI 환경을 정리하는 데 집중했다.
 
-[ACOR](https://github.com/skyoo2003/acor) v0.1.0에서는 새로운 기능을 추가하기보다 프로젝트의 기반을 현대화하는 데 집중했다. Go 생태계의 변화에 맞춰 의존성 관리와 CI/CD 시스템을 최신 표준으로 전환한 릴리즈다.
+## Glide에서 Go modules로
 
-## 왜 Go modules로 전환했는가
+처음 ACOR를 만들 때는 Go에 공식 의존성 관리 도구가 없어서 [Glide](https://github.com/Masterminds/glide)를 사용했고, 의존성은 `vendor/` 디렉토리에 통째로 커밋해 두었다. 그런데 Go 1.11부터 [Go modules](https://blog.golang.org/using-go-modules)가 도입되었고, Glide는 더 이상 관리되지 않는 상태가 되었다. 굳이 Glide를 유지할 이유가 없어서 Go modules로 옮기기로 했다.
 
-ACOR은 처음 [Glide](https://github.com/Masterminds/glide)를 사용해 의존성을 관리했다. Glide는 Go에 공식 의존성 관리 도구가 없던 시절, 커뮤니티에서 널리 사용되던 도구였다. 하지만 Go 1.11부터 [Go modules](https://blog.golang.org/using-go-modules)가 공식으로 도입되면서 상황이 바뀌었다.
-
-Glide의 한계는 명확했다:
-
-1. **유지보수 중단**: Glide는 더 이상 활발히 개발되지 않는다
-2. **버전 관리**: 정확한 버전 고정과 의존성 트리 관리가 번거롭다
-3. **재현성**: 다른 환경에서 동일한 빌드를 보장하기 어렵다
-
-Go modules는 `go.mod` 파일 하나로 의존성을 관리하고 Semantic Versioning을 기반으로 버전을 제어해 이 문제들을 해결한다. 무엇보다 Go 도구 체인에 내장되어 있어 별도 설치가 필요 없다.
-
-## 마이그레이션 여정
-
-Glide에서 Go modules로 전환하는 과정은 생각보다 간단했다.
-
-먼저 기존 `glide.yaml`과 `glide.lock` 파일을 삭제하고, 프로젝트 루트에서 다음 명령을 실행했다:
+전환 자체는 생각보다 간단했다. `glide.yaml`, `glide.lock`과 `vendor/` 디렉토리를 지우고, 프로젝트 루트에서 아래의 명령을 실행하면 된다.
 
 ```bash
-go mod init github.com/skyoo2003/acor
-go mod tidy
+$ go mod init github.com/skyoo2003/acor
+$ go mod tidy
 ```
 
-`go mod init`은 `go.mod` 파일을 생성하고, `go mod tidy`는 실제 사용 중인 의존성만 추가한다.
+`go mod init`은 `go.mod` 파일을 생성하고, `go mod tidy`는 코드에서 실제로 사용하는 의존성을 찾아서 `go.mod`와 `go.sum`에 정리해준다. vendor 디렉토리에 들어 있던 파일들이 빠지면서 커밋 하나에 2만 줄 넘게 삭제되었다. (그동안 저 코드들을 저장소에 들고 있었다니...)
 
-이 과정에서 [go-redis/redis](https://github.com/go-redis/redis) 패키지도 최신 버전으로 업그레이드했다. v6에서 v8로의 업그레이드였는데, API 변경사항이 있어 일부 코드 수정이 필요했다. 특히 컨텍스트(Context) 지원이 추가되어 대부분의 메서드가 컨텍스트를 첫 번째 인자로 받도록 변경되었다.
+## go-redis v6에서 v8로
 
-단위 테스트도 함께 수정했으며 다행히 테스트 커버리지가 괜찮아 큰 문제 없이 전환을 완료할 수 있었다.
+이 김에 [go-redis/redis](https://github.com/go-redis/redis)도 v6에서 v8로 올렸다. v8부터는 대부분의 명령 메서드가 첫 번째 인자로 `context.Context`를 받도록 바뀌었기 때문에, ACOR 내부의 Redis 호출 부분을 전부 수정해야 했다.
 
-## 함께 바뀐 것들
+```go
+// v6
+ac.redisClient.ZScore(pKey, outState)
 
-### Travis CI에서 GitHub Actions로
+// v8
+ac.redisClient.ZScore(ac.ctx, pKey, outState)
+```
 
-의존성 관리 도구를 바꾸면서 CI/CD 시스템도 점검하게 되었다. 기존에 사용하던 Travis CI는 여전히 훌륭한 도구지만, GitHub Actions가 제공하는 장점이 컸다:
+그리고, 단위 테스트가 로컬에 떠 있는 Redis에 의존하던 부분도 [miniredis](https://github.com/alicebob/miniredis)를 사용하도록 바꿨다. miniredis는 Go 코드 안에서 띄우는 Redis 호환 테스트 서버라서, 이제 Redis를 따로 실행하지 않아도 `go test`만으로 테스트를 돌릴 수 있다.
 
-1. **GitHub 통합**: 저장소 설정에서 바로 워크플로우를 관리할 수 있다
-2. **설정 간소화**: `.github/workflows/` 디렉토리에 YAML 파일만 추가하면 된다
-3. **속도**: GitHub 인프라에서 실행되어 빠르다
+## Travis CI에서 GitHub Actions로
 
-GitHub Actions 워크플로우는 다음과 같이 간단하다:
+빌드 환경을 손보는 김에 CI도 Travis CI에서 GitHub Actions로 옮겼다. 저장소 안의 `.github/workflows/`에 YAML 파일 하나만 추가하면 되고, 결과도 GitHub 화면에서 바로 확인할 수 있어서 편했다. 아래가 이번에 추가한 워크플로우인데, 지원하는 Go 버전마다 lint와 테스트를 수행하도록 했다.
 
 ```yaml
-name: CI
-on: [push, pull_request]
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
 jobs:
-  test:
+  build:
+    name: CI
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.11, 1.12, 1.13, 1.14, 1.15]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.15'
-      - run: go test -v ./...
+    - uses: actions/checkout@v2
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Install golint tool
+      run: go get -u golang.org/x/lint/golint
+    - name: Lint
+      run: golint ./...
+    - name: Test
+      run: go test -v ./...
 ```
 
-Travis CI 설정 파일(`.travis.yml`)은 더 이상 필요 없어 제거했다.
+기존의 `.travis.yml` 파일은 제거했다.
 
 ## 업그레이드 방법
 
-기존 ACOR 사용자는 다음과 같이 업그레이드할 수 있다:
+Go modules를 지원하게 되면서 최소 Go 버전은 1.11로 올라갔다. 기존 사용자는 아래와 같이 업그레이드할 수 있다.
 
 ```bash
-go get github.com/skyoo2003/acor@v0.1.0
+$ go get github.com/skyoo2003/acor@v0.1.0
 ```
 
-Go modules를 사용 중이라면 `go.mod` 파일이 자동으로 업데이트된다.
+메서드 시그니처는 그대로라서 대부분은 코드를 수정할 필요가 없다. 다만, `Add()`의 반환값이 "추가 후 전체 키워드 수"에서 "이번에 새로 추가된 키워드 수(0 또는 1)"로 바뀌었으니, 반환값을 사용하고 있었다면 확인이 필요하다.
 
-## 마치며
+## 정리
 
-v0.1.0은 기능적으로는 큰 변화가 없지만, 프로젝트의 지속 가능성을 위해 중요한 업데이트다. 최신 도구와 표준을 사용함으로써 향후 유지보수가 더 쉬워질 것이다.
+기능적으로 달라진 점은 거의 없지만, 앞으로 계속 손을 대려면 먼저 정리해야 했던 부분들이다. 다음 릴리즈부터는 프로젝트 구조나 코드 쪽도 조금씩 개선해 나갈 생각이다.
 
-더 자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v0.1.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.
+자세한 내용은 [GitHub 릴리즈 노트](https://github.com/skyoo2003/acor/releases/tag/v0.1.0)와 [저장소](https://github.com/skyoo2003/acor)를 참고하자.

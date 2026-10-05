@@ -7,9 +7,9 @@ tags: [python, tutorial]
 
 파이썬이라는 언어를 사용하다보면 다양한 버전 환경에 직면하게 된다. 먼저, Redhat, Debian 등의 배포판에는 자체에 설치된 시스템 파이썬이 존재하고, 필요에 따라 계정별로 소스 빌드를 통해 파이썬을 사용할 수도 있다. 파이썬은 크게 2.x 와 3.x 의 메이저 버전에 따라 문법과 내장 라이브러리의 차이가 있으며, 마이너 버전에 따라 일부 기능의 동작 방식이나 구현이 달라질 수 있는 자유롭지만 때론 위험한 상황에 직면해 있다.
 
-물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다. 하지만, 일반적으로 하나의 시스템에는 다양한 파이썬 프로젝트들이 존재할 수 있고 이들은 종종 다양한 파이썬 버전에 기반하여 구현이 되어 있을 수 있다. 의존성 분리를 통해 프로젝트 간에 응집력을 줄인다면, 개별 프로젝트는 다른 환경에 대한 고민을 하지 않아도 된다.
+물론, 단일 시스템에서 하나의 프로젝트만을 운용한다거나 버전이 절대 변경될 가능성이 없다면 특별히 고민하지 않아도 될 수 있다. 하지만, 일반적으로 하나의 시스템에는 다양한 파이썬 프로젝트들이 존재할 수 있고 이들은 종종 다양한 파이썬 버전에 기반하여 구현이 되어 있을 수 있다. 의존성 분리를 통해 프로젝트 간의 결합도를 줄인다면, 개별 프로젝트는 다른 환경에 대한 고민을 하지 않아도 된다.
 
-이런 상황에 적합한 오픈소스 솔루션으로 pyenv를 소개하고 싶다! 물론 $PATH, $PYTHON_PATH 등의 환경변수를 적절히 관리하면 오픈소스 없이도 버전을 통제할 수 있다. 다만 프로젝트마다 환경변수까지 직접 다루는 데 시간을 쓰는 것은 낭비일 수도 있겠다는 생각에 pyenv를 자세히 알아보게 되었다.
+위와 같은 니즈에 적합한 오픈소스 솔루션이 pyenv 이라고 소개하고 싶다! 물론, 오픈소스를 활용하지 않고 충분히 버전을 통제할 수 있다. $PATH, $PYTHONPATH 등의 환경변수를 적절히 관리하면 가능하다. 다만, 매 프로젝트에서 이러한 환경변수를 다루는 것까지 고민하는 것은 어떻게보면 낭비가 될 수도 있다는 생각에 pyenv에 대해서 자세히 알아보게 되었다.
 
 ## 핵심 기능 간략 소개
 
@@ -30,36 +30,11 @@ pyenv가 제공하는 기능은 간략하게 다음과 같다.
 
 유닉스, 리눅스 시스템에서는 특정 명령을 수행할 때, `$PATH`에 등록된 디렉토리 리스트에서 실행 가능한 파일 (Executable file)을 순서대로 찾도록 되어 있다. 일반적으로 사용하는 `cd`, `rm` 등의 명령어도 `$PATH`라는 환경변수에 등록이 되어 있기 때문에 가능하다. 만약 `$PATH`에 등록되지 않았다면, 매번 `/bin/cd`, `/bin/rm`과 같이 절대 경로로 실행 가능한 파일을 명시해주어야 한다. `$PATH`에서 왼쪽->오른쪽 순서로 디렉토리를 탐색하고, 동일한 실행 파일명을 가지고 있다면, 먼저 발견된 디렉토리의 실행 파일을 사용하게 된다.
 
-pyenv 설치를 완료하면 `eval $(pyenv init -)` 를 초기에 호출하는데, 이 때 `PATH=$(pyenv root)/shims:$PATH` 와 같이 환경변수에 등록된다. 이 때, `$(pyenv root)` 를 통해 동적으로 경로가 생성되는데, 이를 pyenv 프로젝트에선 Hash (혹은 Rehash) 된다고 언급한다.
+pyenv 설치를 완료하면 `eval $(pyenv init -)` 를 초기에 호출하는데, 이 때 `PATH=$(pyenv root)/shims:$PATH` 와 같이 환경변수에 등록된다. 이 때, `$(pyenv root)` 를 통해 동적으로 경로가 결정된다.
 
-이후 pyenv 를 통해 파이썬을 설치하게 되면, `$(pyenv root)/versions/<version>` 의 경로에 버전별로 설치된다. 그리고, 바이너리 파일들은 `$(pyenv root)/shims` 디렉토리 안에 생성된다.
-
-### Shim의 동작 방식
-
-```
-$ python --version
-    ↓
-pyenv shim (~/.pyenv/shims/python)
-    ↓
-버전 결정 (PYENV_VERSION → .python-version → ~/.pyenv/version)
-    ↓
-실제 파이썬 실행 (~/.pyenv/versions/3.9.0/bin/python)
-```
+이후 pyenv 를 통해 파이썬을 설치하게 되면, `$(pyenv root)/versions/<version>` 의 경로에 버전별로 설치된다. 그리고, `$(pyenv root)/shims` 디렉토리 안에는 `python`, `pip` 등 실행 파일과 같은 이름의 shim 스크립트가 생성된다. 이 shim 이 명령을 가로채서 실제 버전의 실행 파일로 넘겨주는 구조이고, 새로 설치된 실행 파일에 대해 shim 을 다시 만드는 과정을 pyenv 에서는 Rehash 라고 부른다.
 
 ## 설치하기
-
-### 자동 설치 (권장)
-
-```bash
-# macOS (Homebrew)
-$ brew update
-$ brew install pyenv
-
-# Linux (pyenv-installer)
-$ curl https://pyenv.run | bash
-```
-
-### 수동 설치
 
 최초 설치시에는 공식 Github 프로젝트에서 복제하여 가져온다. `$HOME/.pyenv` 에 설치하는 것을 가장 권장하고 있으나 필수는 아니므로 적절한 경로에 가져온다.
 
@@ -84,16 +59,21 @@ eval "$(pyenv init -)"
 $ exec $SHELL
 ```
 
-### 설정 가능한 환경변수 정리
+PS. 이 글을 쓴 이후로 pyenv 의 설치 방법이 몇 번 바뀌었다. 지금은 macOS 라면 `brew install pyenv` 로 설치하는 것이 간편하고, 쉘 설정도 버전에 따라 조금씩 달라졌으니 최신 버전을 쓴다면 [공식 README](https://github.com/pyenv/pyenv#set-up-your-shell-environment-for-pyenv)의 내용을 따르는 것이 안전하다.
 
-| 환경변수 | 설명 | 기본값 |
-|---------|------|--------|
-| `PYENV_VERSION` | 사용할 파이썬 버전 명시 | |
-| `PYENV_ROOT` | pyenv 설치 루트 디렉토리 | `~/.pyenv` |
-| `PYENV_DEBUG` | 디버그 정보 노출 여부 | |
-| `PYENV_HOOK_PATH` | hooks 탐색 경로 | |
-| `PYENV_DIR` | `.python-version` 파일 탐색 경로 | `$PWD` |
-| `PYTHON_BUILD_ARIA2_OPTS` | aria2 다운로드 옵션 | |
+__설정 가능한 환경변수 정리__
+
+`PYENV_VERSION` 사용할 파이썬 버전을 명시한다.
+
+`PYENV_ROOT` pyenv 가 설치될 루트 디렉토리를 명시한다. (기본값: ~/.pyenv)
+
+`PYENV_DEBUG` pyenv 디버그 정보 노출 여부 cf. `pyenv --debug <subcommand>`
+
+`PYENV_HOOK_PATH` pyenv hooks 기능에서 사용할 탐색 경로를 정의한다. pyenv hooks 기능은 pyenv 명령이 특정 시점에 지정한 스크립트가 동작되길 원할 때 사용하는 전문가 옵션이므로 자세한 내용은 다음의 위키를 참조하도록 한다. [pyenv hook wiki 참조](https://github.com/pyenv/pyenv/wiki/Authoring-plugins#pyenv-hooks)
+
+`PYENV_DIR`	`.python-version` 파일을 찾기위한 경로를 입력한다. (기본값: $PWD)
+
+`PYTHON_BUILD_ARIA2_OPTS` pyenv는 `$PATH`에 aria2c 바이너리의 경로가 정의되고 실행 가능하다면, `aria2` 를 사용하여 파이썬 소스를 다운로드 받는데, 이 때 사용하는 옵션을 전달하기 위한 환경변수이다. bandwidth 조절이나, 커넥션 수 등을 조절할 수 있다. [aria2c options](https://aria2.github.io/manual/en/html/aria2c.html#options)
 
 ## 최신 또는 특정 버전 선택하기
 
@@ -104,7 +84,7 @@ $ cd $(pyenv root)
 $ git pull
 ```
 
-만약, 릴리즈된 특정 태그를 명시하여 사용하고 싶다면, 아래의 명령을 호출한다.
+만약, 릴리즈된 특정 태그를 명시하여 사용하고 싶다면, 아래의 명령을 호출한다. (예를 들어, v1.0.9 버전을 사용한다. v0.9.4 를 사용한다. 등...)
 
 ```bash
 $ cd $(pyenv root)
@@ -131,373 +111,116 @@ $ vi ~/.zshrc
 
 ## 명령어 알아보기
 
-pyenv 설치가 완료되었다면, 이제 pyenv에서 제공하는 명령어에 대해서 정리하려고 한다.
+pyenv 설치가 완료되었다면, 이제 pyenv에서 제공하는 명령어에 대해서 정리하려고 한다. 모든 명령어를 정리하지는 않고, 자주 사용하고 필수적인 내용만 다루어보려고 한다. 기타 명령어나 최신 버전에 추가된 명령어 등을 확인하려면, [pyenv COMMANDS](https://github.com/pyenv/pyenv/blob/master/COMMANDS.md) 페이지를 참조하도록 한다.
 
 ### 파이썬 설치하기
 
 특정 파이썬 버전을 설치하거나, 설치 가능한 파이썬 버전 리스트를 볼 수 있다.
 
-```bash
-# 특정 버전의 파이썬 설치
-$ pyenv install 3.9.0
-Downloading Python-3.9.0.tar.xz...
--> https://www.python.org/ftp/python/3.9.0/Python-3.9.0.tar.xz
-Installing Python-3.9.0...
-Installed Python-3.9.0 to /Users/lukas/.pyenv/versions/3.9.0
+* 특정 버전의 파이썬 설치
 
-# 설치 가능한 전체 파이썬 리스트 조회
+```bash
+$ pyenv install 2.7.12
+Downloading Python-2.7.12.tar.xz...
+-> https://www.python.org/ftp/python/2.7.12/Python-2.7.12.tar.xz
+Installing Python-2.7.12...
+Installed Python-2.7.12 to /Users/lukas/.pyenv/versions/2.7.12
+```
+
+파이썬 빌드 중 컴파일 옵션을 설정할 필요가 있는 경우, `CONFIGURE_OPTS` 환경변수를 통해 설정이 가능하다.
+
+HTTP(S) 프록시 설정이 필요한 경우에는 `http_proxy`, `https_proxy` 환경변수를 사전에 설정하면 된다.
+
+필수 패키지/라이브러리 설치, CPU 아키텍처 선택 등의 다양한 빌드 문제를 정리한 부분은 [common build problems wiki](https://github.com/pyenv/pyenv/wiki/Common-build-problems) 페이지를 참조하도록 한다.
+
+* 설치 가능한 전체 파이썬 리스트 조회
+
+```bash
 $ pyenv install -l
 Available versions:
   2.1.3
   2.2.3
   2.3.7
 --- 생략 ---
-  3.9.0
-  3.9-dev
-  anaconda3-2020.07
-  miniconda3-latest
---- 생략 ---
-
-# 특정 접두사로 필터링
-$ pyenv install -l | grep "3.9"
-  3.9.0
-  3.9.1
-  3.9.2
-```
-
-### 빌드 옵션 설정
-
-```bash
-# 컴파일 옵션 설정
-$ CONFIGURE_OPTS="--enable-shared" pyenv install 3.9.0
-
-# 프록시 설정
-$ export https_proxy=http://proxy.company.com:8080
-$ pyenv install 3.9.0
-
-# 병렬 빌드
-$ PYTHON_MAKE_OPTS="-j4" pyenv install 3.9.0
 ```
 
 ### 파이썬 삭제하기
 
-이미 설치된 파이썬을 삭제할 때 사용한다.
+이미 설치된 파이썬을 삭제할 때 사용한다. 모든 버전에 대해서 삭제할 필요가 있고, pyenv 를 더이상 사용하지 않을 경우에는 `rm -rf $(pyenv root)` 를 통해 영구적인 삭제가 가능하다. 다만, 삭제한 버전이 `pyenv global` 이나 `.python-version` 에 지정되어 있었다면 다른 버전으로 직접 바꿔주어야 한다.
 
 ```bash
-$ pyenv uninstall 3.9.0
-pyenv: remove /Users/lukas/.pyenv/versions/3.9.0? y
+$ pyenv uninstall 2.7.12
+pyenv: remove /Users/lukas/.pyenv/versions/2.7.12? y # y/n 중에 하나 입력!
 ```
 
 ### 파이썬 버전 관리하기
 
 pyenv는 다양한 파이썬 버전을 다루게 되는데 몇가지 환경변수를 응용하여, 필요에 따라서 다양한 버전을 선택할 수 있고 복수의 버전을 선택할 수도 있다.
 
-우선순위: `$PYENV_VERSION` > `$PYENV_DIR/.python-version` > `$PYENV_ROOT/version`
+먼저, pyenv가 파이썬을 선택할 때, `$PYENV_VERSION` > `$PYENV_DIR/.python-version` > `$PYENV_ROOT/version`순으로 우선순위가 정의되어 있으며, 각각의 값은 `pyenv shell`, `pyenv local`, `pyenv global` 의 명령을 통해서 설정할 수 있다.
+
+즉, `python 호출` -> `pyenv가 명령어 후킹` -> `우선 순위에 따라 사용할 버전 정보 획득` -> `해당 버전 파이썬 실행` 과 같다.
+
+추가로 특이한 점은 복수의 파이썬 버전을 선택할 수 있다는 점이다. 만약에 2.7.13과 3.4.6 버전을 사용하기로 한다면? `pyenv (shell|local|global) 2.7.13 3.4.6` 과 같이 설정하면 된다. 이렇게 설정한 경우, `python` 명령을 호출하면, 2.7.13 버전의 파이썬이 호출된다. 만약에 3.4.6 버전을 디폴트로 사용하고자 한다면? `pyenv (shell|local|global) 3.4.6 2.7.13` 과 같이 순서만 바꾸면 된다.
+
+구체적인 내용은 아래에 정리해보도록 하겠다.
 
 #### pyenv shell
 
-쉘에서 파이썬 버전을 관리하는 명령으로, 버전 선택 시 가장 높은 우선순위를 가진다.
+쉘에서 파이썬 버전을 관리하기 위한 명령이다. 즉, `$PYENV_VERSION` 환경변수를 설정하여 사용할 버전을 명시하는데, 이 환경변수는 다른 설정 방법 중에서 가장 높은 우선순위를 가지고 있다. 만약에 스크립트 단위로 파이썬 버전이 달라져야한다는 경우와 같이 실행 시점에 버전이 결정되어야할 필요가 있을 때 유용하다.
 
 ```bash
-$ pyenv shell 3.9.0
-$ python --version
-Python 3.9.0
+$ echo $PYENV_VERSION # 환경변수의 값이 비어있다.
 
-# 복수 버전 설정
-$ pyenv shell 3.9.0 2.7.18
-$ python --version    # 첫 번째 버전 사용
-Python 3.9.0
-$ python2 --version   # 두 번째 버전 사용
-Python 2.7.18
+$ pyenv shell 3.4.6
+$ echo $PYENV_VERSION # 환경변수에 설정된 것을 볼 수 있다.
+3.4.6
+```
+
+```bash
+$ pyenv shell 2.7.13 3.4.6
+$ echo $PYENV_VERSION
+2.7.13:3.4.6
 ```
 
 #### pyenv local
 
-특정 디렉토리에서 파이썬 버전을 관리하기 위한 명령어이다.
+특정 디렉토리에서 파이썬 버전을 관리하기 위한 명령어이다. 더 정확히는 `$PYENV_DIR/.python-version`에 사용할 파이썬 버전을 정의하는 명령어라고 할 수 있다. 특별히 `$PYENV_DIR` 환경변수를 설정하지 않았다면, 기본값으로 `$PWD` 즉, 현재 디렉토리에 해당 파일이 생성되는 것을 알 수 있다.
 
 ```bash
-$ cd ~/projects/myproject
-$ pyenv local 3.9.0
-$ cat .python-version
-3.9.0
+$ pyenv local 3.4.6
+$ ll .python-version # 현재 디렉토리에 .python-version 파일이 생성되었다.
+-rw-rw-r--  1 lukas  staff     6B  4  2 01:10 .python-version
+$ cat .python-version # 내가 설정한 파이썬 버전이 정의되어 있다.
+3.4.6
+```
 
-# 복수 버전 설정
-$ pyenv local 3.9.0 2.7.18
-$ cat .python-version
-3.9.0
-2.7.18
+```bash
+$ pyenv local 2.7.13 3.4.6
+$ cat .python-version # 복수의 버전이 정의되어 있다. python 명령어 수행 시, 2.7.13 버전이 수행된다.
+2.7.13
+3.4.6
 ```
 
 #### pyenv global
 
-시스템 전체의 기본 파이썬 버전을 관리하기 위한 명령이다.
+시스템의 파이썬 버전을 관리하기 위한 명령이다. 더 정확히는 `$PYENV_ROOT/version`에 사용할 버전을 정의하기 위한 명령어이다. `$PYENV_ROOT` 환경변수를 특별히 정의하지 않았다면 기본적으로 `~/.pyenv` 를 기본값으로 가지고 있다.
 
 ```bash
-$ pyenv global 3.9.0
+$ pyenv global 3.4.6
+$ ll ~/.pyenv/version # $PYENV_ROOT/version 경로에 파일이 생성되었다.
+-rw-r--r--  1 lukas  staff    13B  4  2 01:30 /Users/lukas/.pyenv/version
+$ cat ~/.pyenv/version # 내가 설정한 파이썬 버전이 정의되어 있다.
+3.4.6
+```
+
+```bash
+$ pyenv global 2.7.13 3.4.6
 $ cat ~/.pyenv/version
-3.9.0
-
-# 복수 버전 설정
-$ pyenv global 3.9.0 2.7.18
-$ cat ~/.pyenv/version
-3.9.0
-2.7.18
-```
-
-### 버전 확인 명령어
-
-```bash
-# 현재 활성화된 파이썬 버전
-$ pyenv version
-3.9.0 (set by /Users/lukas/projects/myproject/.python-version)
-
-# 설치된 모든 파이썬 버전
-$ pyenv versions
-  system
-  2.7.18
-* 3.9.0 (set by /Users/lukas/projects/myproject/.python-version)
-  3.8.5
-```
-
-## pyenv-virtualenv 활용하기
-
-pyenv-virtualenv는 pyenv의 플러그인으로, 가상환경 관리를 자동화한다.
-
-### 설치
-
-```bash
-# macOS (Homebrew)
-$ brew install pyenv-virtualenv
-
-# Linux
-$ git clone https://github.com/pyenv/pyenv-virtualenv.git $(pyenv root)/plugins/pyenv-virtualenv
-```
-
-### 쉘 설정 추가
-
-```bash
-$ vi ~/.zshrc
-eval "$(pyenv virtualenv-init -)"
-```
-
-### 가상환경 생성 및 사용
-
-```bash
-# 가상환경 생성
-$ pyenv virtualenv 3.9.0 myproject-env
-
-# 가상환경 목록
-$ pyenv virtualenvs
-  myproject-env (created from ~/.pyenv/versions/3.9.0)
-
-# 가상환경 활성화
-$ pyenv activate myproject-env
-
-# 가상환경 비활성화
-$ pyenv deactivate
-
-# 가상환경 삭제
-$ pyenv uninstall myproject-env
-```
-
-### 프로젝트별 자동 활성화
-
-```bash
-$ cd ~/projects/myproject
-$ pyenv local myproject-env
-# 이제 해당 디렉토리로 이동하면 자동으로 가상환경 활성화
-```
-
-## 실전 활용 예제
-
-### Django 프로젝트 설정
-
-```bash
-# 프로젝트 디렉토리 생성
-$ mkdir ~/projects/django-app && cd ~/projects/django-app
-
-# 파이썬 버전 설정
-$ pyenv local 3.9.0
-
-# 가상환경 생성
-$ pyenv virtualenv 3.9.0 django-app-env
-$ pyenv local django-app-env
-
-# Django 설치
-$ pip install django
-$ django-admin startproject mysite .
-```
-
-### tox와 함께 사용하기 (다중 버전 테스트)
-
-```bash
-# 여러 파이썬 버전 설치
-$ pyenv install 3.7.9 3.8.5 3.9.0
-
-# 프로젝트에 복수 버전 설정
-$ pyenv local 3.9.0 3.8.5 3.7.9
-
-# tox.ini
-[tox]
-envlist = py37,py38,py39
-
-[testenv]
-deps = pytest
-commands = pytest
-
-# tox 실행
-$ tox
-```
-
-### CI/CD에서 활용
-
-```yaml
-# GitHub Actions 예시
-name: Python CI
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: [3.7, 3.8, 3.9]
-    
-    steps:
-      - uses: actions/checkout@v3
-      
-      - name: Install pyenv
-        run: |
-          curl https://pyenv.run | bash
-          echo "$HOME/.pyenv/bin" >> $GITHUB_PATH
-          echo "$HOME/.pyenv/shims" >> $GITHUB_PATH
-      
-      - name: Install Python ${{ matrix.python-version }}
-        run: pyenv install ${{ matrix.python-version }}
-      
-      - name: Run tests
-        run: |
-          pyenv global ${{ matrix.python-version }}
-          pip install -r requirements.txt
-          pytest
-```
-
-## 트러블슈팅
-
-### 자주 발생하는 문제
-
-**1. 빌드 실패**
-
-```bash
-ERROR: The Python ssl extension was not compiled. Missing the OpenSSL lib?
-```
-
-해결 (Ubuntu/Debian):
-```bash
-$ sudo apt-get install -y build-essential libssl-dev zlib1g-dev libbz2-dev \
-    libreadline-dev libsqlite3-dev wget curl llvm libncurses5-dev \
-    libncursesw5-dev xz-utils tk-dev libffi-dev liblzma-dev python-openssl
-```
-
-해결 (macOS):
-```bash
-$ brew install openssl readline sqlite3 xz zlib
-$ export LDFLAGS="-L$(brew --prefix openssl)/lib"
-$ export CPPFLAGS="-I$(brew --prefix openssl)/include"
-$ pyenv install 3.9.0
-```
-
-**2. 명령어를 찾을 수 없음**
-
-```bash
-pyenv: command not found
-```
-
-해결:
-```bash
-# 환경변수 확인
-$ echo $PATH | grep pyenv
-
-# 쉘 설정 재적용
-$ source ~/.zshrc  # 또는 ~/.bash_profile
-```
-
-**3. 버전이 변경되지 않음**
-
-```bash
-$ pyenv global 3.9.0
-$ python --version
-Python 2.7.16  # 변경 안됨
-```
-
-해결:
-```bash
-# shim 재생성
-$ pyenv rehash
-
-# 쉘 재시작
-$ exec $SHELL
-```
-
-**4. 권한 문제**
-
-```bash
-permission denied: ~/.pyenv/versions/3.9.0
-```
-
-해결:
-```bash
-$ sudo chown -R $(whoami) ~/.pyenv
-```
-
-## 모범 사례
-
-### 1. 프로젝트별 .python-version 커밋
-
-```bash
-# .python-version 파일을 Git에 커밋
-$ cd ~/projects/myproject
-$ pyenv local 3.9.0
-$ git add .python-version
-$ git commit -m "Add Python version specification"
-```
-
-### 2. requirements.txt와 함께 관리
-
-```bash
-# 가상환경 생성 후 의존성 설치
-$ pyenv virtualenv 3.9.0 myproject
-$ pyenv local myproject
-$ pip install -r requirements.txt
-$ pip freeze > requirements.txt
-```
-
-### 3. .python-version과 runtime.txt
-
-Heroku 등의 PaaS에서는 `runtime.txt`를 사용:
-
-```
-# runtime.txt
-python-3.9.0
-```
-
-### 4. pyenv와 poetry 조합
-
-```bash
-# pyenv로 파이썬 버전 관리
-$ pyenv local 3.9.0
-
-# poetry로 의존성 관리
-$ pip install poetry
-$ poetry init
-$ poetry add django
-$ poetry install
+2.7.13
+3.4.6
 ```
 
 ## 참고 링크
 
 - [github.com/pyenv/pyenv](https://github.com/pyenv/pyenv)
-- [pyenv-virtualenv](https://github.com/pyenv/pyenv-virtualenv)
-- [Common build problems](https://github.com/pyenv/pyenv/wiki/Common-build-problems)
-- [Python Version Management with pyenv](https://realpython.com/intro-to-pyenv/)

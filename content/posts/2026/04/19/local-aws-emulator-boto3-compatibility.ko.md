@@ -1,143 +1,114 @@
 ---
 title: "로컬 AWS 에뮬레이터에서 boto3 호환성 달성하기"
-description: "로컬 AWS 에뮬레이터 DevCloud가 5가지 AWS 프로토콜을 한 게이트웨이에서 감지하고 직렬화해 boto3 호환성 테스트 96%를 통과한 방법을 설명한다."
+description: "로컬 AWS 에뮬레이터 DevCloud가 여러 AWS 프로토콜을 한 게이트웨이에서 구분해 처리하는 방법과, boto3 호환성 테스트 699건 중 28건이 실패했던 원인을 정리한다."
 date: 2026-04-19T00:00:00+09:00
 tags: [aws, emulator, boto3, python, devcloud]
 ---
 
-## 들어가며
+AWS를 사용하는 애플리케이션을 개발하다 보면 테스트 환경 때문에 불편할 때가 많다. CI에서 실제 AWS를 호출하면 비용이 나가고, 회사 네트워크나 VPN이 없으면 개발이 막히고, 새로 합류한 사람은 자격 증명부터 받아야 한다. 이런 불편함을 줄여보려고 로컬에서 띄울 수 있는 AWS 에뮬레이터인 [DevCloud](https://github.com/skyoo2003/devcloud)를 만들고 있다.
 
-클라우드 네이티브 애플리케이션을 개발하다 보면 느끼는 불편함이 있다. CI 파이프라인에서 AWS를 호출하면 비용이 청구되고, VPN이 없으면 개발이 멈추며, 온보딩에는 자격 증명 설정이 필요하다. [DevCloud](https://github.com/skyoo2003/devcloud)는 이 문제를 로컬에서 해결하는 AWS 에뮬레이터다.
+DevCloud의 목표는 "SDK 입장에서 진짜 AWS와 구별되지 않는 것"이다. 그래서 boto3로 각 서비스의 오퍼레이션을 실제로 호출해보는 호환성 테스트를 만들어 두었는데, 처음 전체를 돌렸을 때 결과는 **699건 중 671건 통과(96%)** 였다. 이번 글에서는 DevCloud가 여러 AWS 프로토콜을 하나의 포트에서 어떻게 구분하는지, 그리고 실패했던 28건이 어떤 문제였는지 정리해보려 한다.
 
-boto3 호환성 테스트에서 **671/699 케이스 통과 (96%)**를 달성했다. 이 숫자는 단순한 테스트 통과율이 아니라, 프로토콜 설계가 얼마나 정확한지를 보여주는 지표다.
+## AWS 에뮬레이션이 까다로운 이유
 
-## 왜 AWS 에뮬레이션이 어려운가
+보통의 API는 프로토콜이 하나다. 그런데 AWS는 서비스마다 사용하는 프로토콜이 다르다. 크게 나누면 아래와 같다.
 
-해결책을 설명하기 전에, AWS 에뮬레이션이 왜 근본적으로 어려운지 이해할 필요가 있다.
+| 프로토콜 | 대표 서비스 | 특징 |
+|---|---|---|
+| REST-XML | S3, Route 53 | HTTP 메서드와 경로로 오퍼레이션 결정, XML 응답 |
+| REST-JSON | Lambda, SESv2 | HTTP 메서드와 경로로 오퍼레이션 결정, JSON 응답 |
+| JSON 1.0 / 1.1 | DynamoDB, SQS(JSON) | `X-Amz-Target` 헤더로 오퍼레이션 결정 |
+| Query | IAM, STS, SQS(Query) | form-urlencoded 바디의 `Action=`으로 오퍼레이션 결정 |
 
-대부분의 API는 프로토콜이 하나다. gRPC 서비스는 protobuf를 쓰고, REST API는 JSON을 쓰며, GraphQL은 자체 쿼리 언어를 사용한다. AWS는 **서로 다른 다섯 가지 프로토콜**을 서비스별로 사용하며, 각 프로토콜마다 직렬화 규칙, 에러 포맷, 인증 방식이 다르다. 단일한 "AWS API"는 존재하지 않는다 — 사실상 하나의 서비스 모델을 공유하는 다섯 개의 프로토콜 구현체를 만드는 셈이다.
+프로토콜마다 요청을 읽는 방법, 응답을 만드는 방법, 에러를 표현하는 방법이 전부 다르다. 즉, "AWS API" 하나를 만드는 게 아니라 같은 서비스 모델을 공유하는 여러 프로토콜 구현체를 만드는 셈이다.
 
-두 번째 난제는 **동작 충실도(behavioral fidelity)**다. 올바른 JSON 구조를 반환하는 것만으로는 충분하지 않다. 타임스탬프는 정해진 정밀도의 ISO 8601 포맷이어야 하고, 에러 코드는 AWS 특정 문자열과 정확히 일치해야 하며, 페이지네이션 토큰은 SDK가 파싱할 수 있는 형태여야 하고, XML 응답은 boto3가 기대하는 정확한 네임스페이스 선언을 가져야 한다. 이 디테일 각각이 잠재적 호환성 실패 원인이다.
+게다가 응답의 구조만 맞으면 끝나는 것도 아니다. 에러 코드 문자열, 타임스탬프 형식, 페이지네이션 토큰, XML 엘리먼트 이름 같은 세부 사항 하나만 달라도 SDK에서 파싱이 실패하거나 엉뚱한 값이 나온다.
 
-## 5가지 프로토콜, 하나의 게이트웨이
+## 하나의 게이트웨이에서 프로토콜 구분하기
 
-DevCloud는 다섯 가지 AWS 프로토콜을 단일 HTTP 게이트웨이에서 처리한다:
-
-```
-Client (boto3 / AWS CLI / Terraform / CDK)
-  │
-  ▼
-API Gateway (port 4747)
-  │
-  ├─ Middleware Chain
-  │   ├─ ErrorRecovery (패닉 복구)
-  │   ├─ BodyLimit (요청 크기 제한)
-  │   ├─ CORS (크로스 오리진 처리)
-  │   ├─ RequestID (X-Amz-Request-Id)
-  │   ├─ RequestLogger (구조화 로깅)
-  │   └─ LogCollector (대시보드 실시간 로그)
-  │
-  ▼
-Protocol Detector
-  │
-  ├─ X-Amz-Target 헤더 존재       → JSON 프로토콜 (DynamoDB, SQS JSON)
-  ├─ Content-Type: x-www-form-urlencoded + Action= → Query 프로토콜 (IAM, STS, SQS)
-  ├─ SigV4 서명에 Lambda 경로     → REST-JSON (Lambda)
-  └─ 기본                         → REST-XML (S3)
-```
-
-### 프로토콜 자동 감지
-
-들어오는 요청의 헤더만으로 프로토콜을 판별한다:
+DevCloud는 모든 서비스를 4747 포트 하나로 받는다. 요청이 들어오면 공통 미들웨어(패닉 복구, 요청 크기 제한, CORS, `X-Amz-Request-Id` 생성, 요청 로깅)를 거친 뒤에, 요청의 헤더와 바디를 보고 프로토콜과 서비스를 판별한다.
 
 ```go
 // internal/gateway/protocol.go
 func DetectProtocol(r *http.Request) (protocol string, serviceID string) {
-    // 1. JSON 프로토콜: X-Amz-Target 헤더 존재
-    if target := r.Header.Get("X-Amz-Target"); target != "" {
-        contentType := r.Header.Get("Content-Type")
-        proto := jsonProtocolFromContentType(contentType)
-        service := serviceFromTarget(target)
-        return proto, service
-    }
+	// 1. JSON 프로토콜: X-Amz-Target 헤더가 있다.
+	if target := r.Header.Get("X-Amz-Target"); target != "" {
+		contentType := r.Header.Get("Content-Type")
+		proto := jsonProtocolFromContentType(contentType)
+		service := serviceFromTarget(target)
+		return proto, service
+	}
 
-    // 2. Query 프로토콜: form-encoded body에 Action= 파라미터
-    contentType := r.Header.Get("Content-Type")
-    if strings.Contains(contentType, "application/x-www-form-urlencoded") {
-        bodyBytes, err := io.ReadAll(r.Body)
-        if err == nil {
-            r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
-            if strings.Contains(string(bodyBytes), "Action=") {
-                service := serviceFromQueryRequest(r, string(bodyBytes))
-                return "query", service
-            }
-        }
-    }
+	// 2. Query 프로토콜: form-urlencoded 바디에 Action= 이 있다.
+	contentType := r.Header.Get("Content-Type")
+	if strings.Contains(contentType, "application/x-www-form-urlencoded") {
+		bodyBytes, err := io.ReadAll(r.Body)
+		if err == nil {
+			r.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+			if strings.Contains(string(bodyBytes), "Action=") {
+				service := serviceFromQueryRequest(r, string(bodyBytes))
+				return "query", service
+			}
+		}
+	}
 
-    // 3. SigV4 서명에서 REST 스타일 서비스 추출
-    if svc := serviceFromSigV4(r); svc != "" && svc != "s3" {
-        normalized := normalizeServiceID(svc)
-        return "rest-json", normalized
-    }
+	// 3. SigV4 서명의 서비스 이름으로 REST-JSON 서비스를 찾는다.
+	if svc := serviceFromSigV4(r); svc != "" && svc != "s3" {
+		normalized := normalizeServiceID(svc)
+		if normalized == "ses" {
+			normalized = "sesv2"
+		}
+		if normalized == "opensearch" && strings.Contains(r.URL.Path, "/2015-01-01/") {
+			normalized = "elasticsearchservice"
+		}
+		return "rest-json", normalized
+	}
 
-    // 4. 기본: REST-XML (S3)
-    return "rest-xml", "s3"
+	// 4. 나머지는 REST-XML(S3)로 본다.
+	return "rest-xml", "s3"
 }
 ```
 
-감지 순서가 중요하다. `X-Amz-Target`을 먼저 확인해야 JSON 프로토콜 서비스(DynamoDB, Lambda)가 Query 프로토콜로 오인되지 않는다. SQS는 JSON과 Query 프로토콜을 모두 지원하는 특이한 서비스로, `X-Amz-Target` 헤더 유무로 구분한다.
+여기서는 확인하는 순서가 중요하다. SQS는 JSON과 Query 프로토콜을 둘 다 지원하는 서비스라서, `X-Amz-Target` 헤더가 있으면 JSON으로, 없고 바디에 `Action=`이 있으면 Query로 처리해야 한다. 그리고 Query 판별을 위해 바디를 한 번 읽었다면, 뒤에서 다시 읽을 수 있도록 `r.Body`를 되돌려 놓아야 한다. (이걸 빠뜨리면 서비스 핸들러에서 빈 바디를 받게 된다.)
 
-### 서비스 이름 정규화
+3번의 예외 처리도 실제로 부딪히면서 추가한 부분이다. SES와 SESv2는 SigV4 서명 이름이 둘 다 `ses`이고, Elasticsearch와 OpenSearch도 둘 다 `es`를 쓴다. 그래서 서명 이름만으로는 구분이 안 되고, REST-JSON인 SESv2로 보내거나 경로에 `/2015-01-01/`이 있는지로 레거시 Elasticsearch API를 따로 구분하고 있다. 이 밖에도 SDK가 보내는 서비스 이름을 내부 ID로 바꿔주는 `normalizeServiceID`가 꽤 긴 switch 문으로 되어 있다.
 
-게이트웨이는 100개 이상의 AWS 서비스 이름을 내부 ID로 매핑하는 광범위한 테이블을 유지한다. 특수 케이스가 많다:
-
-- SES → `sesv2` (Query가 아닌 REST-JSON)
-- `opensearch` vs `elasticsearchservice` (경로 기반 구분)
-- 서비스 이름 정규화 (공백 제거, 소문자 변환)
-
-SDK가 서비스를 참조하는 방식에 관계없이 올바른 플러그인에 도달하도록 보장한다.
-
-## 프로토콜별 직렬화 상세
-
-프로토콜마다 직렬화 방식이 완전히 달라, 에뮬레이터에서도 직렬화/역직렬화 계층이 가장 까다로운 부분이다. 구체적인 예시로 차이를 살펴보자.
+## 프로토콜별로 다른 직렬화
 
 ### REST-XML (S3)
 
-S3는 가장 복잡한 프로토콜이다. 오퍼레이션은 HTTP 메서드와 경로로 결정되며, 응답은 특정 네임스페이스 선언이 있는 유효한 XML이어야 한다.
+S3는 HTTP 메서드와 경로, 쿼리 스트링 조합으로 오퍼레이션이 결정된다.
 
-**요청 라우팅:**
 ```
-PUT    /my-bucket/my-key HTTP/1.1          → PutObject
-GET    /my-bucket?list-type=2 HTTP/1.1     → ListObjectsV2
-DELETE /my-bucket/my-key HTTP/1.1          → DeleteObject
-HEAD   /my-bucket/my-key HTTP/1.1          → HeadObject
-POST   /my-bucket?delete HTTP/1.1          → DeleteObjects (다중 객체)
+PUT    /my-bucket/my-key        → PutObject
+GET    /my-bucket?list-type=2   → ListObjectsV2
+DELETE /my-bucket/my-key        → DeleteObject
+HEAD   /my-bucket/my-key        → HeadObject
+POST   /my-bucket?delete        → DeleteObjects
 ```
 
-**응답 XML 구조:**
+응답은 XML이고, boto3는 서비스 모델에 정의된 엘리먼트 이름을 기준으로 값을 꺼낸다. 엘리먼트 이름이 하나라도 다르면 에러가 나는 게 아니라 그 필드가 조용히 빠진 채로 응답이 만들어지기 때문에, 오히려 문제를 찾기가 더 어렵다.
+
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<ListObjectsV2Output>
+<ListBucketResult xmlns="http://s3.amazonaws.com/doc/2006-03-01/">
     <Name>my-bucket</Name>
-    <Prefix></Prefix>
-    <KeyCount>2</KeyCount>
+    <KeyCount>1</KeyCount>
     <MaxKeys>1000</MaxKeys>
     <IsTruncated>false</IsTruncated>
     <Contents>
         <Key>hello.txt</Key>
         <LastModified>2026-04-19T12:00:00.000Z</LastModified>
-        <ETag>"d41d8cd98f00b204e9800998ecf8427e"</ETag>
-        <Size>13</Size>
+        <ETag>"..."</ETag>
+        <Size>16</Size>
         <StorageClass>STANDARD</StorageClass>
     </Contents>
-</ListObjectsV2Output>
+</ListBucketResult>
 ```
 
-boto3는 서비스 모델의 `xmlNamespace` 트레이트를 사용하여 이 XML을 파싱한다. 네임스페이스 선언이나 엘리먼트 순서가 틀리면, 역직렬화가 조용히 실패하거나 잘못된 값을 생성한다.
+### JSON 1.0 / 1.1 (DynamoDB 등)
 
-### JSON 1.0/1.1 (DynamoDB, Lambda)
-
-JSON 프로토콜은 라우팅이 단순하지만 자체적인 뉘앙스가 있다:
+JSON 프로토콜은 라우팅이 단순하다. `X-Amz-Target`이 `서비스이름_API버전.오퍼레이션` 형식이라서 이것만 잘라보면 된다.
 
 ```
 X-Amz-Target: DynamoDB_20120810.CreateTable
@@ -146,176 +117,95 @@ Content-Type: application/x-amz-json-1.0
 {"TableName": "users", "KeySchema": [...], "AttributeDefinitions": [...]}
 ```
 
-JSON 1.0은 `application/x-amz-json-1.0`을 사용하고, 특정 `X-Amz-Target` 포맷을 따른다: `ServiceName_APIVersion.OperationName`. JSON 1.1은 `application/x-amz-json-1.1`과 약간 다른 타겟 포맷을 사용한다.
-
-에러 응답은 특정 구조를 따른다:
+에러는 `__type` 필드에 에러 코드를 담아서 반환한다.
 
 ```json
 {"__type": "ResourceNotFoundException", "message": "Requested resource not found"}
 ```
 
-### Query (IAM, STS)
+### Query (IAM, STS 등)
 
-Query 프로토콜은 모든 파라미터를 form-urlencoded 형식으로 인코딩한다:
+Query 프로토콜은 모든 파라미터를 form-urlencoded로 보낸다.
 
 ```
 Action=GetUser&Version=2010-05-08&UserName=alice
 ```
 
-이 프로토콜에는 다음과 같은 독특한 직렬화 과제가 있다:
+리스트나 맵도 `member.1=Value1&member.2=Value2`처럼 인덱스를 붙인 평탄한 키로 표현하기 때문에, 중첩된 구조를 다시 조립하는 부분이 생각보다 까다로웠다. 응답은 REST-XML처럼 XML이지만, `<GetUserResponse><GetUserResult>...</GetUserResult></GetUserResponse>`처럼 오퍼레이션 이름으로 한 번 더 감싸는 형태다.
 
-- **ECMAScript 날짜 포맷**: 타임스탬프가 `20260419T120000Z` (하이픈과 콜론 없음)으로 인코딩되며, ISO 8601이 아니다
-- **평탄화 리스트**: `member.1=Value1&member.2=Value2` — JSON 배열이 아닌 인덱스 기반 표현
-- **구조화 맵 키**: `AttributeName.1.Name=id&AttributeName.1.Value=userId` — 맵 키도 인덱스로 인코딩
-- **부울린 인코딩**: `true`와 `false`를 소문자 문자열로 표현
+## 실패한 28건은 무엇이었나
 
-## 96% 호환성의 의미
+호환성 테스트는 `tests/compatibility/` 아래에 서비스별 pytest 파일로 되어 있다. 테스트가 DevCloud 서버를 띄운 뒤에, boto3 클라이언트로 오퍼레이션을 호출하고 응답 값을 확인하는 방식이다. 단위 테스트와 달리 실제 SDK의 직렬화/역직렬화를 그대로 거치기 때문에, 서버 코드만 봐서는 알기 어려운 형식 문제를 잡아준다.
 
-boto3 호환성 테스트는 실제 AWS SDK가 보내는 요청을 에뮬레이터에 재생하고, 응답이 SDK가 기대하는 구조와 일치하는지 검증한다. 이것은 단위 테스트가 아니라 **와이어 프로토콜 수준의 통합 테스트**다.
+처음 실행했을 때 실패한 28건을 원인별로 보면 아래와 같았다.
 
-```
-699개 테스트 케이스 실행
-├─ 671개 통과 (96.0%)
-├─ 28개 실패
-│  ├─ 페이지네이션 엣지 케이스: 12개
-│  │   └─ NextToken 포맷, exclusive StartKey 처리
-│  ├─ 타임스탬프 포맷 미세 차이: 8개
-│  │   └─ 밀리초 정밀도, 타임존 처리
-│  └─ 예외 메시지 텍스트 차이: 8개
-│       └─ AWS 정확 문구와 불일치
-```
+| 원인 | 서비스 |
+|---|---|
+| 태그를 맵이 아니라 `[{key, value}]` 리스트로 반환해야 함 | Bedrock, Textract |
+| boto3가 붙이는 `/v1` 경로 접두사를 처리하지 못함 | S3 Tables |
+| 같은 POST 요청이 생성인지 수정인지 구분하지 못함, 바디의 `GroupName`을 읽지 않음 | EventBridge Scheduler |
+| camelCase/PascalCase 파라미터 이름 혼용, 응답 키 대소문자 | Serverless Application Repository |
+| botocore 버전에 따라 달라지는 파라미터, 필수 파라미터 누락 등 테스트 코드 쪽 문제 | Route 53, Support, Textract |
 
-실패한 28개의 대부분은 기능적 오류가 아니라 **포맷 미세 차이**다:
+대부분은 기능이 없어서가 아니라 **응답 형식이 SDK가 기대하는 것과 조금씩 달라서** 생긴 문제였다. 예를 들어 Bedrock은 태그를 `{"env": "dev"}` 같은 맵으로 돌려주고 있었는데, 서비스 모델은 `[{"key": "env", "value": "dev"}]` 형태의 리스트를 기대한다. 서버 쪽에서는 정상 응답이지만 boto3에서는 파싱 결과가 기대와 다르게 나온다. 이 28건은 같은 날 [#4](https://github.com/skyoo2003/devcloud/pull/4)에서 모두 수정했다.
 
-1. **페이지네이션 (12개 실패)**: boto3는 한 응답의 `NextToken`을 다음 요청의 입력으로 사용한다. 토큰 포맷이 AWS와 다르면 페이지네이션이 깨진다. 우리 토큰은 base64 인코딩 포인터인 반면, AWS는 불투명한 암호화 토큰을 사용한다. SDK는 파싱할 수 있지만, 일부 엣지 케이스에서 라운드트립이 실패한다.
+그리고 테스트가 실패했는데 원인이 서버가 아니라 테스트 환경이었던 경우도 있었다. 테스트용 서버를 띄울 때 저장소에 없는 `devcloud.yaml`을 `-config`로 넘기고 있었는데, 서버가 설정 파일을 찾지 못하고 바로 종료되어 버렸다. 서버의 stderr를 버리고 있었기 때문에, 테스트에서는 30초 동안 서버를 기다리다가 타임아웃이 나는 것만 보였다. 지금은 설정 파일이 있을 때만 넘기고, 서버가 뜨지 않으면 stderr 내용을 에러 메시지에 같이 보여주도록 바꿨다.
 
-2. **타임스탬프 (8개 실패)**: AWS는 가변 정밀도의 타임스탬프를 반환한다 — 밀리초(`2026-04-19T12:00:00.123Z`)가 있고, 없는 것(`2026-04-19T12:00:00Z`)도 있다. SDK는 필드별로 특정 포맷을 기대한다. 우리 타임스탬프는 항상 밀리초 정밀도인데, 일부 필드는 소수점이 없는 것을 기대한다.
+## 서비스 플러그인 구조
 
-3. **에러 메시지 (8개 실패)**: `The bucket you are attempting to access must be addressed using the specified endpoint.` 같은 에러 메시지는 AWS의 정확한 문구와 일치해야 한다. 우리 메시지는 동일한 의미를 전달하지만 다른 표현을 사용한다.
-
-이 실패들은 실제 애플리케이션 동작에 영향을 주지 않는다. 애플리케이션은 에러 메시지 텍스트가 아닌 에러 코드(예: `NoSuchBucket`)를 확인하며, 우리 에러 코드는 정확히 일치한다.
-
-## 서비스 플러그인 아키텍처
-
-모든 서비스는 `ServicePlugin` 인터페이스를 구현한다:
+각 서비스는 `ServicePlugin` 인터페이스를 구현하고, 중앙 레지스트리에 팩토리를 등록하는 방식으로 붙는다.
 
 ```go
 type ServicePlugin interface {
-    ServiceID() string
-    ServiceName() string
-    Protocol() ProtocolType
-    Init(config PluginConfig) error
-    Shutdown(ctx context.Context) error
-    HandleRequest(ctx context.Context, op string, req *http.Request) (*Response, error)
-    ListResources(ctx context.Context) ([]Resource, error)
-    GetMetrics(ctx context.Context) (*ServiceMetrics, error)
+	ServiceID() string
+	ServiceName() string
+	Protocol() ProtocolType
+	Init(config PluginConfig) error
+	Shutdown(ctx context.Context) error
+	HandleRequest(ctx context.Context, op string, req *http.Request) (*Response, error)
+	ListResources(ctx context.Context) ([]Resource, error)
+	GetMetrics(ctx context.Context) (*ServiceMetrics, error)
 }
 ```
 
-### 플러그인 레지스트리
+게이트웨이는 프로토콜과 서비스, 오퍼레이션 이름까지만 결정하고, 실제 요청을 해석해서 응답을 만드는 일은 각 서비스의 `HandleRequest`가 맡는다. 서비스 골격은 AWS의 Smithy 모델로부터 코드 생성기로 만들어내는데, 이 부분은 [Smithy 코드 생성 글](/ko/posts/2026/04/19/smithy-codegen-aws-services/)에서 따로 정리했다. 다만, S3, DynamoDB, SQS처럼 자주 쓰는 서비스는 직렬화까지 직접 작성한 코드가 대부분이고, 생성된 직렬화 코드를 그대로 쓰는 서비스는 아직 일부다.
 
-서비스는 중앙 레지스트리를 통해 등록된다:
+## 사용 방법
 
-```go
-type Registry struct {
-    mu        sync.RWMutex
-    factories map[string]PluginFactory
-    active    map[string]ServicePlugin
-}
+기존 코드는 그대로 두고 엔드포인트만 DevCloud로 바꾸면 된다.
 
-func (r *Registry) Register(serviceID string, factory PluginFactory) {
-    r.mu.Lock()
-    defer r.mu.Unlock()
-    r.factories[serviceID] = factory
-}
-
-func (r *Registry) Init(serviceID string, cfg PluginConfig) (ServicePlugin, error) {
-    factory, ok := r.factories[serviceID]
-    if !ok {
-        return nil, fmt.Errorf("unknown service: %s", serviceID)
-    }
-    p := factory(cfg)
-    if err := p.Init(cfg); err != nil {
-        return nil, fmt.Errorf("init %s: %w", serviceID, err)
-    }
-    r.active[serviceID] = p
-    return p, nil
-}
+```bash
+$ docker run -p 4747:4747 ghcr.io/skyoo2003/devcloud:latest
 ```
-
-이 분리 덕분에 새 서비스를 추가하려면:
-1. 코드 생성기를 실행하여 타입과 스텁 생성
-2. `ServicePlugin` 인터페이스 구현
-3. 팩토리에 등록
-
-프로토콜 처리, 직렬화, 라우팅은 자동 생성 코드가 전부 처리한다.
-
-## 실제 사용 예시: 코드 변경 제로
-
-DevCloud를 띄우면 기존 코드 변경 없이 엔드포인트만 바꾸면 된다:
-
-### Python (boto3)
 
 ```python
 import boto3
 
-# 프로덕션
-# s3 = boto3.client('s3', endpoint_url='https://s3.amazonaws.com')
+s3 = boto3.client(
+    "s3",
+    endpoint_url="http://localhost:4747",
+    region_name="us-east-1",
+    aws_access_key_id="test",
+    aws_secret_access_key="test",
+)
 
-# DevCloud 로컬
-s3 = boto3.client('s3', endpoint_url='http://localhost:4747',
-                  aws_access_key_id='test',
-                  aws_secret_access_key='test')
-
-s3.create_bucket(Bucket='my-bucket')
-s3.put_object(Bucket='my-bucket', Key='hello.txt', Body=b'Hello, DevCloud!')
-response = s3.get_object(Bucket='my-bucket', Key='hello.txt')
-print(response['Body'].read())  # b'Hello, DevCloud!'
+s3.create_bucket(Bucket="my-bucket")
+s3.put_object(Bucket="my-bucket", Key="hello.txt", Body=b"Hello, DevCloud!")
+response = s3.get_object(Bucket="my-bucket", Key="hello.txt")
+print(response["Body"].read())  # b'Hello, DevCloud!'
 ```
 
-### Docker
+AWS CLI나 Terraform도 마찬가지로 엔드포인트만 지정하면 된다.
 
 ```bash
-docker run -p 4566:4566 skyoo2003/devcloud
+$ aws --endpoint-url http://localhost:4747 s3 ls
+
+$ export AWS_ENDPOINT_URL=http://localhost:4747
+$ terraform apply
 ```
 
-### Terraform
+## 정리
 
-```bash
-export AWS_ENDPOINT_URL=http://localhost:4747
-terraform apply
-```
-
-### AWS CLI
-
-```bash
-aws --endpoint-url http://localhost:4747 s3 ls
-```
-
-AWS SDK를 사용하는 모든 도구가 수정 없이 동작한다. DevCloud는 AWS와 동일한 와이어 프로토콜을 구현하므로, SDK 입장에서는 진짜 AWS인지 로컬 에뮬레이터인지 구별할 수 없다.
-
-## 핵심 인사이트
-
-### 1. 프로토콜이 복잡성의 핵심이다
-
-구현 난이도는 비즈니스 로직보다 직렬화/역직렬화에 달려 있다. 96개 서비스에 대해 5개 프로토콜 직렬화기를 수동으로 구현하면 유지보수가 너무 어려워지므로, 코드 생성으로 자동화하는 것이 올바른 접근이었다.
-
-### 2. 호환성은 포맷 정밀도에서 갈린다
-
-96%에서 99.9%로 가는 길은 기능 추가가 아니라 타임스탬프 포맷, 에러 메시지 문구, 페이지네이션 토큰 같은 디테일에 있다. 이 디테일은 지루하지만 필수적이다. 96%를 넘어선 각 퍼센트 포인트마다 점점 더 구체적인 포맷 매칭이 필요하다.
-
-### 3. 플러그인 아키텍처로 관심사를 분리하라
-
-프로토콜 처리와 서비스 로직을 분리하면 양쪽을 독립적으로 발전시킬 수 있다. 코드 생성 쪽에서 프로토콜 처리를 개선해도 서비스 구현에 영향이 없고, 서비스 개발자는 직렬화 세부사항을 몰라도 기능을 추가할 수 있다.
-
-### 4. SDK 관점에서 테스트하라
-
-호환 가능한 에뮬레이터를 구축하는 가장 빠른 방법은 서버 관점이 아니라 SDK 관점에서 테스트하는 것이다. 실제 SDK 요청을 녹화해 에뮬레이터에 재생한 뒤 응답을 비교하면, 서버 중심 테스트가 놓치는 포맷 이슈를 잡을 수 있다.
-
-## 마치며
-
-96% boto3 호환성은 로컬 개발 환경에서 AWS SDK를 그대로 사용할 수 있다는 것을 의미한다. CI/CD 파이프라인의 클라우드 비용을 없애고, 오프라인 개발(비행기, 제한된 네트워크 환경)을 가능하게 하며, 새 팀원의 온보딩을 `docker run` 하나로 줄일 수 있다.
-
-남은 4%는 포맷 정밀도 문제다 — 페이지네이션 토큰, 타임스탬프 포맷, 에러 메시지 문구. 이것도 매주 Smithy 모델 동기와 함께 점진적으로 개선되고 있다.
+에뮬레이터를 만들면서 느낀 점은, 구현 난이도가 비즈니스 로직보다 **직렬화 형식을 정확히 맞추는 쪽**에 몰려 있다는 것이다. 이번에 실패한 28건도 대부분 태그 형식, 경로 접두사, 파라미터 이름의 대소문자 같은 작은 차이였다. 이런 차이는 서버 코드만 봐서는 잘 보이지 않기 때문에, 실제 SDK로 호출해보는 테스트를 먼저 갖춰 둔 것이 가장 도움이 되었다.
 
 전체 소스 코드는 [github.com/skyoo2003/devcloud](https://github.com/skyoo2003/devcloud)에서 확인할 수 있다.

@@ -6,11 +6,9 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, smithy, go, devcloud, emulator]
 ---
 
-## 들어가며
-
 참고로 이 글은 2026-10-05에 보완했으며, v1.2.0 이후 main의 [`734b839`](https://github.com/skyoo2003/devcloud/tree/734b83995a3f750f0db827ec9299bc8ed81a530c)를 기준으로 설명한다.
 
-[DevCloud](https://github.com/skyoo2003/devcloud)는 로컬에서 돌아가는 AWS 에뮬레이터다. [이전 글](/ko/posts/2026/04/19/smithy-codegen-aws-services/)에서 Smithy 모델로 서비스별 타입과 라우터, 직렬화 코드, `NotImplemented`를 돌려주는 스텁까지 생성하는 파이프라인을 다루고 "스텁은 시작점이지 끝점이 아니다"라는 말로 마무리했는데, 이번에는 그 다음 이야기를 해보려 한다.
+[DevCloud](https://github.com/skyoo2003/devcloud)는 로컬에서 돌아가는 AWS 에뮬레이터다. [이전 글](/ko/posts/2026/04/19/smithy-codegen-aws-services/)에서 Smithy 모델로 서비스별 타입과 라우터, 직렬화 코드, `NotImplemented`를 돌려주는 스텁까지 생성하는 파이프라인을 다루면서, 생성 코드만으로는 결국 서비스마다 손이 많이 간다는 한계도 같이 이야기했다. 이번에는 그 다음 이야기를 해보려 한다.
 
 스텁을 생성하고 나면 라우터는 있는데 구현이 없는 오퍼레이션이 수천 개 남는데, S3, DynamoDB, SQS 같은 핵심 서비스를 손으로 구현하던 속도로는 이 롱테일을 따라잡을 수 없다. 그렇다고 아무 요청에나 `200`을 돌려주면 SDK가 이를 성공으로 받아들이기 때문에 로컬에서 통과한 코드가 실제 AWS에서 깨지게 된다.
 
@@ -235,7 +233,7 @@ if !ok || m.Verb == "" {
 
 엔진은 로컬에서 연결이 되는지 확인하는 도구일 뿐 그 이상의 동작까지 기대하게 만들어서는 안 되기 때문에, 이런 한계도 문서와 manifest에 그대로 드러내고 있다.
 
-## 마치며
+## 정리
 
 로컬에서 SDK 연결을 확인하려면 필요한 오퍼레이션이 `auto-crud`인지 먼저 살펴보면 된다. 입력 검증이나 리소스 간 동작까지 확인하려는 경우에는 수동 구현과 테스트 범위도 함께 봐야 하므로, [다음 글](/ko/posts/2026/09/29/devcloud-fidelity-manifest-coverage/)에서는 각 등급과 커버리지 집계 방식을 정리해보려 한다.
 

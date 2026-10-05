@@ -6,11 +6,9 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, smithy, go, devcloud, emulator]
 ---
 
-## Introduction
-
 Updated on 2026-10-05. The implementation described here is main at [`734b839`](https://github.com/skyoo2003/devcloud/tree/734b83995a3f750f0db827ec9299bc8ed81a530c), after v1.2.0.
 
-[DevCloud](https://github.com/skyoo2003/devcloud) is an AWS emulator that runs locally. In an [earlier post](/en/posts/2026/04/19/smithy-codegen-aws-services/) I covered the pipeline that generates each service's types, router, serialization code, and a stub that returns `NotImplemented`, all from Smithy models. That post ended with "a stub is a starting point, not an end point."
+[DevCloud](https://github.com/skyoo2003/devcloud) is an AWS emulator that runs locally. In an [earlier post](/en/posts/2026/04/19/smithy-codegen-aws-services/) I covered the pipeline that generates each service's types, router, serialization code, and a stub that returns `NotImplemented`, all from Smithy models, and also admitted that generated code alone still leaves a lot of per-service work.
 
 The hard part comes after the stub. Thousands of operations are left with a router but no implementation. Hand-implementing core services like S3, DynamoDB, and SQS will never keep up with that long tail. But answering any request with `200` is worse: the SDK takes it as success, and code that passed locally breaks against real AWS.
 
@@ -235,7 +233,7 @@ The documented limits are:
 
 These limits are not hidden. They are stated in the docs and in the manifest. The engine is a tool for checking that things connect locally, and it must not set expectations beyond that.
 
-## Conclusion
+## Wrapping Up
 
 For local SDK wiring, check whether the required operation is classified as `auto-crud`. If input validation or cross-resource behavior matters, also check the manual implementation and its tests. The [next post](/en/posts/2026/09/29/devcloud-fidelity-manifest-coverage/) explains the tiers and coverage counts.
 

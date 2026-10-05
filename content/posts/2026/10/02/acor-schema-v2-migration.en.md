@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, data-migration]
 ---
 
-## Introduction
-
 Since its first version in 2017, [ACOR](https://github.com/skyoo2003/acor) has stored its Aho-Corasick trie in Redis. The first design (V1) mapped the trie structure almost directly onto Redis data structures: the keyword set, prefix edges, suffix links, per-state outputs, and node metadata each lived in separate keys. It was easy to understand, but the number of keys and the cost of writes grew with the number of keywords.
 
 v0.4.0 introduced a new schema, V2. A collection uses **at most 3 keys** regardless of how many keywords it has. This post covers the V2 design, the migration API for moving data already stored as V1, the bugs I hit along the way, and how V1 was retired in stages.
@@ -188,7 +186,7 @@ Dropping the `suffixes` field is a small change, but it shows how rolling upgrad
 
 Even in the read-only stage, `Find`, `FindIndex`, `Suggest`, `Info`, `Flush`, and `MigrateV1ToV2` still work. Existing collections can be read and converted in place. Note, though, that `Flush` still deletes every key. Read-only refuses keyword writes. It does not protect the collection.
 
-## Conclusion
+## Wrapping Up
 
 Before migrating, stop older clients from writing and inspect the collection with a dry run. Use `KeepOldKeys` if rollback is needed. Retained V1 keys do not include later V2 writes, and V1 is read-only in clients from v1.5.0 onward.
 

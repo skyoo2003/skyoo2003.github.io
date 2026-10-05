@@ -42,7 +42,7 @@ With lambda expressions, you can write code more simply and focus more on the co
 ```java
 Collections.sort(theListOfMyClasses, new Comparator<MyClass>() {
     public int compare(MyClass a, MyClass b) {
-        return b.getValue() - a.getValue();
+        return a.getValue() - b.getValue();
     }
 });
 ```
@@ -57,54 +57,7 @@ theListOfMyClasses.sort((MyClass a, MyClass b) -> {
 theListOfMyClasses.sort((a, b) -> a.getValue() - b.getValue());
 ```
 
-Lambda expressions support 'type inference', so the runtime can infer the type of parameters without explicitly declaring them. Since you don't need to declare explicitly, the amount of code is reduced.
-
-#### Practical Lambda Patterns
-
-**Simplifying Event Handlers**
-
-```java
-// Java 7
-button.addActionListener(new ActionListener() {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        System.out.println("Button clicked!");
-    }
-});
-
-// Java 8
-button.addActionListener(e -> System.out.println("Button clicked!"));
-```
-
-**Conditional Execution Pattern**
-
-```java
-public static void processIfValid(String input, Consumer<String> processor) {
-    if (input != null && !input.isEmpty()) {
-        processor.accept(input);
-    }
-}
-
-// Usage
-processIfValid(userData, data -> saveToDatabase(data));
-processIfValid(logMessage, msg -> logger.info(msg));
-```
-
-**Lazy Initialization**
-
-```java
-public class ExpensiveResource {
-    private Supplier<HeavyObject> heavyObject = () -> {
-        HeavyObject instance = createHeavyObject();
-        heavyObject = () -> instance; // Memoization
-        return instance;
-    };
-    
-    public HeavyObject getHeavyObject() {
-        return heavyObject.get();
-    }
-}
-```
+Lambda expressions support 'type inference', so the compiler can infer the type of parameters without explicitly declaring them. Since you don't need to declare explicitly, the amount of code is reduced.
 
 ### Stream API
 
@@ -124,105 +77,17 @@ return guests.stream()
 This logic creates a stream from a container, filters only guest objects with the same company, sorts by guest.grade in ascending order, extracts only guest names, and creates a list again.
 Parts that could be complex with existing for-each loops become simpler and clearer.
 
-#### Advanced Stream API
-
-**Parallel Stream**
+Calling `parallelStream()` instead of `stream()` gives you parallel processing too. But if the data isn't large enough it can actually be slower, and mutating shared state like an `ArrayList` inside the lambda can break the result, so collect with `collect()` instead.
 
 ```java
-// Sequential processing
-long count = data.stream()
-    .filter(s -> s.length() > 5)
-    .count();
-
-// Parallel processing
-long count = data.parallelStream()
-    .filter(s -> s.length() > 5)
-    .count();
-```
-
-Cautions when using parallel streams:
-- Only effective when data size is sufficiently large
-- Avoid thread-unsafe operations
-- Not suitable for order-dependent operations
-
-```java
-// Bad example: Shared state modification
+// Mutating shared state (X) - elements can go missing or an exception can be thrown.
 List<Integer> results = new ArrayList<>();
-IntStream.range(0, 1000).parallel()
-    .forEach(i -> results.add(i)); // ConcurrentModificationException possible
+IntStream.range(0, 1000).parallel().forEach(results::add);
 
-// Good example: Thread-safe collection
+// Collecting with collect (O)
 List<Integer> results = IntStream.range(0, 1000).parallel()
-    .boxed()
-    .collect(Collectors.toList());
-```
-
-**Custom Collector**
-
-```java
-public class StringJoiner implements Collector<CharSequence, StringBuilder, String> {
-    
-    @Override
-    public Supplier<StringBuilder> supplier() {
-        return StringBuilder::new;
-    }
-    
-    @Override
-    public BiConsumer<StringBuilder, CharSequence> accumulator() {
-        return (sb, cs) -> {
-            if (sb.length() > 0) sb.append(", ");
-            sb.append(cs);
-        };
-    }
-    
-    @Override
-    public BinaryOperator<StringBuilder> combiner() {
-        return (sb1, sb2) -> {
-            if (sb1.length() > 0) sb1.append(", ");
-            sb1.append(sb2);
-            return sb1;
-        };
-    }
-    
-    @Override
-    public Function<StringBuilder, String> finisher() {
-        return StringBuilder::toString;
-    }
-    
-    @Override
-    public Set<Characteristics> characteristics() {
-        return Collections.emptySet();
-    }
-}
-
-// Usage
-String result = names.stream().collect(new StringJoiner());
-```
-
-**Grouping and Partitioning**
-
-```java
-// Grouping
-Map<Department, List<Employee>> byDept = employees.stream()
-    .collect(Collectors.groupingBy(Employee::getDepartment));
-
-// Grouping + Aggregation
-Map<Department, Double> avgSalaryByDept = employees.stream()
-    .collect(Collectors.groupingBy(
-        Employee::getDepartment,
-        Collectors.averagingDouble(Employee::getSalary)
-    ));
-
-// Multi-level grouping
-Map<Department, Map<Grade, List<Employee>>> byDeptAndGrade = employees.stream()
-    .collect(Collectors.groupingBy(
-        Employee::getDepartment,
-        Collectors.groupingBy(Employee::getGrade)
-    ));
-
-// Partitioning
-Map<Boolean, List<Employee>> partitioned = employees.stream()
-    .collect(Collectors.partitioningBy(e -> e.getSalary() > 50000));
+	.boxed()
+	.collect(Collectors.toList());
 ```
 
 ### Default Method
@@ -342,41 +207,6 @@ public class JSR310Test {
 }
 ```
 
-#### Practical Date API Usage
-
-**Date Calculations**
-
-```java
-LocalDate today = LocalDate.now();
-LocalDate nextWeek = today.plusWeeks(1);
-LocalDate lastDayOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
-LocalDate nextMonday = today.with(TemporalAdjusters.next(DayOfWeek.MONDAY));
-
-// Period between two dates
-Period period = Period.between(startDate, endDate);
-long days = ChronoUnit.DAYS.between(startDate, endDate);
-```
-
-**Time Zone Handling**
-
-```java
-ZonedDateTime seoul = ZonedDateTime.of(
-    LocalDateTime.of(2024, 1, 1, 9, 0),
-    ZoneId.of("Asia/Seoul")
-);
-
-ZonedDateTime ny = seoul.withZoneSameInstant(ZoneId.of("America/New_York"));
-// Seoul 9am = New York 7pm previous day
-```
-
-**Date Parsing and Formatting**
-
-```java
-DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-LocalDateTime dateTime = LocalDateTime.parse("2024-01-15 10:30:00", formatter);
-String formatted = dateTime.format(formatter);
-```
-
 ### Improved Meta-annotation Support
 
 Meta-programming is used for development convenience and productivity. It's a development method where annotations are placed on methods or properties and information is dynamically retrieved.
@@ -412,34 +242,7 @@ public static void main(String[] args) {
 * java.util.concurrent.ForkJoinPool multi-core ExecutorService implementation (JDK7+) / ForkJoinPool.commonPool() method added so you can allocate without creating ForkJoinPool objects
 * java.util.concurrent.locks.StampedLock was added to improve performance issues with java.util.concurrent.locks.ReadWriteLock. Not only is it faster by itself, but it also provides Optimistic Lock for even faster operation. See link [5] for details. See link [6] for performance comparison.
 * Classes supporting atomic operations for counting/accumulation (DoubleAccumulator, DoubleAdder, LongAccumulator, LongAdder) were added. See link [5] for details.
-
-#### CompletableFuture Usage
-
-`CompletableFuture` was added in Java 8, making asynchronous programming even more convenient.
-
-```java
-// Creating async task
-CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
-    return expensiveOperation();
-});
-
-// Chaining
-CompletableFuture<Integer> result = future
-    .thenApply(String::length)
-    .thenApply(len -> len * 2);
-
-// Combining
-CompletableFuture<String> future1 = CompletableFuture.supplyAsync(() -> "Hello");
-CompletableFuture<String> future2 = CompletableFuture.supplyAsync(() -> "World");
-
-CompletableFuture<String> combined = future1
-    .thenCombine(future2, (s1, s2) -> s1 + " " + s2);
-
-// Exception handling
-CompletableFuture<String> handled = future
-    .exceptionally(ex -> "Error: " + ex.getMessage())
-    .thenApply(s -> "Result: " + s);
-```
+* java.util.concurrent.CompletableFuture was added, so async tasks can be chained or combined with `thenApply`, `thenCombine`, and so on. (The old Future only let you block on get().)
 
 ### IO/NIO Extensions
 
@@ -480,7 +283,7 @@ System.out.println(new String(asBytes, "utf-8"));
 
 ### Removal of Permanent Generation from Heap
 
-Cause of java.lang.OutOfMemoryError: PermGen error. (PermGen heap memory is not garbage collected. Causes are mainly indiscriminate Static variables + PermGen memory leaks due to HotSwap)
+Cause of java.lang.OutOfMemoryError: PermGen error. (PermGen is only cleaned up during a Full GC and has a fixed size. Causes are mainly indiscriminate Static variables + PermGen memory leaks due to HotSwap)
 
 #### Changed JVM Options
 
@@ -532,149 +335,11 @@ __Metaspace and Heap separation in Java8__
 
 In summary:
 
-* Heap area structure changed from __New / Survive / Old / Perm / Native__ to __New / Survive / Old / Metaspace__.
+* The heap changed from __New / Survive / Old / Perm__ to __New / Survive / Old__, and the metadata that lived in Perm moved to __Metaspace__ in native memory, not the heap.
 
 * Static Objects that were stored in PermGen area and caused problems were moved to Heap area to be GC targets as much as possible. (Static Final can't be helped...)
 
 * Only information that doesn't need to be modified is stored in Metaspace, and Metaspace has been improved to a structure where JVM can resize as needed.
-
-## Java 8 Migration Guide
-
-### Existing Code Refactoring Checklist
-
-**1. Convert Anonymous Classes to Lambdas**
-
-```java
-// Before
-Runnable r = new Runnable() {
-    @Override
-    public void run() {
-        System.out.println("Hello");
-    }
-};
-
-// After
-Runnable r = () -> System.out.println("Hello");
-```
-
-**2. Convert for Loops to Streams**
-
-```java
-// Before
-List<String> names = new ArrayList<>();
-for (User user : users) {
-    if (user.isActive()) {
-        names.add(user.getName());
-    }
-}
-
-// After
-List<String> names = users.stream()
-    .filter(User::isActive)
-    .map(User::getName)
-    .collect(Collectors.toList());
-```
-
-**3. Convert Null Checks to Optional**
-
-```java
-// Before
-String name = user != null ? user.getName() : "Unknown";
-
-// After
-String name = Optional.ofNullable(user)
-    .map(User::getName)
-    .orElse("Unknown");
-```
-
-**4. Convert Date/Calendar to New Date API**
-
-```java
-// Before
-Calendar cal = Calendar.getInstance();
-cal.set(2024, Calendar.JANUARY, 15);
-Date date = cal.getTime();
-
-// After
-LocalDate date = LocalDate.of(2024, 1, 15);
-```
-
-### Migration Cautions
-
-**Performance Considerations**
-
-```java
-// Streams may be slower for small collections
-List<String> smallList = Arrays.asList("a", "b", "c");
-
-// In such cases, traditional for-each may be more efficient
-for (String s : smallList) {
-    System.out.println(s);
-}
-
-// Streams are advantageous for large collections
-largeCollection.stream()
-    .filter(...)
-    .map(...)
-    .collect(...);
-```
-
-**Serialization Caution**
-
-```java
-// Lambdas can be serialized but it's not recommended
-// Use explicit interfaces if necessary
-@FunctionalInterface
-public interface SerializableFunction<T, R> 
-    extends Function<T, R>, Serializable {
-}
-```
-
-## Troubleshooting
-
-### Common Problems
-
-**1. StreamAlreadyClosedException**
-
-```java
-// Bad example
-Stream<String> stream = Files.lines(path);
-stream.forEach(System.out::println);
-stream.count(); // Exception!
-
-// Good example
-try (Stream<String> stream = Files.lines(path)) {
-    stream.forEach(System.out::println);
-}
-```
-
-**2. ConcurrentModificationException**
-
-```java
-// Bad example
-List<String> list = new ArrayList<>(Arrays.asList("a", "b", "c"));
-list.stream().forEach(s -> list.add(s.toUpperCase())); // Exception!
-
-// Good example
-List<String> upper = list.stream()
-    .map(String::toUpperCase)
-    .collect(Collectors.toList());
-```
-
-**3. NullPointerException in Streams**
-
-```java
-// Problem code
-List<String> names = users.stream()
-    .map(User::getName) // NPE if user is null
-    .collect(Collectors.toList());
-
-// Safe code
-List<String> names = users.stream()
-    .filter(Objects::nonNull)
-    .map(User::getName)
-    .collect(Collectors.toList());
-```
 
 ## References
 

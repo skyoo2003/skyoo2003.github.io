@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, acor, performance, aho-corasick]
 ---
 
-## Introduction
-
 For a while, [ACOR](https://github.com/skyoo2003/acor)'s README said that the V2 schema made `Find()` 50–60x faster. While reorganizing the benchmarks for v0.11.0, I found that sentence was wrong. 50–60x was a real measured number. But that speed came from `EnableCache` and the `Preset` engines, not from the V2 schema. V2 without a cache was actually slower than V1.
 
 That changed how I handle performance claims. Every published number now sits in the docs with the command that reproduces it, and structural numbers are pinned by tests. This post covers the performance work from v0.9.0 through v1.5.0: not only the changes that made things faster, but also a change I removed after measuring it, and correctness bugs I found while doing the performance work.
@@ -149,7 +147,7 @@ Both bugs passed the existing tests. They surfaced because the performance work 
 
 In the same spirit, `Find` and `FindSet` do not allocate a result slice when nothing matches. When ACOR is used as a filter, most text matches nothing, and there is no reason to allocate memory for a match that never happened.
 
-## Conclusion
+## Wrapping Up
 
 Cache settings and `Preset` change search performance, so compare runs under the same conditions. Count round trips at the storage boundary and record timing with its environment. Treat V1 write figures as historical comparisons rather than current API behavior.
 

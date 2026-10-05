@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, raft, distributed-systems]
 ---
 
-## Introduction
-
 The [previous post](/en/posts/2026/10/03/kvs-resp2-server-lua/) covered how [KVS](https://github.com/skyoo2003/kvs) learned to speak the Redis protocol. But up to that point, KVS kept everything in memory. When the process restarted, the keyspace was gone.
 
 This post covers the work that added two flags to KVS. `--data-dir` lets the keyspace survive a restart, and `--raft-addr` lets it survive losing a machine. Both are off by default, so a plain `kvs serve` is still a single in-memory node.
@@ -188,7 +186,7 @@ The version file itself was refined three times in review:
 
 Upgrades happen in place. A build reads the older formats it lists as readable and restamps them with its own version. Format 2 (which added revisions) reads format 1. Downgrades do not work: a newer format is refused, so you move the directory aside and load the data again.
 
-## Conclusion
+## Wrapping Up
 
 When operating a KVS cluster, monitor majority connectivity and log size together. Writes go through consensus, but local reads may be stale, and a node that cannot snapshot may keep growing its log. The soak result covers only the latest acknowledged values and conditions checked by the harness described above.
 

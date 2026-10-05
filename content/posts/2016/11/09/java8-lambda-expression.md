@@ -1,6 +1,6 @@
 ---
 title: Java 8 람다 표현식 자세히 살펴보기
-description: "함수형 프로그래밍 개념부터 Java 8 람다 표현식의 문법, 행위 파라미터화, Optional 조합, 표준·커스텀 함수형 인터페이스까지 자세히 살펴본다."
+description: "함수형 프로그래밍 개념부터 Java 8 람다 표현식의 문법, 행위 파라미터화, Optional 조합, 표준 함수형 인터페이스와 람다의 동작 방식까지 자세히 살펴본다."
 date: 2016-11-09T18:02:24+09:00
 tags: [java, tutorial]
 ---
@@ -17,7 +17,7 @@ tags: [java, tutorial]
 
 부작용 (Side-effect)가 없는 함수로 함수의 실행이 외부의 상태를 변경시키지 않는 함수를 의미한다. 순수한 함수는 멀티 쓰레드 환경에서도 안전하고, 병렬처리 및 계산이 가능하다. 오직 입력에 의해서만 출력이 정해지고, 환경이나 상태에 영향을 받아서는 안된다는 의미이다.
 
-- 익명 함수 (Annonymous Function)
+- 익명 함수 (Anonymous Function)
 
 이름이 없는 함수를 정의할 수 있어야 한다. 이러한 익명 함수는 대부분의 프로그래밍 언어에서 '람다식'으로 표현하고 있으며, 이론적인 근거는 람다 대수에 있다.
 
@@ -29,7 +29,7 @@ tags: [java, tutorial]
 
 **자바에는 함수의 개념이 없다.** (자바의 메소드는 일급 함수가 아니므로, 다른 메소드로 전달할 수 없다. 자바에는 모든 것이 객체다. 메소드는 객체의 행위를 정의하고 객체의 상태를 변경한다.) 이런 이유로 기존의 자바 언어 체계에서는 함수형 언어를 언어 차원에서 지원하지는 못하였다. (함수형 프로그래밍의 조건을 만족하도록 구현한다면 기존에도 가능하다고 할 수 있겠다.)
 
-떄문에, Java8 에서 함수형 인터페이스(**단 하나의 메소드만이 선언된 인터페이스**)라는 개념을 도입하게 되었고, 함수형 인터페이스의 경우, 람다식으로 표현이 가능할 수 있게 제공하였다.
+때문에, Java8 에서 함수형 인터페이스(**단 하나의 메소드만이 선언된 인터페이스**)라는 개념을 도입하게 되었고, 함수형 인터페이스의 경우, 람다식으로 표현이 가능할 수 있게 제공하였다.
 
 Java8에서 함수형 인터페이스라는 개념과 람다식 표현을 통해 입력에 의해서만 출력이 결정되도록 '순수한 함수'를 표현할 수 있게 되었고, 람다식으로 표현함으로써 '익명 함수'를 정의할 수 있게 되었고, 함수형 인터페이스의 메소드에서 또다른 함수형 인터페이스를 인자로 받을 수 있도록 하여 '고계 함수'를 정의할 수 있게 되었다. 즉, 함수형 프로그래밍 언어의 조건을 만족시킬 수 있게 되었다고 할 수 있다.
 
@@ -61,7 +61,7 @@ Functional1, 2, 3는 모두 함수형 인터페이스를 만족한다. 특이한
 자바에서 기본적인 람다식 구조는 아래와 같다.
 
 ```java
-(int a, int b) -> {return a + b} // 매개변수 -> 함수 로직 (+@ 리턴)
+(int a, int b) -> { return a + b; } // 매개변수 -> 함수 로직 (+@ 리턴)
 ```
 
 정리해보자면 아래와 같다.
@@ -72,7 +72,7 @@ Functional1, 2, 3는 모두 함수형 인터페이스를 만족한다. 특이한
 
 * 매개변수에는 타입을 명시하지 않아도 된다. (타입 추론)
 
-* 람다식 문법을 컴파일러가 익명 클래스로 변환한다. 즉, 함수형 인터페이스를 컴파일러가 구현하도록 위임하는 형태라 볼 수 있다
+* 함수형 인터페이스의 구현을 개발자가 직접 작성하지 않고 컴파일러(정확히는 런타임)에 위임하는 형태라 볼 수 있다. (익명 클래스로 변환되는 것은 아니다. 아래에서 다시 설명한다.)
 
 ```java
 () -> {}                     // No parameters; result is void
@@ -101,7 +101,8 @@ t -> { t.start(); }          // Single inferred-type parameter
 
 ## 람다 표현식 활용
 
-자바의 함수형 프로그래밍과 람다 표현식을 살펴보았으니, 이제 람다의 구체적인 명세를 정리해보려 한다. 람다식을 활용할 때 어떤 문법적인 제약이 있고 어떤 방법으로 사용할 수 있는지 알아보자.
+위에서 자바의 함수형 프로그래밍과 람다 표현식에 대해서 자세하게 살펴보았고, 이번에는 람다의 구체적인 명세에 대해서 정리해보고자 한다.
+람다식을 활용함에 있어 어떤 부분이 문법적인 제약이 있는지, 어떤 방법으로 활용될 수 있는지에 대해서 정리해보는 부분이라고 이해하면 좋다.
 
 ### 파라미터에 행위 전달 (Parameterized Behaviors)
 
@@ -125,7 +126,7 @@ public class Fruit {
 }
 
 // AS-IS
-Collections.max(fruits, new Comparator<Fruit> {
+Collections.max(fruits, new Comparator<Fruit>() {
   @Override
   public int compare(Fruit o1, Fruit o2) {
       return o1.name.compareTo(o2.name);
@@ -133,7 +134,7 @@ Collections.max(fruits, new Comparator<Fruit> {
 });
 
 // TO-BE
-Collections.max(fruits, (o1, o2) -> o1.name.compareTo(o2.name) ;
+Collections.max(fruits, (o1, o2) -> o1.name.compareTo(o2.name));
 ```
 
 스프링 프레임워크에서 익명 클래스를 이용한 행위 파라미터를 적극적으로 활용해 '템플릿 콜백 패턴' 디자인패턴으로 이미 유용하게 사용되던 기법이었고, 람다식으로 간결하게 사용할 수 있게 된 것이다.
@@ -143,10 +144,10 @@ Collections.max(fruits, (o1, o2) -> o1.name.compareTo(o2.name) ;
 자바에서 익명 클래스 + 자유 변수 포획으로 클로저를 가능하게 하였는데, 포획된 변수에는 명시적으로 final 지시자를 사용하도록 강제하였다. 람다식에서는 포획된 변수에 final 을 명시하지 않아도 되도록 변경되었지만 기존과 동일하게 포획된 변수는 변경할 수 없고, 변경하는 경우 컴파일 에러가 발생한다.
 
 ```java
-int counter = 0 // Free Variable
+int counter = 0; // Free Variable
 
-new Thread(() -> System.out.println(counter)) // OK
-new Thread(() -> System.out.println(counter++)) // Compile Error (Free variable is immutable!)
+new Thread(() -> System.out.println(counter)); // OK
+new Thread(() -> System.out.println(counter++)); // Compile Error (Free variable is immutable!)
 ```
 
 ### 상태 없는 객체 (Stateless Object)
@@ -170,7 +171,7 @@ if (member != null) {
   if (member.getAddress() != null) {
     String zipCode = member.getAddress().getZipCode();
     if (zipCode != null) {
-      coord = coordRepository.findByZipCode(zipCode)
+      coord = coordRepository.findByZipCode(zipCode);
     }
   }
 }
@@ -180,7 +181,7 @@ Optional<Member> member = memberRepository.findById(1L);
 Coord coord = member.map(Member::getAddress)
     .map(address -> address.getZipCode())
     .map(zipCode -> coordRepository.findByZipCode(zipCode))
-    .orElse(null)
+    .orElse(null);
 ```
 
 * 비어 있는 객체 생성
@@ -192,8 +193,7 @@ Optional<Member> member = Optional.empty();
 * Null 허용하지 않는 객체 생성
 
 ```java
-Optional<Member> member = Optional.of(memberRepository.findById(1L));
-member.get() // NullPointerException !!!
+Optional<Member> member = Optional.of(memberRepository.findById(1L)); // null 이면 여기서 NullPointerException !!!
 ```
 
 * 값이 존재할 때, 특정 메소드 호출
@@ -219,7 +219,7 @@ System.out.println(member != null ? member : new Member("Unknown"));
 
 // TO-BE
 Optional<Member> member = Optional.ofNullable(memberRepository.findById(1L));
-member.orElse(new Member("Unknown")).ifPresent(System.out::println);
+System.out.println(member.orElse(new Member("Unknown")));
 ```
 
 * 특정 조건을 만족하는 경우에만 특정 행위를 하고 싶을 경우
@@ -233,480 +233,42 @@ if (member != null && member.getRating() != null && member.getRating() >= 4.0) {
 
 // TO-BE
 Optional<Member> member = Optional.ofNullable(memberRepository.findById(1L));
-member.filter(m -> m.getRating() >= 4.0)
-    .ifPresent(m -> System.out::println)
+member.filter(m -> m.getRating() != null && m.getRating() >= 4.0)
+    .ifPresent(System.out::println);
 ```
 
-## 함수형 인터페이스 심화
+## 표준 함수형 인터페이스
 
-### 표준 함수형 인터페이스
+매번 함수형 인터페이스를 직접 정의할 필요는 없다. Java 8 에는 `java.util.function` 패키지에 자주 쓰이는 형태의 함수형 인터페이스가 미리 정의되어 있다. 전부 43개인데, 기본형 특화 버전(IntPredicate, LongFunction 등)을 빼면 아래 정도만 알아두어도 충분할 것 같다.
 
-Java 8은 `java.util.function` 패키지에 43개의 표준 함수형 인터페이스를 제공한다. 가장 자주 사용되는 인터페이스들을 살펴보자.
+| 인터페이스 | 메소드 | 용도 |
+|---|---|---|
+| `Predicate<T>` | `boolean test(T t)` | 조건 검사 (filter 등) |
+| `Function<T, R>` | `R apply(T t)` | 값 변환 (map 등) |
+| `Consumer<T>` | `void accept(T t)` | 값 소비 (forEach 등) |
+| `Supplier<T>` | `T get()` | 값 생성 (지연 생성, 팩토리 등) |
+| `UnaryOperator<T>` | `T apply(T t)` | 입력과 출력 타입이 같은 Function |
+| `BinaryOperator<T>` | `T apply(T t1, T t2)` | 같은 타입 두 개를 하나로 (reduce 등) |
 
-#### Predicate<T> - 조건 검사
-
-```java
-@FunctionalInterface
-public interface Predicate<T> {
-    boolean test(T t);
-    
-    default Predicate<T> and(Predicate<? super T> other) { ... }
-    default Predicate<T> or(Predicate<? super T> other) { ... }
-    default Predicate<T> negate() { ... }
-}
-
-// 사용 예
-Predicate<String> isEmpty = String::isEmpty;
-Predicate<String> isNotEmpty = isEmpty.negate();
-Predicate<String> isLongerThan5 = s -> s.length() > 5;
-
-// 조합
-Predicate<String> isValid = isNotEmpty.and(isLongerThan5);
-
-List<String> filtered = names.stream()
-    .filter(isValid)
-    .collect(Collectors.toList());
-```
-
-#### Function<T, R> - 변환
+디폴트 메소드로 조합 기능도 제공하고 있어서, 작은 람다들을 이어 붙여 쓸 수 있다.
 
 ```java
-@FunctionalInterface
-public interface Function<T, R> {
-    R apply(T t);
-    
-    default <V> Function<V, R> compose(Function<? super V, ? extends T> before) { ... }
-    default <V> Function<T, V> andThen(Function<? super R, ? extends V> after) { ... }
-}
+Predicate<String> isNotEmpty = ((Predicate<String>) String::isEmpty).negate();
+Predicate<String> isValid = isNotEmpty.and(s -> s.length() > 5);
 
-// 사용 예
-Function<String, Integer> toLength = String::length;
-Function<Integer, String> toString = Object::toString;
-Function<String, String> pipeline = toLength.andThen(toString);
-
-// compose vs andThen
 Function<Integer, Integer> multiplyBy2 = x -> x * 2;
 Function<Integer, Integer> add10 = x -> x + 10;
-
-Function<Integer, Integer> multiplyThenAdd = multiplyBy2.andThen(add10); // (x * 2) + 10
-Function<Integer, Integer> addThenMultiply = multiplyBy2.compose(add10); // (x + 10) * 2
+multiplyBy2.andThen(add10).apply(1); // (1 * 2) + 10 = 12
+multiplyBy2.compose(add10).apply(1); // (1 + 10) * 2 = 22
 ```
 
-#### Consumer<T> - 소비
+PS. 위의 예제에서 `String::isEmpty`, `System.out::println` 같은 표현은 메소드 레퍼런스라고 하는데, 람다식이 기존 메소드 하나만 호출하는 경우에 더 간결하게 쓸 수 있는 문법이다. 정적 메소드(`Integer::parseInt`), 인스턴스 메소드(`String::length`), 생성자(`ArrayList::new`) 모두 레퍼런스로 표현할 수 있다.
 
-```java
-@FunctionalInterface
-public interface Consumer<T> {
-    void accept(T t);
-    
-    default Consumer<T> andThen(Consumer<? super T> after) { ... }
-}
+## 참고로, 람다는 익명 클래스가 아니다
 
-// 사용 예
-Consumer<String> print = System.out::println;
-Consumer<String> printWithPrefix = s -> System.out.println("Log: " + s);
-Consumer<String> combined = print.andThen(printWithPrefix);
+앞에서 람다식을 익명 클래스처럼 설명했지만, 실제로 컴파일된 바이트코드를 보면 익명 클래스 파일(`Outer$1.class`)이 생기지 않는다. 람다 본문은 `lambda$main$0` 같은 private 메소드로 컴파일되고, 호출 지점에는 `invokedynamic` 명령이 들어가서 런타임에 처음 호출될 때 함수형 인터페이스 구현체가 만들어진다. 때문에 람다 안의 `this` 는 익명 클래스 객체가 아니라 람다를 감싸고 있는 클래스의 인스턴스를 가리킨다.
 
-combined.accept("Hello"); // Hello \n Log: Hello
-```
-
-#### Supplier<T> - 공급
-
-```java
-@FunctionalInterface
-public interface Supplier<T> {
-    T get();
-}
-
-// 사용 예 - 지연 초기화
-public class LazyLoader {
-    private Supplier<ExpensiveObject> supplier = () -> {
-        ExpensiveObject obj = createExpensiveObject();
-        supplier = () -> obj; // 메모이제이션
-        return obj;
-    };
-    
-    public ExpensiveObject get() {
-        return supplier.get();
-    }
-}
-
-// 사용 예 - 팩토리
-Supplier<List<String>> listFactory = ArrayList::new;
-List<String> list = listFactory.get();
-```
-
-#### BinaryOperator<T> - 이항 연산
-
-```java
-@FunctionalInterface
-public interface BinaryOperator<T> extends BiFunction<T, T, T> {
-    static <T> BinaryOperator<T> minBy(Comparator<? super T> comparator) { ... }
-    static <T> BinaryOperator<T> maxBy(Comparator<? super T> comparator) { ... }
-}
-
-// 사용 예
-BinaryOperator<Integer> sum = Integer::sum;
-BinaryOperator<String> concat = (s1, s2) -> s1 + s2;
-
-// Stream.reduce()에서 활용
-int total = numbers.stream().reduce(0, sum);
-String result = words.stream().reduce("", concat);
-```
-
-### 커스텀 함수형 인터페이스
-
-표준 인터페이스로 표현할 수 없는 경우 직접 정의할 수 있다.
-
-```java
-@FunctionalInterface
-public interface ThrowingFunction<T, R, E extends Exception> {
-    R apply(T t) throws E;
-    
-    static <T, R, E extends Exception> Function<T, R> unchecked(
-            ThrowingFunction<T, R, E> function) {
-        return t -> {
-            try {
-                return function.apply(t);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        };
-    }
-}
-
-// 사용 예
-List<File> files = paths.stream()
-    .map(ThrowingFunction.unchecked(File::new))
-    .collect(Collectors.toList());
-```
-
-## 메소드 레퍼런스 심화
-
-메소드 려퍼런스는 람다식을 더 간결하게 표현하는 방법이다.
-
-### 정적 메소드 레퍼런스
-
-```java
-// 람다
-Function<String, Integer> parser = s -> Integer.parseInt(s);
-
-// 메소드 레퍼런스
-Function<String, Integer> parser = Integer::parseInt;
-
-// 활용
-List<Integer> numbers = strings.stream()
-    .map(Integer::parseInt)
-    .collect(Collectors.toList());
-```
-
-### 인스턴스 메소드 레퍼런스
-
-```java
-// 특정 객체의 인스턴스 메소드
-String prefix = "Hello, ";
-Predicate<String> startsWith = prefix::startsWith;
-
-// 임의 객체의 인스턴스 메소드
-Function<String, Integer> length = String::length;
-BiPredicate<String, String> equals = String::equals;
-
-// 활용
-List<Integer> lengths = strings.stream()
-    .map(String::length)
-    .collect(Collectors.toList());
-```
-
-### 생성자 레퍼런스
-
-```java
-// 기본 생성자
-Supplier<List<String>> listSupplier = ArrayList::new;
-List<String> list = listSupplier.get();
-
-// 매개변수 생성자
-Function<Integer, List<String>> listFactory = ArrayList::new;
-List<String> list = listFactory.apply(10);
-
-// 복잡한 예
-record Person(String name, int age) {}
-
-BiFunction<String, Integer, Person> personFactory = Person::new;
-Person person = personFactory.apply("John", 30);
-
-// Stream에서 활용
-List<Person> people = names.stream()
-    .map(name -> new Person(name, 0))
-    .collect(Collectors.toList());
-    
-// 생성자 레퍼런스로 변환 (단, age가 필요하므로 직접 사용은 어려움)
-// 대신 팩토리 메소드 활용
-```
-
-## 람다와 클로저
-
-### 클로저의 개념
-
-클로저는 자신이 생성된 환경의 변수를 포획(capture)하여, 그 변수에 접근할 수 있는 함수를 말한다.
-
-```java
-public class ClosureExample {
-    public static void main(String[] args) {
-        int x = 10;  // 자유 변수
-        
-        // 람다는 x를 포획 (클로저)
-        Function<Integer, Integer> addX = y -> y + x;
-        
-        System.out.println(addX.apply(5));  // 15
-    }
-}
-```
-
-### Java의 클로저 제약
-
-Java의 람다는 포획한 변수가 반드시 effectively final이어야 한다는 점에서 제한된 클로저다.
-
-```java
-public class ClosureLimitation {
-    public static void main(String[] args) {
-        int counter = 0;  // effectively final이 아님
-        
-        // 컴파일 에러!
-        Runnable r = () -> {
-            // counter++;  // 포획한 변수는 수정 불가
-            System.out.println(counter);  // 읽기는 OK
-        };
-    }
-}
-```
-
-### 우회 방법
-
-```java
-// 방법 1: Atomic 사용
-AtomicInteger counter = new AtomicInteger(0);
-Runnable r = () -> counter.incrementAndGet();
-
-// 방법 2: 배열 사용 (권장하지 않음)
-int[] counter = {0};
-Runnable r = () -> counter[0]++;
-
-// 방법 3: 래퍼 클래스 사용
-class Counter {
-    int value = 0;
-}
-Counter counter = new Counter();
-Runnable r = () -> counter.value++;
-```
-
-## 람다 성능 고려사항
-
-### JVM 최적화
-
-Java 8의 람다는 `invokedynamic` 바이트코드로 구현되어 JVM이 런타임에 최적화를 수행할 수 있다.
-
-```java
-// 람다는 익명 클래스와 다르다
-Runnable r1 = () -> System.out.println("Hello");
-
-// 위 코드는 다음과 같이 컴파일되지 않음:
-// new Runnable() { ... }
-
-// 대신 invokedynamic을 사용하여 JVM이 최적화
-```
-
-### 성능 벤치마크
-
-```java
-@BenchmarkMode(Mode.AverageTime)
-@OutputTimeUnit(TimeUnit.NANOSECONDS)
-public class LambdaBenchmark {
-    
-    @Benchmark
-    public void anonymousClass() {
-        Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                // do nothing
-            }
-        };
-        r.run();
-    }
-    
-    @Benchmark
-    public void lambda() {
-        Runnable r = () -> {};
-        r.run();
-    }
-    
-    @Benchmark
-    public void methodReference() {
-        Runnable r = LambdaBenchmark::doNothing;
-        r.run();
-    }
-    
-    private static void doNothing() {}
-}
-```
-
-일반적으로 람다는 익명 클래스보다 약간 더 빠르거나 비슷한 성능을 보인다. 첫 호출 시 약간의 오버헤드가 있을 수 있지만, JVM이 최적화한 후에는 차이가 미미하다.
-
-### 메모리 사용량
-
-```java
-// 람다는 캡처가 없는 경우 싱글톤으로 최적화됨
-Runnable r1 = () -> System.out.println("Hello");
-Runnable r2 = () -> System.out.println("Hello");
-// r1 == r2일 수 있음 (JVM 구현에 따라 다름)
-
-// 캡처가 있는 경우 새 인스턴스 생성
-String msg = "Hello";
-Runnable r3 = () -> System.out.println(msg);
-Runnable r4 = () -> System.out.println(msg);
-// r3 != r4
-```
-
-## 람다 디버깅
-
-### 스택 트레이스 문제
-
-람다식은 스택 트레이스에서 익명 클래스와 다르게 표시된다.
-
-```java
-public class LambdaStackTrace {
-    public static void main(String[] args) {
-        List<Integer> list = Arrays.asList(1, 2, 3, null);
-        
-        try {
-            list.stream()
-                .map(i -> i + 1)  // NPE 발생
-                .forEach(System.out::println);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-}
-```
-
-스택 트레이스:
-```
-java.lang.NullPointerException
-    at LambdaStackTrace.lambda$main$0(LambdaStackTrace.java:7)
-    at java.util.stream.ReferencePipeline$3$1.accept(ReferencePipeline.java:193)
-    ...
-```
-
-### 디버깅 팁
-
-```java
-// 1. 람다를 별도 메소드로 분리
-list.stream()
-    .map(this::addOne)  // 디버깅 포인트 설정 가능
-    .forEach(System.out::println);
-
-private Integer addOne(Integer i) {
-    return i + 1;  // 여기에 브레이크포인트
-}
-
-// 2. peek() 사용
-list.stream()
-    .peek(i -> System.out.println("Before: " + i))
-    .map(i -> i + 1)
-    .peek(i -> System.out.println("After: " + i))
-    .forEach(System.out::println);
-
-// 3. 로깅 래퍼
-public static <T> T log(String name, T value) {
-    System.out.println(name + ": " + value);
-    return value;
-}
-
-list.stream()
-    .map(i -> log("input", i))
-    .map(i -> i + 1)
-    .forEach(System.out::println);
-```
-
-## 람다 모범 사례
-
-### 1. 람다는 간결하게 유지
-
-```java
-// 나쁜 예: 너무 긴 람다
-list.stream()
-    .filter(item -> {
-        if (item == null) return false;
-        if (item.getValue() == null) return false;
-        return item.getValue() > 0 && item.isActive();
-    })
-    .forEach(...);
-
-// 좋은 예: 별도 메소드로 분리
-list.stream()
-    .filter(this::isValid)
-    .forEach(...);
-
-private boolean isValid(Item item) {
-    return item != null 
-        && item.getValue() != null 
-        && item.getValue() > 0 
-        && item.isActive();
-}
-```
-
-### 2. 타입 명시는 필요할 때만
-
-```java
-// 불필요한 타입 명시
-list.stream()
-    .map((String s) -> s.toUpperCase())
-    .collect(Collectors.toList());
-
-// 깔끔한 형태
-list.stream()
-    .map(String::toUpperCase)
-    .collect(Collectors.toList());
-
-// 타입 명시가 필요한 경우 (모호할 때)
-executor.execute((Runnable) () -> doSomething());
-```
-
-### 3. 부작용 피하기
-
-```java
-// 나쁜 예: 외부 상태 변경
-List<String> results = new ArrayList<>();
-list.stream()
-    .forEach(item -> results.add(transform(item)));  // 부작용!
-
-// 좋은 예: 순수 함수 사용
-List<String> results = list.stream()
-    .map(this::transform)
-    .collect(Collectors.toList());
-```
-
-### 4. Optional과 람다 조합
-
-```java
-// 나쁜 예: null 체크
-if (user != null) {
-    Address address = user.getAddress();
-    if (address != null) {
-        String city = address.getCity();
-        if (city != null) {
-            return city.toUpperCase();
-        }
-    }
-}
-return "UNKNOWN";
-
-// 좋은 예: Optional + 람다
-return Optional.ofNullable(user)
-    .map(User::getAddress)
-    .map(Address::getCity)
-    .map(String::toUpperCase)
-    .orElse("UNKNOWN");
-```
+예외가 발생했을 때 스택 트레이스에 `lambda$main$0` 같은 이름이 찍히는 것도 이 때문이다. 람다 본문이 길어서 디버깅이 어렵다면, 별도 메소드로 빼고 메소드 레퍼런스로 넘기는 편이 읽기에도 디버깅하기에도 낫다.
 
 ## 참고 링크
 

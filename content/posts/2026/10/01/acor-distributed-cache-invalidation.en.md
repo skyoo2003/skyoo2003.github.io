@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, acor, caching]
 ---
 
-## Introduction
-
 [ACOR](https://github.com/skyoo2003/acor) is a Go library that stores an Aho-Corasick dictionary in Redis. Keeping the dictionary in Redis lets many processes share one keyword set. The cost is that every `Find` has to read the dictionary from Redis.
 
 v0.5.0 added a **local cache** to cut that cost. Each instance holds the dictionary as an in-memory automaton and serves `Find` locally. That leaves one question: when instance A adds a keyword, how does instance B know to drop its cache?
@@ -151,7 +149,7 @@ A few things to keep in mind when reading the numbers:
 
 Since v0.11.0, turning on `EnableCache` together with `Preset` returns `ErrCacheWithPreset`. `Preset` mode already serves reads from a local engine, so the cache setting has no effect. It used to be silently ignored. Accepting a setting that does nothing makes users believe the cache is on. Rejecting it is more honest.
 
-## Conclusion
+## Wrapping Up
 
 After a message is lost, successful polling and reloading can still discover the stored change. Repeated failures remove any freshness bound based on the polling interval. Monitor both `PresetPollFailures` and `PresetReloadFailures` during operation.
 

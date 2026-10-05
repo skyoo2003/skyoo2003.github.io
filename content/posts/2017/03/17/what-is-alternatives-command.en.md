@@ -5,34 +5,9 @@ date: 2017-03-17T11:13:43+09:00
 tags: [linux, tutorial]
 ---
 
-`alternatives` (or `update-alternatives`) is a GNU-licensed command-line tool that provides functionality to create, remove, manage, and query symbolic links. In other words, it allows defining default versions or paths for specific commands through symbolic links. Note that Debian-based Linux distributions only provide the `update-alternatives` command (the original `alternatives` script was reimplemented to remove perl language dependency), and there are some differences in functionality compared to RedHat-based Linux commands, but this article covers only common functionality and options. Examples are based on RedHat.
+`alternatives` (or `update-alternatives`) is a GNU-licensed command-line tool that provides functionality to create, remove, manage, and query symbolic links. In other words, it allows defining default versions or paths for specific commands through symbolic links. Note that Debian-based Linux distributions only provide the `update-alternatives` command (`update-alternatives` was originally a Debian perl script, and Red Hat reimplemented it in C as `alternatives` to drop the perl dependency), and there are some differences in functionality compared to RedHat-based Linux commands, but this article covers only common functionality and options. Examples are based on RedHat.
 
 For easier understanding, I'll use Maven installation on the system and connecting it via symbolic links. Assume Maven is installed at `/usr/lib/apache-maven-*`. Of course, other applications are also possible.
-
-## What is alternatives?
-
-### Overview
-
-In Linux systems, multiple versions of the same program can be installed. For example:
-- Java: OpenJDK 8, OpenJDK 11, Oracle JDK
-- Python: Python 2.7, Python 3.6, Python 3.9
-- Maven: 3.3.9, 3.6.3, 3.8.1
-
-The `alternatives` command solves this problem elegantly through symbolic links.
-
-### How It Works
-
-```
-/usr/bin/java → /etc/alternatives/java → /usr/lib/jvm/java-11/bin/java
-     ^                    ^                          ^
-     |                    |                          |
-  User command      Managed by alternatives       Actual binary
-```
-
-1. User enters `java` command
-2. System follows `/usr/bin/java` symbolic link
-3. Points to `/etc/alternatives/java`
-4. Finally reaches the actual Java binary
 
 ## Creating Symbolic Links (--install)
 
@@ -79,9 +54,7 @@ Note: To change the paths where alternatives manages symbolic links and metadata
 $ alternatives --altdir /home/user/alternatives --admindir /home/user/alternatives/meta --install /home/user/bin/mvn mvn /usr/lib/maven-3.3.9/bin/mvn 1
 ```
 
-### Using Slave Option Example
-
-Managing related commands together when installing Java:
+For example, when registering Java you can bundle the related commands together like this.
 
 ```bash
 $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 2000 \
@@ -240,155 +213,6 @@ java	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64/jre/bin/j
 libnssckbi.so.x86_64	auto	/usr/lib64/pkcs11/p11-kit-trust.so
 jre_1.8.0_openjdk	auto	/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
 java_sdk_1.7.0_openjdk	auto	/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.131-2.6.9.0.el7_3.x86_64
-```
-
-## Practical Examples
-
-### Java Version Management
-
-```bash
-# Install and register OpenJDK 8
-$ alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.8.0-openjdk/bin/java 1800 \
-  --slave /usr/bin/javac javac /usr/lib/jvm/java-1.8.0-openjdk/bin/javac
-
-# Install and register OpenJDK 11
-$ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 1100 \
-  --slave /usr/bin/javac javac /usr/lib/jvm/java-11-openjdk/bin/javac
-
-# Switch Java version
-$ alternatives --config java
-
-# Check current Java version
-$ java -version
-```
-
-### Python Version Management
-
-```bash
-# Register Python 3.6
-$ alternatives --install /usr/bin/python python /usr/bin/python3.6 1
-
-# Register Python 3.8
-$ alternatives --install /usr/bin/python python /usr/bin/python3.8 2
-
-# Switch Python version
-$ alternatives --config python
-```
-
-### Jenkins CI/CD Usage
-
-```groovy
-pipeline {
-    agent any
-    
-    stages {
-        stage('Set Java Version') {
-            steps {
-                sh 'alternatives --set java /usr/lib/jvm/java-11-openjdk/bin/java'
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-    }
-}
-```
-
-## Troubleshooting
-
-### Common Problems
-
-**1. Insufficient Permissions**
-
-```bash
-failed to create /var/lib/alternatives/java.new: Permission denied
-```
-
-Solution:
-```bash
-$ sudo alternatives --install ...
-```
-
-**2. Link Group Does Not Exist**
-
-```bash
-failed to read link /usr/bin/java: No such file or directory
-```
-
-Solution:
-```bash
-# Must perform install first
-$ alternatives --install /usr/bin/java java /path/to/java 1
-```
-
-**3. Understanding Priority**
-
-```bash
-# Higher priority is automatically selected
-$ alternatives --install /usr/bin/java java /path/to/java8 800
-$ alternatives --install /usr/bin/java java /path/to/java11 1100
-
-# java11 is selected in auto mode
-$ alternatives --auto java
-```
-
-## Differences in Debian/Ubuntu
-
-Debian-based systems use the `update-alternatives` command:
-
-```bash
-# Debian/Ubuntu
-$ sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-11/bin/java 1
-$ sudo update-alternatives --config java
-$ sudo update-alternatives --display java
-$ sudo update-alternatives --list
-
-# Options are the same
-# --install, --remove, --config, --auto, --display, --list
-```
-
-## Best Practices
-
-### 1. Priority Strategy
-
-```bash
-# Use version number as priority
-# Java 8.0.121 → 80121
-# Java 11.0.2 → 110002
-# Maven 3.3.9 → 30309
-# Maven 3.6.3 → 30603
-```
-
-### 2. Actively Use Slave Option
-
-```bash
-# Manage related commands together
-$ alternatives --install /usr/bin/java java /path/to/java 1 \
-  --slave /usr/bin/javac javac /path/to/javac \
-  --slave /usr/bin/javadoc javadoc /path/to/javadoc \
-  --slave /usr/bin/jar jar /path/to/jar \
-  --slave /usr/bin/jps jps /path/to/jps
-```
-
-### 3. Automate with Script
-
-```bash
-#!/bin/bash
-# install-java.sh
-
-JAVA_HOME=$1
-PRIORITY=$2
-
-alternatives --install /usr/bin/java java $JAVA_HOME/bin/java $PRIORITY \
-  --slave /usr/bin/javac javac $JAVA_HOME/bin/javac \
-  --slave /usr/bin/javadoc javadoc $JAVA_HOME/bin/javadoc \
-  --slave /usr/bin/jar jar $JAVA_HOME/bin/jar
-
-echo "Java installed. Current version:"
-java -version
 ```
 
 ## References

@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [aws, devcloud, testing, documentation]
 ---
 
-## Introduction
-
 Updated on 2026-10-05. The implementation described here is main at [`734b839`](https://github.com/skyoo2003/devcloud/tree/734b83995a3f750f0db827ec9299bc8ed81a530c), after v1.2.0.
 
 The first number you notice in an emulator's README is the count of supported services. [DevCloud](https://github.com/skyoo2003/devcloud) was no different at first. But while preparing v1.1.0, I noticed the same number had different values across the docs. The README said 104, the FAQ said 101, and the number of services actually registered was 148.
@@ -175,7 +173,7 @@ curl -s localhost:4747/devcloud/api/unrouted | jq .
 
 It counts services that DevCloud received requests for but could not route. You paste the output into the "Service Not Supported" issue form. One user report is a stronger signal than all three proxies. Service IDs come from caller-controlled headers, so the collector caps how many distinct IDs it keeps and also reports how many it dropped because of the cap. The data stays in memory and is never sent anywhere.
 
-## Conclusion
+## Wrapping Up
 
 DevCloud routes 431 services, and 426 serve at least one operation. The separate depth target covers 205 services. Before using an operation, check its tier and tests rather than relying on the service count.
 

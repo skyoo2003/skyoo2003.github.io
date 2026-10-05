@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, redis, valkey, acor, performance]
 ---
 
-## Introduction
-
 [ACOR](https://github.com/skyoo2003/acor)'s [V2 schema](/en/posts/2026/10/02/acor-schema-v2-migration/) fits filters with thousands or tens of thousands of keywords well. Once a dictionary grows to a million keywords, though, V2's structure becomes a burden. V2 serializes the whole trie into one hash, so even adding a single keyword recomputes and rewrites the whole thing. And while the whole dictionary is being replaced, it is hard to guarantee which version a search sees.
 
 v1.6.0 added a new storage format to address this, **V3 versioned dictionaries**, as an opt-in, and v1.7.0 refined it. This post covers V3's API and storage layout, the delta search I experimented with and then removed, and the numbers measured at one million keywords.
@@ -145,7 +143,7 @@ Moving to V3 is different from the V1→V2 migration. There is no in-place conve
 3. **Cut over.** Stop V2 writes for the final copy, verify, and point the application at the new V3 name. There is no automatic dual write.
 4. **Rollback is not a name change.** Once V3 writes begin, switching back to V2 loses them.
 
-## Conclusion
+## Wrapping Up
 
 Before adopting V3, check startup time and memory for the dictionary size and distribution. An instance that must search immediately after a write should use `WaitForVersion` to wait for its local engine. The million-keyword table measures the single-engine path at `212179f`; measure the selected v1.7.0 sharding configuration separately.
 

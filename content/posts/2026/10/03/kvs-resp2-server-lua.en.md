@@ -6,8 +6,6 @@ lastmod: 2026-10-05T00:00:00+09:00
 tags: [go, kvs, redis-protocol, lua]
 ---
 
-## Introduction
-
 [KVS](https://github.com/skyoo2003/kvs) is a key-value store written in Go. The [first post about it](/en/posts/2026/03/18/kvs-intro/) focused on data structures like the Red-Black Tree and the LSM Tree. Since then the project has changed direction. The storage engine moved to an append log and Raft, and `pkg/rbt`, `pkg/lsm`, `pkg/bitset`, and `pkg/cuckoofilter`, which nothing imported anymore, were removed. KVS went from a data-structure playground to a server you can actually use.
 
 The first step in that change was support for the **Redis protocol (RESP2)**. This post covers that work. Durability and clustering are covered in the [next post](/en/posts/2026/10/03/kvs-append-log-raft/).
@@ -180,7 +178,7 @@ KVS speaks RESP2, but it is not Redis. The docs collect the places where KVS ans
 
 The unsupported features are published as a list too: Functions (`FCALL`), streams, blocking commands (`BLPOP` and friends), RESP3 push, `MONITOR`, bit operations, `GEO`, HyperLogLog, `SCRIPT KILL`, and more. Every unsupported command answers with an error, so a client learns it is not supported instead of getting a wrong result.
 
-## Conclusion
+## Wrapping Up
 
 Existing Redis tools can connect, but check the supported commands and Lua features before using them. Scripts stop at the 5-second deadline, and writes already performed remain. The [next post](/en/posts/2026/10/03/kvs-append-log-raft/) explains persisting this keyspace and replicating it across nodes.
 

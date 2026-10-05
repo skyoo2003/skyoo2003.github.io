@@ -5,40 +5,15 @@ date: 2017-03-17T11:13:43+09:00
 tags: [linux, tutorial]
 ---
 
-`alternatives` (cf, `update-alternatives`)는 심볼릭 링크를 생성, 제거, 관리, 조회할 수 있는 기능을 제공하는 GNU 라이센스의 커맨드라인 툴. 즉, 심볼릭 링크를 통해서 특정 커맨드에 대해 디폴트 버전 혹은 경로를 정의할 수 있다. 다만, Debian 계열의 리눅스에는 `update-alternatives` 명령어만 제공 (perl 언어에 대한 의존성을 제거하기 위해 기존의 `alternatives` 스크립트가 재구현이 되었다고 함)되고, Redhat 계열의 리눅스 명령과 제공하는 기능에는 다소 차이가 있지만, 이번에는 공통적인 기능과 옵션에 대해서만 정리하기로 하였다. 추가로, 예제들은 Redhat 기준으로 정리하였다.
+`alternatives` (cf, `update-alternatives`)는 심볼릭 링크를 생성, 제거, 관리, 조회할 수 있는 기능을 제공하는 GNU 라이센스의 커맨드라인 툴. 즉, 심볼릭 링크를 통해서 특정 커맨드에 대해 디폴트 버전 혹은 경로를 정의할 수 있다. 다만, Debian 계열의 리눅스에는 `update-alternatives` 명령어만 제공 (원래 Debian 의 perl 스크립트였던 `update-alternatives` 를 Redhat 에서 perl 의존성을 없애기 위해 C 로 재구현한 것이 `alternatives` 라고 함)되고, Redhat 계열의 리눅스 명령과 제공하는 기능에는 다소 차이가 있지만, 이번에는 공통적인 기능과 옵션에 대해서만 정리하기로 하였다. 추가로, 예제들은 Redhat 기준으로 정리하였다.
 
 이해를 쉽게하기 위해, 각각의 기능을 설명할 때, 메이븐을 시스템에 설치한 뒤에 심볼릭 링크로 연결하는 방법을 정리하도록 한다. 때문에 메이븐이 `/usr/lib/apache-maven-*` 경로에 설치되어 있다고 가정한다. 물론, 메이븐 이외의 다른 응용도 충분히 가능하다.
-
-## alternatives란 무엇인가?
-
-### 개요
-
-Linux 시스템에서는 여러 버전의 동일한 프로그램이 설치될 수 있다. 예를 들어:
-- Java: OpenJDK 8, OpenJDK 11, Oracle JDK
-- Python: Python 2.7, Python 3.6, Python 3.9
-- Maven: 3.3.9, 3.6.3, 3.8.1
-
-이때 `java`, `python`, `mvn` 같은 명령어가 어떤 버전을 가리킬지 결정해야 하는데, `alternatives`로 심볼릭 링크를 관리하면 이를 해결할 수 있다.
-
-### 동작 원리
-
-```
-/usr/bin/java → /etc/alternatives/java → /usr/lib/jvm/java-11/bin/java
-     ^                    ^                          ^
-     |                    |                          |
-  사용자 명령        alternatives 관리            실제 바이너리
-```
-
-1. 사용자가 `java` 명령어 입력
-2. 시스템은 `/usr/bin/java` 심볼릭 링크를 따라감
-3. `/etc/alternatives/java`를 가리키고 있음
-4. 최종적으로 실제 Java 바이너리에 도달
 
 ## 심볼릭 링크 생성하기 (--install)
 
 `--install` 액션을 통해 심볼릭 링크를 생성할 수 있다. Redhat 기준으로 `alternatives` 는 기본적으로 `/etc/alternatives/<name>` 의 경로에 심볼릭 링크가 생성되고, mode, priority, link, path 에 대한 정보를 `/var/lib/alternatives/<name>` 의 경로에 저장 한다. 심볼릭 링크가 처음 생성되는 경우에는 `<link>`의 경로에 `/etc/alternatives/<name>`에 대한 심볼릭 링크가 생성된다. (`<link>`->`/etc/alternatives/<name>`->`<path>`)
 
-`--slave` 옵션은 마스터 심볼릭 링크와 부수적인 명령어를 함께 관리할 때 사용한다. 예를 들어 `java`의 심볼릭 링크를 생성하면서 `javac`, `javadoc`도 같이 관리할 수 있도록 `--slave` 옵션을 여러 번 정의할 수 있다.
+`--slave` 옵션은 위의 마스터 심볼릭 링크에 부수적인 명령어들도 같이 관리할 때 사용한다. 예를 들어, `java` 에 명령에 대한 심볼릭 링크를 생성할 때, `javac`, `javadoc` 등의 부가적인 명령에 대해서도 같이 관리할 수 있다. 때문에 `--slave` 옵션은 여러번 정의할 수 있다.
 
 ```bash
 $ alternatives --install <link> <name> <path> <priority> [--slave <link> <name> <path>]*
@@ -79,9 +54,7 @@ PS. alternatives에서 관리하는 심볼릭 링크와 메타 데이터의 경�
 $ alternatives --altdir /home/user/alternatives --admindir /home/user/alternatives/meta --install /home/user/bin/mvn mvn /usr/lib/maven-3.3.9/bin/mvn 1
 ```
 
-### Slave 옵션 활용 예시
-
-Java 설치 시 연관된 명령어들을 함께 관리:
+예를 들어, Java 를 등록할 때 아래와 같이 연관된 명령어들을 한 번에 묶어둘 수 있다.
 
 ```bash
 $ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 2000 \
@@ -240,155 +213,6 @@ java	auto	/usr/lib/jvm/java-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64/jre/bin/j
 libnssckbi.so.x86_64	auto	/usr/lib64/pkcs11/p11-kit-trust.so
 jre_1.8.0_openjdk	auto	/usr/lib/jvm/jre-1.8.0-openjdk-1.8.0.121-0.b13.el7_3.x86_64
 java_sdk_1.7.0_openjdk	auto	/usr/lib/jvm/java-1.7.0-openjdk-1.7.0.131-2.6.9.0.el7_3.x86_64
-```
-
-## 실전 활용 예제
-
-### Java 버전 관리
-
-```bash
-# OpenJDK 8 설치 및 등록
-$ alternatives --install /usr/bin/java java /usr/lib/jvm/java-1.8.0-openjdk/bin/java 1800 \
-  --slave /usr/bin/javac javac /usr/lib/jvm/java-1.8.0-openjdk/bin/javac
-
-# OpenJDK 11 설치 및 등록
-$ alternatives --install /usr/bin/java java /usr/lib/jvm/java-11-openjdk/bin/java 1100 \
-  --slave /usr/bin/javac javac /usr/lib/jvm/java-11-openjdk/bin/javac
-
-# Java 버전 전환
-$ alternatives --config java
-
-# 현재 Java 버전 확인
-$ java -version
-```
-
-### Python 버전 관리
-
-```bash
-# Python 3.6 등록
-$ alternatives --install /usr/bin/python python /usr/bin/python3.6 1
-
-# Python 3.8 등록
-$ alternatives --install /usr/bin/python python /usr/bin/python3.8 2
-
-# Python 버전 전환
-$ alternatives --config python
-```
-
-### Jenkins CI/CD에서의 활용
-
-```groovy
-pipeline {
-    agent any
-    
-    stages {
-        stage('Set Java Version') {
-            steps {
-                sh 'alternatives --set java /usr/lib/jvm/java-11-openjdk/bin/java'
-            }
-        }
-        
-        stage('Build') {
-            steps {
-                sh 'mvn clean package'
-            }
-        }
-    }
-}
-```
-
-## 트러블슈팅
-
-### 자주 발생하는 문제
-
-**1. 권한 부족**
-
-```bash
-failed to create /var/lib/alternatives/java.new: Permission denied
-```
-
-해결:
-```bash
-$ sudo alternatives --install ...
-```
-
-**2. 링크 그룹이 존재하지 않음**
-
-```bash
-failed to read link /usr/bin/java: No such file or directory
-```
-
-해결:
-```bash
-# 먼저 install을 수행해야 함
-$ alternatives --install /usr/bin/java java /path/to/java 1
-```
-
-**3. 우선순위 이해하기**
-
-```bash
-# 높은 우선순위가 자동 선택됨
-$ alternatives --install /usr/bin/java java /path/to/java8 800
-$ alternatives --install /usr/bin/java java /path/to/java11 1100
-
-# 자동 모드에서는 java11이 선택됨
-$ alternatives --auto java
-```
-
-## Debian/Ubuntu에서의 차이점
-
-Debian 계열에서는 `update-alternatives` 명령어를 사용한다:
-
-```bash
-# Debian/Ubuntu
-$ sudo update-alternatives --install /usr/bin/java java /usr/lib/jvm/java-11/bin/java 1
-$ sudo update-alternatives --config java
-$ sudo update-alternatives --display java
-$ sudo update-alternatives --list
-
-# 옵션은 동일함
-# --install, --remove, --config, --auto, --display, --list
-```
-
-## 모범 사례
-
-### 1. 우선순위 전략
-
-```bash
-# 버전 번호를 우선순위로 사용
-# Java 8.0.121 → 80121
-# Java 11.0.2 → 110002
-# Maven 3.3.9 → 30309
-# Maven 3.6.3 → 30603
-```
-
-### 2. 슬레이브 옵션 적극 활용
-
-```bash
-# 관련 명령어를 함께 관리
-$ alternatives --install /usr/bin/java java /path/to/java 1 \
-  --slave /usr/bin/javac javac /path/to/javac \
-  --slave /usr/bin/javadoc javadoc /path/to/javadoc \
-  --slave /usr/bin/jar jar /path/to/jar \
-  --slave /usr/bin/jps jps /path/to/jps
-```
-
-### 3. 스크립트로 자동화
-
-```bash
-#!/bin/bash
-# install-java.sh
-
-JAVA_HOME=$1
-PRIORITY=$2
-
-alternatives --install /usr/bin/java java $JAVA_HOME/bin/java $PRIORITY \
-  --slave /usr/bin/javac javac $JAVA_HOME/bin/javac \
-  --slave /usr/bin/javadoc javadoc $JAVA_HOME/bin/javadoc \
-  --slave /usr/bin/jar jar $JAVA_HOME/bin/jar
-
-echo "Java installed. Current version:"
-java -version
 ```
 
 ## 참고 링크

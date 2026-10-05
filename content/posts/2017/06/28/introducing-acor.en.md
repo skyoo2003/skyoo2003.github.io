@@ -5,28 +5,23 @@ date: 2017-06-28T16:39:49+09:00
 tags: [go, redis, acor, tutorial]
 ---
 
-## Introduction
+Finding one keyword in a string isn't hard. But when there are hundreds or thousands of keywords to look for, it's a different story. If you scan the text once per keyword, search time grows with the number of keywords.
 
-String searching is a common problem in software development. Finding a single keyword is straightforward, but what if you need to search for hundreds of keywords simultaneously? Iterating through the text for each keyword would be inefficient.
+The usual answer here is the [Aho-Corasick algorithm](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm). Published by Alfred V. Aho and Margaret J. Corasick in a [1975 paper](http://dl.acm.org/citation.cfm?id=360855), it finds every keyword while walking the text only once, no matter how many keywords there are.
 
-The [Aho-Corasick algorithm](https://en.wikipedia.org/wiki/Aho%E2%80%93Corasick_algorithm) elegantly solves this problem. Developed by Alfred V. Aho and Margaret J. Corasick in 1975, this algorithm can efficiently search for multiple patterns at once.
+I implemented this algorithm in Go and released it as [ACOR (Aho-Corasick automation On Redis)](https://github.com/skyoo2003/acor), a library that stores the trie in Redis instead of memory. The idea came from the [judou/redis-ac-keywords](https://github.com/judou/redis-ac-keywords) project. In this post I'll briefly go over the algorithm, then show how ACOR stores its data in Redis and how to use it.
 
-[ACOR](https://github.com/skyoo2003/acor) is a Go library that implements Aho-Corasick with Redis as the backend storage. In this post, we'll introduce ACOR, cover the basics of the Aho-Corasick algorithm, and walk through its usage.
+## A Quick Look at Aho-Corasick
 
-## Aho-Corasick Algorithm Overview
+The algorithm is made of three parts.
 
-### Basic Principles
+1. **Goto (trie)** : A trie built from the registered keywords. Decides whether the current state can move on with the next character.
+2. **Failure (failure function)** : Defines the state to fall back to when it can't move on.
+3. **Output (output function)** : Defines the keywords matched when a state is reached.
 
-The Aho-Corasick algorithm operates in two phases:
+You read the text one character at a time and move with Goto. When you can't move, you follow Failure back and try again. Checking Output at each state gives you every matched keyword. With text length n, total keyword length m, and z matches, the time complexity is O(n + m + z).
 
-1. **Trie Construction**: Build a trie data structure from the keywords to search
-2. **Failure Function Construction**: Pre-calculate which state to transition to when a match fails
-
-During search, the input text is traversed only once while finding all keyword matches. The time complexity is O(n + m + z), where n is the text length, m is the total length of all keywords, and z is the number of matches.
-
-### Trie Structure
-
-A trie is a tree structure where each node represents a single character. When registering keywords "he", "his", and "she", the following trie is constructed:
+For example, registering "he", "his", and "she" builds this trie.
 
 ```
 root
@@ -36,97 +31,95 @@ root
 │       └── s (output: "his")
 └── s
     └── h
-        └── e (output: "she")
+        └── e (output: "she", "he")
 ```
 
-### Failure Function
+Note that the output of the "she" state also contains "he", because "he", a suffix of "she", is a keyword too. The failure function works on the same idea: if the "his" state can't move any further, it falls back to "s", the longest suffix of "his" that exists in the trie. That way you never have to go back and reread the text.
 
-The failure function defines which state to return to when matching fails at the current state. For example, if searching for "his" and a different character appears after 's', the algorithm falls back to the suffix "s" or the empty string state.
+## What ACOR Stores in Redis
 
-This allows finding all matches without backtracking through the text.
+ACOR doesn't create node objects for trie states. A state is just **the string from the root to that state**. The state reached by "h" → "i" → "s" is simply the string "his". Thanks to that, you can tell which state a value is just by looking at it in Redis, which made debugging easy.
 
-## ACOR Design and Features
+Based on the name given as `Name`, it uses these keys.
 
-### Redis as Storage
+| Key | Type | Use |
+|---|---|---|
+| `{name}:keyword` | Set | Registered keywords |
+| `{name}:prefix` | Sorted Set | Every trie state (every prefix of the keywords) |
+| `{name}:suffix` | Sorted Set | State strings reversed. Used to find states whose output must be recomputed |
+| `{state}:output` | Set | Keywords matched at that state |
+| `{keyword}:node` | Set | States that have that keyword as output (used on removal) |
 
-ACOR's unique feature is storing the trie and failure function in Redis. Benefits include:
+Goto is just a `ZSCORE` check for "current state + next character" in `{name}:prefix`. The failure function isn't precomputed; on every search it looks up the suffixes of the current state in `{name}:prefix`, longest first. Outputs, on the other hand, are computed and stored when a keyword is added.
 
-1. **Memory Efficiency**: Large keyword sets are managed by Redis's memory management
-2. **Persistence**: Data preservation through Redis persistence options
-3. **Distributed Environment Support**: Multiple application instances can share the same trie
+Keeping it in Redis means a large keyword set doesn't take up application memory, and several application instances can share the same keyword dictionary. Of course, since every state transition calls Redis, it's bound to be slower than an in-memory implementation. I think it fits cases where several servers need to share one keyword dictionary.
 
-### State Representation
-
-ACOR represents states as strings. For example, the path "h" -> "i" -> "s" is represented as the state string "his". This simple representation makes debugging and understanding easier.
-
-Redis Sorted Sets are used to manage valid states.
-
-## Getting Started
+## Usage
 
 ### Prerequisites
 
-- Go 1.13 or higher
-- Redis 3.0 or higher
+- Go 1.7+
+- Redis 3.x+
 
 ### Installation
 
 ```bash
-go get -u github.com/skyoo2003/acor
+$ go get github.com/skyoo2003/acor
 ```
 
-### Basic Usage
+Dependencies are managed with [Glide](https://github.com/Masterminds/glide).
+
+### Example
 
 ```go
 package main
 
 import (
-    "fmt"
-    "github.com/skyoo2003/acor/pkg/acor"
+	"fmt"
+
+	"github.com/skyoo2003/acor"
 )
 
 func main() {
-    args := &acor.AhoCorasickArgs{
-        Addr:     "localhost:6379",
-        Password: "",
-        DB:       0,
-        Name:     "sample",
-    }
-    ac := acor.Create(args)
-    defer ac.Close()
+	args := &acor.AhoCorasickArgs{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+		Name:     "sample",
+	}
+	ac := acor.Create(args)
+	defer ac.Close()
 
-    keywords := []string{"he", "her", "him"}
-    for _, k := range keywords {
-        ac.Add(k)
-    }
+	keywords := []string{"he", "her", "him"}
+	for _, k := range keywords {
+		ac.Add(k)
+	}
 
-    matched := ac.Find("he is him")
-    fmt.Println(matched)
-    // Output: [he him]
+	matched := ac.Find("he is him")
+	fmt.Println(matched)
+	// Output: [he him]
 
-    ac.Flush()
+	ac.Flush() // If you want to remove all of the data
 }
 ```
 
-### API Overview
+If you don't have Redis locally, the `run-redis.sh` script in the repository starts a Redis docker container for testing.
+
+### Methods
 
 | Method | Description |
-|--------|-------------|
-| `Create(args)` | Create a new Aho-Corasick instance |
+|---|---|
+| `Create(args)` | Connect to Redis and create an Aho-Corasick instance |
 | `Add(keyword)` | Add a keyword |
-| `Find(text)` | Search for matching keywords in text |
-| `Suggest(input)` | Get prefix-based autocomplete suggestions |
-| `Flush()` | Remove all registered keywords |
-| `Close()` | Close Redis connection |
+| `Remove(keyword)` | Remove a keyword |
+| `Find(text)` | Find matching keywords in text |
+| `Suggest(input)` | Look up keywords starting with the input |
+| `Info()` | Get the number of keywords and nodes (states) |
+| `Flush()` | Delete all stored data |
+| `Close()` | Close the Redis connection |
 
-## Use Cases
+## Wrapping Up
 
-1. **Spam Filtering**: Register spam keywords and search messages
-2. **Sensitive Data Detection**: Detect patterns like SSNs, credit card numbers
-3. **Autocomplete**: Search query autocomplete systems
-4. **Content Moderation**: Filter inappropriate words
+I built it with cases like profanity filtering or detecting messages with certain keywords in mind, where several servers need to share a keyword dictionary. It's still an early version with plenty missing, so I plan to keep improving it.
 
-## Conclusion
-
-ACOR combines the power of the Aho-Corasick algorithm with the flexibility of Redis. It's easy to integrate into projects that need multi-keyword searching.
-
-For more details, check out the [GitHub repository](https://github.com/skyoo2003/acor).
+See the [GitHub repository](https://github.com/skyoo2003/acor) for details.

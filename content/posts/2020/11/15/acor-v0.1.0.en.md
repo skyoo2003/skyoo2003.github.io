@@ -5,79 +5,83 @@ date: 2020-11-15T00:00:00+09:00
 tags: [go, redis, acor, release-notes]
 ---
 
-## Introduction
+I finally got back to [ACOR](https://github.com/skyoo2003/acor) after a long while. I'd left it mostly untouched since first publishing it in 2017, and the Go ecosystem had changed so much in the meantime that the build setup needed work first. So v0.1.0 focuses on cleaning up dependency management and CI rather than adding features.
 
-I've released [ACOR](https://github.com/skyoo2003/acor) v0.1.0. This version focuses on modernizing the project foundation rather than adding new features. Following the evolution of the Go ecosystem, I migrated the dependency management and CI/CD systems to current standards.
+## From Glide to Go modules
 
-## Why Go Modules
+When I first built ACOR, Go had no official dependency manager, so I used [Glide](https://github.com/Masterminds/glide) and committed the dependencies wholesale into a `vendor/` directory. Since then Go 1.11 introduced [Go modules](https://blog.golang.org/using-go-modules), and Glide is no longer maintained. There was no reason to keep Glide, so I moved to Go modules.
 
-ACOR initially used [Glide](https://github.com/Masterminds/glide) for dependency management. Glide was widely used in the community during the era when Go lacked an official dependency management tool. However, things changed when [Go modules](https://blog.golang.org/using-go-modules) were officially introduced in Go 1.11.
-
-The limitations of Glide became clear:
-
-1. **Maintenance discontinued**: Glide is no longer actively developed
-2. **Version management**: Pinning exact versions and managing dependency trees is cumbersome
-3. **Reproducibility**: Guaranteeing identical builds across different environments is difficult
-
-Go modules solves these problems. A single `go.mod` file manages dependencies, and versioning is controlled based on Semantic Versioning. Best of all, it's built into the Go toolchain, requiring no separate installation.
-
-## The Migration Journey
-
-Migrating from Glide to Go modules was simpler than expected.
-
-First, I removed the existing `glide.yaml` and `glide.lock` files, then ran the following commands in the project root:
+The switch itself was simpler than I expected. Delete `glide.yaml`, `glide.lock`, and the `vendor/` directory, then run the following in the project root.
 
 ```bash
-go mod init github.com/skyoo2003/acor
-go mod tidy
+$ go mod init github.com/skyoo2003/acor
+$ go mod tidy
 ```
 
-`go mod init` creates the `go.mod` file, and `go mod tidy` adds only the dependencies actually in use.
+`go mod init` creates the `go.mod` file, and `go mod tidy` finds the dependencies the code actually uses and records them in `go.mod` and `go.sum`. Dropping the vendor directory deleted more than 20,000 lines in one commit. (I can't believe I'd been carrying all that code in the repository...)
 
-During this process, I also upgraded the [go-redis/redis](https://github.com/go-redis/redis) package to the latest version. The upgrade from v6 to v8 included API changes that required some code modifications. Notably, context support was added, so most methods now accept context as the first argument.
+## go-redis v6 to v8
 
-Unit tests were updated as well. Fortunately, the test coverage was decent, allowing the migration to complete without major issues.
+While I was at it, I also moved [go-redis/redis](https://github.com/go-redis/redis) from v6 to v8. From v8, most command methods take a `context.Context` as their first argument, so every Redis call inside ACOR had to change.
 
-## What Else Changed
+```go
+// v6
+ac.redisClient.ZScore(pKey, outState)
 
-### From Travis CI to GitHub Actions
+// v8
+ac.redisClient.ZScore(ac.ctx, pKey, outState)
+```
 
-While changing the dependency management tool, I also reviewed the CI/CD system. Travis CI, which I had been using, is still an excellent tool, but GitHub Actions offered significant advantages:
+I also changed the unit tests, which depended on a locally running Redis, to use [miniredis](https://github.com/alicebob/miniredis). miniredis is a Redis-compatible test server started from Go code, so the tests now run with just `go test`, without starting Redis separately.
 
-1. **GitHub integration**: Manage workflows directly from repository settings
-2. **Simplified configuration**: Just add a YAML file to the `.github/workflows/` directory
-3. **Speed**: Runs on GitHub infrastructure, making it fast
+## From Travis CI to GitHub Actions
 
-The GitHub Actions workflow is simple:
+Since I was already fixing the build, I moved CI from Travis CI to GitHub Actions too. All it takes is one YAML file under `.github/workflows/` in the repository, and the results show up right in the GitHub UI, which is handy. This is the workflow I added; it runs lint and tests on each supported Go version.
 
 ```yaml
-name: CI
-on: [push, pull_request]
+name: Go
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
 jobs:
-  test:
+  build:
+    name: CI
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        go-version: [1.11, 1.12, 1.13, 1.14, 1.15]
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
-        with:
-          go-version: '1.15'
-      - run: go test -v ./...
+    - uses: actions/checkout@v2
+    - name: Set up Go ${{ matrix.go-version }}
+      uses: actions/setup-go@v2
+      with:
+        go-version: ${{ matrix.go-version }}
+    - name: Install golint tool
+      run: go get -u golang.org/x/lint/golint
+    - name: Lint
+      run: golint ./...
+    - name: Test
+      run: go test -v ./...
 ```
 
-The Travis CI configuration file (`.travis.yml`) was removed as it's no longer needed.
+The old `.travis.yml` file was removed.
 
-## How to Upgrade
+## Upgrading
 
-Existing ACOR users can upgrade with:
+With Go modules support, the minimum Go version is now 1.11. Existing users can upgrade like this.
 
 ```bash
-go get github.com/skyoo2003/acor@v0.1.0
+$ go get github.com/skyoo2003/acor@v0.1.0
 ```
 
-If you're using Go modules, the `go.mod` file will be updated automatically.
+Method signatures are unchanged, so most code needs no changes. However, the return value of `Add()` changed from "total keyword count after adding" to "number of keywords newly added this call (0 or 1)", so check it if you were using that value.
 
-## Conclusion
+## Wrapping Up
 
-While v0.1.0 doesn't bring major functional changes, it's an important update for the project's sustainability. Using modern tools and standards will make future maintenance easier.
+Not much changed functionally, but these were things I had to clean up before I could keep working on it. From the next release I plan to gradually improve the project structure and the code itself.
 
-For more details, see the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v0.1.0) and the [repository](https://github.com/skyoo2003/acor).
+See the [GitHub release notes](https://github.com/skyoo2003/acor/releases/tag/v0.1.0) and the [repository](https://github.com/skyoo2003/acor) for details.
